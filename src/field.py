@@ -10,6 +10,9 @@ class field(object):
 
   @staticmethod
   def whisker(cat,mask=None):
+    """
+    Calculate whisker plot for e and psf e over field of view.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -54,6 +57,9 @@ class field(object):
 
   @staticmethod
   def whisker_chip(cat,mask=None):
+    """
+    Calculate whisker plot for e and psf e over each chip.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -94,6 +100,9 @@ class field(object):
 
   @staticmethod
   def footprint(cat,mask=None):
+    """
+    Calculate and plot object number density over field of view.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -104,7 +113,9 @@ class field(object):
 
   @staticmethod
   def build_special_points(chunk):
-
+    """
+    Used to build parts of catalog of special points.
+    """
 
     s='S25,S3,S3,S8,S8'+',f8'*30
     tmp=np.genfromtxt(config.wcsfile,names=True,dtype=s)
@@ -144,6 +155,9 @@ class field(object):
 
   @staticmethod
   def build_special_points_fits(): 
+    """
+    Combines parts of special points catalog into single fits catalog.
+    """
 
     import fitsio as fio
     import re
@@ -186,6 +200,9 @@ class field(object):
 
   @staticmethod
   def corr_points(cat,mask):
+    """
+    Calculate and plot tangential shear and mean shear around special points in catalog.
+    """
 
     import fitsio as fio
 
@@ -253,6 +270,9 @@ class field(object):
 
 
 class field_methods(object):
+  """
+  Utilities for doing pixel and chip calculations.
+  """
 
   chip_centres = {
 

@@ -14,6 +14,9 @@ class split(object):
 
   @staticmethod
   def cat_splits_lin(vals,cat,mask=None):
+    """
+    Loop over array names in vals of CatalogStore cat with optional masking. Calls split_methods.split_gals_lin_along().
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -37,6 +40,9 @@ class split(object):
 
   @staticmethod
   def cat_splits_2pt(vals,cat,cat2=None,mask=None):
+    """
+    Loop over array names in vals of CatalogStore cat with optional masking. Calls split_methods.split_gals_2pt_along().
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     if cat2 is None:
@@ -89,6 +95,9 @@ class split_methods(object):
 
   @staticmethod
   def load_maps(cat,maps=None):
+    """
+    Load list of 'systematic' maps (see Boris et al) and match to positions in cat. If maps=None, load all in dictionary. See config.py.
+    """
 
     if not hasattr(maps, '__len__'):
       if cat.release=='y1':
@@ -107,6 +116,9 @@ class split_methods(object):
 
   @staticmethod
   def get_maps(ra,dec,x,release='y1',nside=4096,map=False,nested=False):
+    """
+    Match 'systematic' map to catalog positions.
+    """
 
     if release=='y1':
       xx=config.map_name_y1.get(x,None)
@@ -127,6 +139,9 @@ class split_methods(object):
 
   @staticmethod
   def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,label='',plot=False):
+    """
+    Split catalog cat into cat.lbins equal (weighted) parts along val. Plots mean shear in bins and outputs slope and error information.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -151,6 +166,9 @@ class split_methods(object):
 
   @staticmethod
   def split_gals_2pt_along(cat,cat2,val,mask=None,mean=True,jkon=False,mock=False,log=False,plot=False):
+    """
+    Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -203,6 +221,9 @@ class split_methods(object):
 
   @staticmethod
   def get_mask_wnz(cat,array,mask=None,mean=True):
+    """
+    Calculate splitting and redshift reweighting. Redshift reweighting currently not migrated from SV code.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -227,6 +248,9 @@ class split_methods(object):
 
   @staticmethod
   def pz_weight(nz,pz,a,label='',plot=False):
+    """
+    Not migrated yet.
+    """
 
     from sklearn.linear_model import Ridge
     
@@ -238,6 +262,9 @@ class split_methods(object):
 
   @staticmethod
   def amp_shift(xip,dxip,dxiperr):
+    """
+    Calculate amplitude shift for correlation splits.
+    """
 
     chi2st=999999
     amp=0.

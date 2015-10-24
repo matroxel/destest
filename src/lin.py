@@ -88,6 +88,9 @@ class linear_methods(object):
 
   @staticmethod
   def calc_mean_stdev_rms_e(cat,mask=None,mock=False):
+    """
+    For a general CatalogStore object cat, return mean, std dev, rms of ellipticities.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -105,6 +108,9 @@ class linear_methods(object):
 
   @staticmethod
   def calc_mean_stdev_rms(cat,x,mask=None,mock=False):
+    """
+    For a general CatalogStore object cat, return mean, std dev, rms of array x in cat.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -123,6 +129,9 @@ class linear_methods(object):
 
   @staticmethod    
   def find_bin_edges(x,nbins,w=None):
+    """
+    For an array x, returns the boundaries of nbins equal (possibly weighted by w) bins.
+    """
 
     if w is None:
       xs=np.sort(x)
@@ -215,6 +224,9 @@ class linear_methods(object):
 
   @staticmethod
   def bin_means(x,cat,mask=None,mock=False,log=False,noe=False):
+    """
+    For array x in CatalogStore object cat, calculate the means of shear in equal bins of x. Returns errors in both x and y directions.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -236,6 +248,9 @@ class fitting(object):
 
   @staticmethod
   def lin_fit(x,y,sig):
+    """
+    Find linear fit with errors for two arrays.
+    """
 
     def func(x,m,b):
       return m*x+b
@@ -249,6 +264,9 @@ class fitting(object):
 
   @staticmethod
   def sys_lin_fit(x,cat,mask=None,log=False,noe=False,mock=False,bins=100):
+    """
+    Find linear fit corresponding to mean shears in bins of x.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -275,6 +293,11 @@ class hist(object):
 
   @staticmethod
   def hist_tests(vals,cat,mask=None):
+    """
+    Loop over array vals, containing stored catalog column variables in CatalogStore object cat. Optionally mask the elements used.
+
+    Produces plots of 1D histograms for each element in vals.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -292,6 +315,12 @@ class hist(object):
 
   @staticmethod
   def hist_2D_tests(valsx,valsy,cat,cat2=None,mask=None,mask2=None,match_col=None):
+    """
+    Loop over array vals(x|y), containing stored catalog column variables in CatalogStore object cat (and cat2). Optionally mask the elements used. 
+
+    Produces plots of 2D histograms for each cross pair in valsx and valsy. If both cat and cat2 provided, optionally provide an array name in cat with which to match the two catalogs (default value of None indicates to use the coadd ids). This is useful for matching between data releases.
+    """
+
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -344,6 +373,11 @@ class hist(object):
 
   @staticmethod
   def tile_tests(vals,cat):
+    """
+    Loop over array vals, containing stored catalog column variables in CatalogStore object cat that have had means computed tile-by-tile with summary_stats.tile_stats(). This expects the output file from that function to exist.
+
+    Produces plots of 1D histograms for each mean value tile-by-tile.
+    """
 
     s='S12,f8'+',f8'*len(vals)*3
     tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
@@ -371,6 +405,11 @@ class hist(object):
 
   @staticmethod
   def tile_tests_2D(valsx,valsy,cat,cat2=None):
+    """
+    Loop over array vals(x|y), containing stored catalog column variables in CatalogStore object cat (and cat2) that have had means computed tile-by-tile with summary_stats.tile_stats(). This expects the output file from that function to exist.
+
+    Produces plots of 2D histograms for each cross pair in valsx and valsy tile-by-tile.
+    """
 
     s='S12,f8'+',f8'*len(valsx)*3
     tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
@@ -409,6 +448,9 @@ class footprint(object):
 
   @staticmethod
   def hexbin_tests(vals,cat,mask=None):
+    """
+    Produces a set of hexbin plots (mean value in cells across the survey footprint) for each value listed in vals and stored in CatalogeStore object cat. Optionally mask the arrays listed in vals.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -423,6 +465,9 @@ class footprint(object):
 
   @staticmethod
   def tile_tests(vals,cat,mask=None):
+    """
+    A version of hexbin_tests that maps mean value tile-by-tile instead of by hexbin cell.
+    """
 
     s='S12,f8'+',f8'*len(vals)*3
     tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
@@ -443,6 +488,9 @@ class footprint(object):
 
   @staticmethod
   def footprint_tests(cat,vals,mask=None,bins=100,label=''):
+    """
+    If vals==[], produces a galaxy density plot over the survey fottprint for the catalog with mask. If vals contains a list of flag columns, it maps the density of objects that fail each flag value.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -464,6 +512,9 @@ class summary_stats(object):
 
   @staticmethod
   def n_bits_array(cat,arr,mask=None):
+    """
+    Convenience function to return maximum flag bit.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -473,6 +524,9 @@ class summary_stats(object):
 
   @staticmethod
   def i3_flags_dist(cat,mask=None):
+    """
+    Produce a summary of error properties in the catalog. Identifies nan or inf values in arrays and lists the distribution of objects that fail info/error flags. Needs to be updated to accept the name of the flag columns to generalise from im3shape.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -504,6 +558,9 @@ class summary_stats(object):
 
   @staticmethod
   def e1_psf_stats(cat,mask=None):
+    """
+    Produce a summary of basic shear and psf properties in the catalog. Writes out the mean, std dev, and rms of e1, e2, psf e1, psf e2 and psf fwhm, along with number of galaxies for some mask. Needs to be updated to be more flexible about what information should be incldued in the summary (which columns).
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -531,7 +588,9 @@ class summary_stats(object):
 
   @staticmethod
   def tile_stats(cat,vals,mask=None):
-
+    """
+    Produce a summary of basic properties tile-by-tile in the catalog. Writes out the mean, std dev, and rms of the values listed in vals for some mask. This output file is used in the other tile functions in module lin.
+    """
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     line='#tile  numgal  '

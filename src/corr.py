@@ -16,6 +16,32 @@ class xi_2pt(object):
 
   @staticmethod
   def xi_2pt(cata,catb=None,k=None,ga=None,gb=None,corr='GG',maska=None,maskb=None,wa=None,wb=None,ran=True,mock=False,erron=True,jkmask=None,label0='',plot=False):
+    """
+    This is a flexible convenience wrapper for interaction with treecorr to work on CatalogStore objects. Some basic examples are given in corr_tests() of the main testsuite.py. g1, g2 correctly by c1, c2 if ellipticities and cat.bs is true. Correction by sensitivity, 1+m applied if cat.bs=True. Weighting applied if cat.wt is true. Other config properties for treecorr stored in CatalogStore object. See catalog.py or config.py. Not all correlation types fully integrated or tested. For example, only one kappa value is currently possible. Will be updated in future as useful.
+
+    Use:
+
+    :cata, catb:    CatalogStore - Must supply both cata, catb (can be same reference) if NG or NK correlation. Otherwise catb is optional.
+    :k:             str - Array name in cata, catb to use for kappa correlation. 
+    :ga, gb:        str - Array names for g1, g2 treecorr inputs. If None assume e1, e2.
+    :corr:          str - Type of correlation for treecorr.
+    :maska, maskb:  [bool] - Masking array to apply to input catalogs.
+    :wa, wb:        [float] - Additional weights to apply after cat.w is used. Combined as e.g., w=sqrt(cat.w*wa).
+    :ran:           bool - Use randoms in correlation calculation. If True, assumes cat.ran_ra, cat.ran_dec exist.
+    :mock:          bool - If mock catalog from sims. Used when calculating covariances from sims, not currently migrated from SV code.
+    :erron:         bool - Calculate jackknife or sim cov errors. If False, uses treecorr error outputs. Not currently migrated from SV code. When implemented requires cat.calc_err in ('jk', 'mock').
+    :jkmask:        [bool] - For jk, mock cov calculation loop over regions/sims.
+    :label0:        str - Additional (optional) label string used in some outputs.
+    :plot:          bool - Plot output?
+
+    Output (len cat.tbins):
+
+    :theta:         [float] - Treecorr np.exp(meanlogr)
+    :out:           ([float]x4) - Output of signal e.g., (xi+,xi-,xi+im,x-im). For correlations with only one xi output, (xi,0.,xi_im,0.).
+    :err:           ([float]x4) - Same but for sqrt(var).
+    :chi2:          ([float]x4) - Same but for chi^2 if using jk or sim covariance.
+
+    """
 
     maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
     jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
@@ -31,7 +57,7 @@ class xi_2pt(object):
       if corr not in ['GG','NN','KK']:
         raise UseError('Must supply both cata,catb for NG,NK correlations.')
 
-    if ga!=None:
+    if gai s not None:
       e1=getattr(cata,ga+'1')[maska]
       e2=getattr(cata,ga+'2')[maska]
     else:
@@ -55,7 +81,7 @@ class xi_2pt(object):
         raise UseError('Unknown k field specified.')
       catxa=treecorr.Catalog(k=getattr(cata, k)[maska0], w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
-    if catb!=None:
+    if catb is not None:
 
       maskb=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
 
@@ -64,7 +90,7 @@ class xi_2pt(object):
 
       e1,e2,w,ms=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
-      if gb!=None:
+      if gb is not None:
         e1=getattr(cata,gb+'1')[maskb]
         e2=getattr(cata,gb+'2')[maskb]
       else:

@@ -11,6 +11,9 @@ class pz_methods(object):
 
   @staticmethod
   def build_nofz_bins(pz0,pzlow,pzhigh,cat=None,bins=3,split='mean',pzmask=None,catmask=None):
+    """
+    Build n(z) for a PZStore object that contains full pdf information. Optionally match to a catalog. Masking for both pz's and catalog optional. split determines which point estimate is used for binning. bins is number of tomographic bins. pzlow, pzhigh are bounds of reliable photo-zs. Stores result in PZStore object.
+    """    
 
     pzmask=catalog.CatalogMethods.check_mask(pz0.coadd,pzmask)
 
@@ -54,26 +57,10 @@ class pz_methods(object):
 class pz_spec_validation(object):
 
   @staticmethod
-  def plot_nofz(pz0,test):
-
-    import matplotlib
-    matplotlib.use ('agg')
-    import matplotlib.pyplot as plt
-    plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
-
-    col=['k','r','g','b','r','g','b']
-    for i in xrange(len(pz0.pz)-1):
-      plt.plot(pz0.bin,pz0.pz[i+1,:],color=col[i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label='')
-      plt.plot(pz0.bin,pz0.spec[i+1,:],color=col[i+1],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
-    plt.xlabel(r'$z$')
-    plt.ylabel(r'$n(z)$')
-    plt.savefig('pz_nofz_'+test+'.png')
-    plt.close()
-
-    return
-
-  @staticmethod
   def calc_bootstrap(test,dir,tomobins,notomo=False):
+    """
+    Calculate bootstrap for correlation functions in spec validation tests.
+    """
 
     ratio=np.zeros((tomobins,50))
     var=np.zeros((tomobins))
@@ -111,6 +98,9 @@ class pz_spec_validation(object):
 
   @staticmethod
   def calc_bootstrap_sig8(test,dir,param,notomo=False):
+    """
+    Calculate bootstrap for cosmological parameters in spec validation tests.
+    """
 
     from astropy.table import Table
 

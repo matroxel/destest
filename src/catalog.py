@@ -603,7 +603,7 @@ class CatalogMethods(object):
 
   @staticmethod
   def default_rm_cuts():
-        """
+    """
     Masking functions for use in CatalogStore initialisation. 
 
     Use:
