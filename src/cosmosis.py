@@ -261,6 +261,15 @@ class run(object):
 
   @staticmethod
   def submit_pz_spec_test(pz0,test,boot=False,cosmo=False,nodes=1,procs=32,hr=48,params=dc1_params,priors=dc1_priors):
+    """
+    A wrapper to submit cosmosis runs specifically for photo-z spec validation. Currently works for my PBS environment. Will add alternate option to just print necessary commands to a file to run as desired. Needs work. Currently works with Cls due to need of synthetic covariance, but will switch back to xi if used in WL analysis once covariances are available. Could also make it optional which (xi vs cl) to use.
+
+    Use:
+
+    ....
+
+
+    """
 
     from popen2 import popen2
     import subprocess as sp
@@ -467,6 +476,9 @@ class make(object):
 
   @staticmethod
   def values(params,vary,ia,pz,mbias,planck,tomobins,sfile):
+    """
+    Writes values.ini files for cosmosis run submitted via run class.
+    """
 
     n='\n'
 
@@ -516,6 +528,9 @@ class make(object):
 
   @staticmethod
   def priors(params,prior,ia,pz,mbias,planck,tomobins,sfile):
+    """
+    Writes priors.ini files for cosmosis run submitted via run class.
+    """
 
     n='\n'
     cnt=0
@@ -561,6 +576,9 @@ class make(object):
 
   @staticmethod
   def nofz(pz0,test):
+    """
+    Writes n(z) files in cosmosis format for photo-z spec validation testing.
+    """
 
     if not os.path.exists(config.pztestdir+test):
       os.makedirs(config.pztestdir+test)

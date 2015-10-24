@@ -229,7 +229,7 @@ class PZStore(object):
   :name:      str - A label for identifying the catalog in output. Multiple catalog classes can be defined, but each should have a unique name.
   :setup:     bool - Read in data and setup class structure? If false, only basic structure is created. Used for custom catalogs to feed into functions that expect a PZStore object.
   :pztype:    str - This identifies which photo-z code is stored in the class. In SV was used for dealing with multiple formats. Hopefully deprecated in Y1 analysis. For now identifies h5 table name.
-  :filetype:  bool - Type of file to be read. dict - standard dict file for passing n(z) for spec validation, h5 - h5 file of pdfs, fits - fits file of pdfs. Non-dict file support not migrated from SV code yet - can use setup=False to store pdf information in class manually, though.
+  :filetype:  bool - Type of file to be read. dict - standard dict file for passing n(z) for spec validation, h5 - h5 file of pdfs, fits - fits file of pdfs. Non-dict file support not fully migrated from SV code yet - can use setup=False to store pdf information in class manually, though.
   :file:      str - File to be read in.
   """
 

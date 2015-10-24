@@ -74,6 +74,8 @@ def single_tests(epochcat,epochmask,cat,mask,lenscat):
 if __name__ == '__main__':
 
 
+  ###   Shear testing Examples    ###
+
 
   #Load shear catalog
 
@@ -106,3 +108,38 @@ if __name__ == '__main__':
   single_tests(i3epoch,epochmask,i3,i3.info==0,rm10)
 
 
+  ###   Photo-z testing Examples    ###
+
+  # Load photo-z catalog of pdfs - h5 version
+
+  sn=catalog.PZStore('skynet',setup=True,pztype='SKYNET',filetype='h5',file='sv_skynet_final.h5')
+
+  # Build photo-z bins from PZStore object
+
+  pz.pz_methods.build_nofz_bins(sn,0.3,1.3,cat=None,bins=3,split='mean',pzmask=None,catmask=None)
+
+  # Load photo-z n(z)'s and bootstrap samples from standard dict file used for spec validation.
+  
+  sn=catalog.PZStore('skynet',setup=True,pztype='SKYNET',filetype='dict',file='WL_test_3_bins.pickle')
+
+  # Plot comparison of photo-z vs spec.
+
+  fig.plot_methods.plot_nofz(sn,'pz_test')
+
+  # Write cosmosis n(z) files from PZStore object.
+
+  cosmosis.make.nofz(sn,'pz_test')
+
+  # Submit cosmosis runs for spec validation
+
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=False,cosmo=False)
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=True,cosmo=False)
+  # First two jobs must finish writing simulated data before running second two commands
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=False,cosmo=True)
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=True,cosmo=True)
+
+  # When cosmosis jobs finished, calculate output figures and stats
+
+  fig.plot_methods.plot_pz_sig8('pz_test',boot=True,tomobins=3)
+
+  
