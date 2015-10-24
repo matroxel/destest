@@ -8,8 +8,28 @@ import pickle
 noval=999999
 
 class CatalogStore(object):
+  """
+  A flexible class that reads and stores shear catalog information. An example is given for im3shape in the main testsuite.py.
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,maps=[],jkbuild=False,jkload=False,loadpz=False,tiles=None,release='y1'):
+  Use:
+
+  :name:      str - A label for identifying the catalog in output. Multiple catalog classes can be defined, but each should have a unique name.
+  :setup:     bool - Read in data and setup class structure? If false, only basic structure is created. Used for custom catalogs to feed into functions that expect a CatalogStore object.
+  :cutfunc:   func - Pre-defined function for determining which objects in the catalog to store. See examples in CatalogMethods below.
+  :cattype:   str - Currently one of 'im', 'ng', or 'gal' for im3shape, ngmix or a galaxy/lens catalog, respectively. This determines the dictionary in config.py used to match shortnames for quantities with column names in the catalog files.
+  :cols:      [str] - Array of shortnames of columns to save from files. If None, saves all columns in dictionary.
+  :catdir:    str - Directory to look for catalog files. Currently looks for files with *fits* extensions. Supports multiple files.
+  :goldfile:  str - Common 'gold' file in combined, flatcat SV format for ngmix, im3shape. Not fully migrated from SV version of code. Will update when common file format for Y1 agreed upon.
+  :catfile:   str - Point to a single catalog file. Also expects fits currently, but simple to add option for text files with column headers or h5 if useful.
+  :ranfile:   str - Random file to be used with catalog type 'gal'. Currently rigid format, expecting numpy array of ra,dec.
+  :jkbuild:   bool - Build jackknife regions from kmeans? Currently partly implemented - 150 regions. Can be more flexible if needed.
+  :jkload:    bool - Load jackknife regions from file. Currently not fully migrated from SV code.
+  :tiles:     [str] - Array of DES tile names to load, maching to multi-file fits format for catalog. Could be made more flexible to match strings in filenames generally.
+  :release:   str - Release version, e.g. 'y1', 'sv'. Used for identifying release-specific files like systematics maps.
+
+  """
+
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1'):
 
     if setup:
 
@@ -73,50 +93,57 @@ class CatalogStore(object):
 
       self.name=name
       self.cat=cattype
-      self.lbins=10
-      self.sbins=2
-      self.slop=0.1
-      self.tbins=8
-      self.cbins=5
-      self.sep=np.array([1,400])
+      self.release=release
+      #Number of bins in linear split functions (see e.g., sys_split module).
+      self.lbins=config.cfg.get('lbins',None)
+      #Number of bins to split signal in for systematics null tests.
+      self.sbins=config.cfg.get('sbins',None)
+      #Binslop for use in Treecorr.
+      self.slop=config.cfg.get('slop',None)
+      #Number of separation bins in Treecorr.
+      self.tbins=config.cfg.get('tbins',None)
+      #Number of cosebi bins (not migrated from SV yet)
+      self.cbins=config.cfg.get('cbins',None)
+      #Separation [min,max] for Treecorr.
+      self.sep=config.cfg.get('sep',None)
       self.calc_err=False
-      self.num_patch=126
+      #Number of simulation patches for covariances.
+      self.num_patch=config.cfg.get('num_patch',None)
+      #Whether to use weighting and bias/sensitivity corrections in calculations.
       if cattype=='gal':
         self.bs=False
-        self.wt=False
+        self.wt=config.cfg.get('wt',None)
       else:
-        self.bs=True
-        self.wt=True
-      self.pzrw=False 
-      self.ztyp='SKYNET_SMOOTHED'
-      self.wt=False
-      self.bs=False
-      self.release=release
+        self.bs=config.cfg.get('bs',None)
+        self.wt=config.cfg.get('wt',None)
+      #Whether to reweight n(z) when comparing subsets of data for null tests.
+      self.pzrw=config.cfg.get('pzrw',None) 
+
+      if (cattype=='gal')&(ranfile is not None):
+        tmp=np.load(ranfile)
+        self.ran_ra=tmp[:,0]
+        self.ran_dec=tmp[:,1]
+        mask=(self.ran_ra>60)&(self.ran_ra<95)&(self.ran_dec>-61)&(self.ran_dec<-42)
+        self.ran_ra=self.ran_ra[mask]
+        self.ran_dec=self.ran_dec[mask] 
 
       if jkbuild:
         X=np.vstack((self.ra,self.dec)).T
-        km0 = km.kmeans_sample(X, 150, maxiter=100, tol=1.0e-5)
+        km0 = km.kmeans_sample(X, config.cfg.get('num_reg',None), maxiter=100, tol=1.0e-5)
         self.regs=km0.labels
-        self.num_reg=150
+        #Number of jackknife regions
+        self.num_reg=config.cfg.get('num_reg',None)
       else:
         self.num_reg=0
         self.regs=np.ones(len(self.coadd))
 
 
-      if jkload:
-        self.num_reg,self.regs=jackknife_methods.load_jk_regs(self.ra,self.dec,64,jkdir)
-      else:
-        self.num_reg=0
-        self.regs=np.ones(len(self.coadd))
+      # if jkload:
+      #   self.num_reg,self.regs=jackknife_methods.load_jk_regs(self.ra,self.dec,64,jkdir)
+      # else:
+      #   self.num_reg=0
+      #   self.regs=np.ones(len(self.coadd))
 
-
-      # self.ran_ra=np.load(catdir+'random.npy')[:,0]
-      # self.ran_dec=np.load(catdir+'random.npy')[:,1]
-
-      # mask=(self.ran_ra>60)&(self.ran_ra<95)&(self.ran_dec>-61)&(self.ran_dec<-42)
-
-      # self.ran_ra=self.ran_ra[mask]
-      # self.ran_dec=self.ran_dec[mask] 
 
     else:
 
@@ -139,6 +166,9 @@ class CatalogStore(object):
 
 
 class MockCatStore(object):
+  """
+  A flexible class that reads and stores mock catalog information. Used for covarianace calculations. Mock catalog module not yet migrated from SV code.
+  """
 
   coadd=[]
   ra=[]
@@ -191,21 +221,24 @@ class MockCatStore(object):
 
 
 class PZStore(object):
+  """
+  A flexible class that reads and stores photo-z catalog information. An example is given in the main testsuite.py.
 
-  def __init__(self,name,setup=True,pztype='skynet',dict=False,file=None,low=None,high=None,tomo=0,bintype=None):
+  Use:
+
+  :name:      str - A label for identifying the catalog in output. Multiple catalog classes can be defined, but each should have a unique name.
+  :setup:     bool - Read in data and setup class structure? If false, only basic structure is created. Used for custom catalogs to feed into functions that expect a PZStore object.
+  :cattype:   str - This identifies which photo-z code is stored in the class. In SV was used for dealing with multiple formats. Hopefully deprecated in Y1 analysis.
+  :filetype:  bool - Type of file to be read. dict - standard dict file for passing n(z) for spec validation, h5 - h5 file of pdfs, fits - fits file of pdfs. Non-dict file support not migrated from SV code yet - can use setup=False to store pdf information in class manually, though.
+  :file:      str - File to be read in.
+  """
+
+  def __init__(self,name,setup=True,pztype='skynet',filetype=None,file=None):
 
     if setup:
 
       if file is None:
         raise CatValError('Need a source file.')
-
-      if dict:
-        filetype='dict'
-      else:
-        if 'h5' in file:
-          filetype='h5'
-        else:
-          filetype='fits'
 
       if filetype=='dict':
         d=CatalogMethods.load_spec_test_file(file)
@@ -459,6 +492,14 @@ class CatalogMethods(object):
 
   @staticmethod
   def sort(a1,a2):
+    """
+    Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
+
+    len(a1[mask1])==len(a2[mask2])
+    (a1[mask1])[sort1]==a2[mask2]
+    a1[mask1]==(a2[mask2])[sort2]
+
+    """
 
     mask1=np.in1d(a1,a2,assume_unique=True)
     mask2=np.in1d(a2,a1,assume_unique=True)
@@ -469,6 +510,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def get_new_nbcw(cat,file,w=True,prune=False):
+    """
+    Convenience function to match and add new nbc values from a fits file to a CatalogeStore object. Takes a CatalogStore object to modify.
+    """
 
     fits=fio.FITS(file)
     tmp=fits[-1].read()
@@ -493,6 +537,13 @@ class CatalogMethods(object):
 
   @staticmethod
   def final_null_cuts():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
 
     cuts=CatalogMethods.add_cut(np.array([]),'coadd',0,noval,noval)
 
@@ -500,6 +551,13 @@ class CatalogMethods(object):
 
   @staticmethod
   def redmagic():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
 
     cuts=CatalogMethods.add_cut(np.array([]),'coadd',0,noval,noval)
 
@@ -507,6 +565,13 @@ class CatalogMethods(object):
 
   @staticmethod
   def default_ngmix009_cuts():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
 
     cuts=CatalogMethods.add_cut(np.array([]),'exp_flags',noval,0,noval)
     cuts=CatalogMethods.add_cut(cuts,'flags_i',noval,noval,4)
@@ -520,6 +585,13 @@ class CatalogMethods(object):
 
   @staticmethod
   def default_im3shapev8_cuts():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
 
     cuts=CatalogMethods.add_cut(np.array([]),'error_flag',noval,0,noval)
     cuts=CatalogMethods.add_cut(cuts,'info_flag',noval,0,noval)
@@ -531,6 +603,14 @@ class CatalogMethods(object):
 
   @staticmethod
   def default_rm_cuts():
+        """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
     cuts=CatalogMethods.add_cut(np.array([]),'error',noval,0,noval)
     cuts=CatalogMethods.add_cut(cuts,'l',0,noval,noval)
     cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
@@ -541,6 +621,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def ngmix_weight_calc(cat,sn=0.16):
+    """
+    Calculates ngmix weight columns from covariance. Takes a CatalogStore object to modify.
+    """
 
     w=1./(2.*sn**2.+cat.cov11+cat.cov22+2.*cat.cov12)
     print w[w<0]
@@ -550,6 +633,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def match_cat(cat,mask):
+    """
+    Takes a CatalogStore object to modify. Masks all arrays of length the array of unique object ids - cat.coadd.
+    """
 
     for x in dir(cat):
       obj = getattr(cat,x)
@@ -561,6 +647,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def check_mask(array,mask):
+    """
+    Convenience function to return true array for mask if None supplied in other functions.
+    """
 
     if mask is None:
       return np.ones(len(array)).astype(bool)
@@ -570,6 +659,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def info_flag(cat):
+    """
+    Takes properly constructed im3shape CatalogStore object and adds info_flag values.
+    """
 
     import healpy as hp
     gdmask=hp.read_map(config.goldir+'y1a1_gold_1.0.1_wide_footprint_4096.fit')
@@ -618,6 +710,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def nbc_sv(cat):
+    """
+    Constructs nbc values for im3shape based on SV greatDES simulation results. Takes CatalogStore object.
+    """
 
     def basis_m(snr,rgp):
       snr1=snr/100.
@@ -683,6 +778,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def write_output(i3,indir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/spte_sv_v1_partial/bord/main_cats/',outdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/'):
+    """
+    Matches extra columns to CatalogStore object (i3) and rewrites info to fits files it was built from.
+    """
 
     import glob
     for ifile,file in enumerate(glob.glob(indir+'*')):
@@ -708,6 +806,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def write_output2(i3,indir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/spte_sv_v1_partial/bord/main_cats/',outdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/'):
+    """
+    Matches extra columns to CatalogStore object (i3) and rewrites info to fits files it was built from.
+    """
 
     import glob
     for ifile,file in enumerate(glob.glob(indir+'*')):

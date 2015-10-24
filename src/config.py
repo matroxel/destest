@@ -1,5 +1,35 @@
+import numpy as np
+
+# Path definitions
+
+mockdir = '/share/des/sv/BCC-SVA1-WL-v3.0/'
+golddir = '/share/des/disc2/y1/gold_v101/'
+pzrootdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
+cosmosisrootdir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
+wcsfile = '/share/des/disc2/y1/y1a1_image_wcs_info.txt'
+spointsfile = 'y1a1_special_field_points.fits'
+pointingfile = '/home/troxel/catcutDES/y1a1_telradec2.txt'
+y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
+svsysmapdir = '/share/des/sv/systematics_maps/'
+redmagicdir = '/share/des/sv/redmagicv6.3.3/'
 
 # Dictionaries
+
+cfg = {
+  
+  'lbins':10,
+  'sbins':2,
+  'slop':0.1,
+  'tbins':8,
+  'cbins':5,
+  'sep':np.array([1.,400.]),
+  'num_patch':126,
+  'num_reg':150,
+  'bs':False,
+  'wt':False,
+  'pzrw':False
+
+}
 
 # Change lookup names at own risk - will need to modify any direct references throught the code, too.
 
@@ -267,35 +297,24 @@ lbl = {
 
 map_name_y1 = {
   
-  'airmass':svsysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_AIRMASS_coaddweights_mean.fits.gz',
-  'exptime':svsysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_EXPTIME__total.fits.gz',
-  'fwhm':svsysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_FWHM_coaddweights_mean.fits.gz',
-  'maglimit':svsysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_maglimit2__.fits.gz',
-  'skybrite':svsysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_SKYBRITE_coaddweights_mean.fits.gz',
-  'skysigma':svsysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_SKYSIGMA_coaddweights_mean.fits.gz'
+  'airmass':y1sysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_AIRMASS_coaddweights_mean.fits.gz',
+  'exptime':y1sysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_EXPTIME__total.fits.gz',
+  'fwhm':y1sysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_FWHM_coaddweights_mean.fits.gz',
+  'maglimit':y1sysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_maglimit2__.fits.gz',
+  'skybrite':y1sysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_SKYBRITE_coaddweights_mean.fits.gz',
+  'skysigma':y1sysmapdir+'Y1A1_SPT_and_S82_IMAGE_SRC_band_r_nside4096_oversamp4_SKYSIGMA_coaddweights_mean.fits.gz'
   
 }
 
 map_name_sv = {
 
-  'airmass':y1sysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_AIRMASS_coaddweights_mean.fits.gz',
-  'ebv':y1sysmapdir+'Planck_EBV_2048r_Q.fits',
-  'exptime':y1sysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_EXPTIME__total.fits.gz',
-  'fwhm':y1sysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_FWHM_coaddweights_mean.fits.gz',
-  'maglimit':y1sysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_maglimit__.fits.gz',
-  'skybrite':y1sysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_SKYBRITE_coaddweights_mean.fits.gz',
-  'skysigma':y1sysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_SKYSIGMA_coaddweights_mean.fits.gz'
+  'airmass':svsysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_AIRMASS_coaddweights_mean.fits.gz',
+  'ebv':svsysmapdir+'Planck_EBV_2048r_Q.fits',
+  'exptime':svsysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_EXPTIME__total.fits.gz',
+  'fwhm':svsysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_FWHM_coaddweights_mean.fits.gz',
+  'maglimit':svsysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_maglimit__.fits.gz',
+  'skybrite':svsysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_SKYBRITE_coaddweights_mean.fits.gz',
+  'skysigma':svsysmapdir+'SVA1_IMAGE_SRC_band_r_nside4096_oversamp4_SKYSIGMA_coaddweights_mean.fits.gz'
   
 }
 
-# Path definitions
-
-mockdir = '/share/des/sv/BCC-SVA1-WL-v3.0/'
-golddir = '/share/des/disc2/y1/gold_v101/'
-pzrootdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
-cosmosisrootdir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
-wcsfile = '/share/des/disc2/y1/y1a1_image_wcs_info.txt'
-spointsfile = 'y1a1_special_field_points.fits'
-pointingfile = '/home/troxel/catcutDES/y1a1_telradec2.txt'
-y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
-svsysmapdir = '/share/des/sv/systematics_maps/'

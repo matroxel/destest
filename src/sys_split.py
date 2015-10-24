@@ -10,7 +10,6 @@ import lin
 import corr
 
 
-
 class split(object):
 
   @staticmethod
@@ -24,7 +23,7 @@ class split(object):
 
       txt.write_methods.heading(x,cat,label='linear_splits',create=False)
 
-      arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=split_methods.split_gals_lin_along(cat,x,mask=mask,log=catalog.log_val.get(x,None),plot=True)
+      arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=split_methods.split_gals_lin_along(cat,x,mask=mask,log=config.log_val.get(x,None),plot=True)
       
       txt.write_methods.write_append(x+'  '+str(arr1)+'  '+str(arr1err),cat,label='linear_splits',create=False)
       txt.write_methods.write_append('e  '+str(e1)+'  '+str(e2),cat,label='linear_splits',create=False)
@@ -40,6 +39,8 @@ class split(object):
   def cat_splits_2pt(vals,cat,cat2=None,mask=None):
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    if cat2 is None:
+      cat2=cat        
 
     txt.write_methods.heading('2pt Splits',cat,label='2pt_splits',create=True)
 
@@ -48,7 +49,7 @@ class split(object):
       txt.write_methods.heading(x,cat,label='2pt_splits',create=False)
 
       xi,gt,split=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,mean=True,jkon=False,mock=False,log=False,plot=True)
-      
+
       txt.write_methods.write_append(x+'  '+str(np.min(getattr(cat,x)[mask]))+'  '+str(split)+'  '+str(np.max(getattr(cat,x)[mask])),cat,label='2pt_splits',create=False)
 
       txt.write_methods.write_append('theta  '+str(xi[0]),cat,label='2pt_splits',create=False)
@@ -108,9 +109,9 @@ class split_methods(object):
   def get_maps(ra,dec,x,release='y1',nside=4096,map=False,nested=False):
 
     if release=='y1':
-      xx=map_name_y1.get(x,None)
+      xx=config.map_name_y1.get(x,None)
     elif release=='sv':
-      xx=map_name_sv.get(x,None)
+      xx=config.map_name_sv.get(x,None)
 
     if map:
       tmp = hp.read_map(xx)

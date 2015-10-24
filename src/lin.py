@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 import catalog
+import config
 import fig
 import txt
 
@@ -13,9 +14,15 @@ class UseError(Exception):
 
 
 class linear_methods(object):
+  """
+  Linear statistics and support functions for modifying shear.
+  """
 
   @staticmethod
   def get_lin_e_w_ms(cat,xi=False,mock=False,mask=None,w1=None):
+    """
+    For a general CatalogStore object cat, return properly corrected ellipticity and weight, m/s values. Used in many functions.
+    """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
@@ -365,9 +372,10 @@ class hist(object):
   @staticmethod
   def tile_tests_2D(valsx,valsy,cat,cat2=None):
 
-    s='S12,f8'+',f8'*len(vals)*3
+    s='S12,f8'+',f8'*len(valsx)*3
     tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
     if cat2!=None:
+      s='S12,f8'+',f8'*len(valsy)*3
       tmp2=np.genfromtxt(txt.write_methods.get_file(cat2,label='tile_stats'),names=True,dtype=s)
       yname=cat2.name
     else:
@@ -393,7 +401,7 @@ class hist(object):
         if config.log_val.get(y,False):
           y1=np.log10(y1)
 
-        fig.plot_methods.plot_hist(x1,y1,bins=20,xname=cat.name,yname=yname,xlabel=x+'_tile',ylabel=y+'_tile')
+        fig.plot_methods.plot_2D_hist(x1,y1,bins=20,xname=cat.name,yname=yname,xlabel=x+'_tile',ylabel=y+'_tile')
 
     return
 

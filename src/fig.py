@@ -11,6 +11,9 @@ import config
 import pz
 
 class plot_methods(object):
+  """
+  Plotting routines used by various modules.
+  """
 
   @staticmethod
   def plot_hist(x1,bins=500,name='',label=''):

@@ -6,6 +6,9 @@ class write_methods(object):
 
   @staticmethod
   def write_append(line,cat,label='',create=False,newline=True):
+    """
+    Text output routine used in many functions to standardise output.
+    """
 
     if newline:
       n='\n'
@@ -26,6 +29,9 @@ class write_methods(object):
 
   @staticmethod
   def heading(line,cat,label='',create=False):
+    """
+    Header formatting.
+    """
 
     write_methods.write_append('',cat,label=label,create=create)
     write_methods.write_append('------------------',cat,label=label,create=create)
@@ -37,6 +43,9 @@ class write_methods(object):
 
   @staticmethod
   def get_file(cat,label=''):
+    """
+    Default filename.
+    """
 
     return 'text/'+label+'_'+cat.name+'.txt'
 
