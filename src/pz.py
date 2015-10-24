@@ -31,8 +31,8 @@ class pz_methods(object):
 
     if split=='mean':
       pointz=pz0.z_mean_full[pzmask]
-    elif split=='median':
-      pointz=pz0.z_median_full[pzmask]
+    elif split=='peak':
+      pointz=pz0.z_peak_full[pzmask]
     else:
       print 'need split type'
       return
@@ -46,7 +46,10 @@ class pz_methods(object):
 
     for i in xrange(bins):
       mask=(xbins==i)&(pointz>=pzlow)&(pointz<=pzhigh)
-      nofz[i+1,:]=np.sum(pz0.pz_full[pzmask&mask],axis=0)
+      if cat is None:
+        nofz[i+1,:]=np.sum(pz0.pz_full[pzmask&mask],axis=0)
+      else:
+        nofz[i+1,:]=np.sum((pz0.pz_full[pzmask&mask].T*w[mask]).T,axis=0)
       nofz[i+1,:]/=np.sum(nofz[i+1,:])
 
     pz0.pz=nofz

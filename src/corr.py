@@ -57,7 +57,7 @@ class xi_2pt(object):
       if corr not in ['GG','NN','KK']:
         raise UseError('Must supply both cata,catb for NG,NK correlations.')
 
-    if gai s not None:
+    if gai is not None:
       e1=getattr(cata,ga+'1')[maska]
       e2=getattr(cata,ga+'2')[maska]
     else:

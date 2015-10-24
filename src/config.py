@@ -4,7 +4,8 @@ import numpy as np
 
 mockdir = '/share/des/sv/BCC-SVA1-WL-v3.0/'
 golddir = '/share/des/disc2/y1/gold_v101/'
-pzrootdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
+pzdir = '/share/des/sv/photoz/DES_PDF_Stacker/'
+pztestdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
 cosmosisrootdir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
 wcsfile = '/share/des/disc2/y1/y1a1_image_wcs_info.txt'
 spointsfile = 'y1a1_special_field_points.fits'

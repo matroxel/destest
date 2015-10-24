@@ -266,26 +266,26 @@ class run(object):
     import subprocess as sp
     import time
 
-    if pz0.pztype+'.txt' not in os.listdir(config.pzrootdir+test+'/nofz'):
+    if pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+pz0.pztype+'.txt'
-    if 'notomo_'+pz0.pztype+'.txt' not in os.listdir(config.pzrootdir+test+'/nofz'):
+    if 'notomo_'+pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+'notomo_'+pz0.pztype+'.txt'
-    if 'spec_'+pz0.pztype+'.txt' not in os.listdir(config.pzrootdir+test+'/nofz'):
+    if 'spec_'+pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+'spec_'+pz0.pztype+'.txt'
-    if 'notomo_spec_'+pz0.pztype+'.txt' not in os.listdir(config.pzrootdir+test+'/nofz'):
+    if 'notomo_spec_'+pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+'notomo_spec_'+pz0.pztype+'.txt'
     if boot&hasattr(pz0,'boot'):
       for i in xrange(pz0.boot):
-        if pz0.pztype+'_'+str(i)+'.txt' not in os.listdir(config.pzrootdir+test+'/nofz'):
+        if pz0.pztype+'_'+str(i)+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
           print 'Missing '+pz0.pztype+'_'+str(i)+'.txt'
-        if 'notomo_'+pz0.pztype+'_'+str(i)+'.txt' not in os.listdir(config.pzrootdir+test+'/nofz'):
+        if 'notomo_'+pz0.pztype+'_'+str(i)+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
           print 'Missing '+'notomo_'+pz0.pztype+'_'+str(i)+'.txt'  
 
     vary['sigma8_input']=True
     params['sigma8_input']=(0.85, 1., 1.15)
 
-    spriors=config.pzrootdir+test+'/priors.ini'
-    sparams=config.pzrootdir+test+'/values.ini'
+    spriors=config.pztestdir+test+'/priors.ini'
+    sparams=config.pztestdir+test+'/values.ini'
 
     make.values(params,False,False,False,sparams)
 
@@ -305,23 +305,23 @@ class run(object):
     cd %s
     cd $PBS_O_WORKDIR
     export DIR="%s"
-    """ % (str(nodes),str(procs),str(hr),test,test,config.pzrootdir,config.pzrootdir+test)
+    """ % (str(nodes),str(procs),str(hr),test,test,config.pztestdir,config.pztestdir+test)
 
     if boot:
 
       jobstring3="""cosmosis %sdata_in.ini
-      """ % (config.pzrootdir)
+      """ % (config.pztestdir)
 
       if cosmo:
         jobstring3="""mpirun -n 32 cosmosis --mpi %sdata_in.ini
-        """ % (config.pzrootdir)
+        """ % (config.pztestdir)
 
         jobstring=jobstring0
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pzrootdir+test)
+        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
         output,input = p.stdout, p.stdin
 
         jobstring3="""cosmosis %sdata_in.ini
-        """ % (config.pzrootdir)
+        """ % (config.pztestdir)
 
         jobstring1="""export SAMP="grid"
         export LIKE="xipm"
@@ -330,7 +330,7 @@ class run(object):
         export LIKE="wl"
         """
         ii=0
-        for nofz in os.listdir(config.pzrootdir+test+'/nofz'):
+        for nofz in os.listdir(config.pztestdir+test+'/nofz'):
           if (pz0.pztype+'.txt' not in nofz):
             if 'notomo' in nofz:
               continue
@@ -340,7 +340,7 @@ class run(object):
               output,outputerr=p.communicate(input=jobstring)
               time.sleep(0.1)
               jobstring=jobstring0
-              p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pzrootdir+test)
+              p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
               output,input = p.stdout, p.stdin
             #jobstring2="""export SAVEXI="save_xi"
             jobstring2="""export SAVEXI="cl_like"
@@ -350,7 +350,7 @@ class run(object):
             jobstring+=jobstring1+jobstring2+jobstring3
 
             jobstring4="""postprocess %s/out/spec_%s_%s.txt -o %s/out/sim_data_%s
-            """ % (config.pzrootdir+test,pz0.pztype,nofz[:-4],dir+test,nofz[:-4])
+            """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],dir+test,nofz[:-4])
             jobstring+=jobstring4
 
 
@@ -361,14 +361,14 @@ class run(object):
       else:
 
         jobstring=jobstring0
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pzrootdir+test)
+        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
         output,input = p.stdout, p.stdin
 
         jobstring1="""export SAMP="test"
         export LIKE=""
         """
 
-        for nofz in os.listdir(config.pzrootdir+test+'/nofz'):
+        for nofz in os.listdir(config.pztestdir+test+'/nofz'):
           if pz0.pztype+'.txt' not in nofz:
             #jobstring2="""export SAVEXI="save_xi"
             jobstring2="""export SAVEXI="generate_dataset"
@@ -383,18 +383,18 @@ class run(object):
     else:
 
       jobstring3="""cosmosis %sdata_in.ini
-      """ % (config.pzrootdir)
+      """ % (config.pztestdir)
  
       if cosmo:
 
         jobstring3="""mpirun -n 32 cosmosis --mpi %sdata_in.ini
-        """ % (config.pzrootdir)
+        """ % (config.pztestdir)
 
         jobstring=jobstring0
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pzrootdir+test)
+        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
         output,input = p.stdout, p.stdin
         jobstring3="""cosmosis %sdata_in.ini
-        """ % (config.pzrootdir)
+        """ % (config.pztestdir)
 
         jobstring1="""export SAMP="grid"
         export LIKE="xipm"
@@ -403,7 +403,7 @@ class run(object):
         export LIKE="wl"
         """
 
-        for nofz in os.listdir(config.pzrootdir+test+'/nofz'):
+        for nofz in os.listdir(config.pztestdir+test+'/nofz'):
           if ('spec' not in nofz)&(pz0.pztype+'.txt' in nofz):
             if 'notomo' in nofz:
               #jobstring2="""export SAVEXI="xipm_2d"
@@ -412,7 +412,7 @@ class run(object):
               export POFZ2="%s"
               """ % ('notomo_spec_'+pz0.pztype,'notomo_'+pz0.pztype)
               jobstring4="""postprocess %s/out/%s_%s.txt -o %s/out/sim_data_%s
-              """ % (config.pzrootdir+test,'notomo_spec_'+pz0.pztype,'notomo_'+pz0.pztype,config.pzrootdir+test,'notomo_'+pz0.pztype)
+              """ % (config.pztestdir+test,'notomo_spec_'+pz0.pztype,'notomo_'+pz0.pztype,config.pztestdir+test,'notomo_'+pz0.pztype)
             else:
               #jobstring2="""export SAVEXI="save_xi"
               jobstring2="""export SAVEXI="cl_like"
@@ -420,7 +420,7 @@ class run(object):
               export POFZ2="%s"
               """ % ('spec_'+pz0.pztype,pz0.pztype)
               jobstring4="""postprocess %s/out/spec_%s_%s.txt -o %s/out/sim_data_%s
-              """ % (config.pzrootdir+test,pz0.pztype,nofz[:-4],config.pzrootdir+test,nofz[:-4])
+              """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],config.pztestdir+test,nofz[:-4])
             jobstring+=jobstring1+jobstring2+jobstring3
 
             jobstring+=jobstring4 
@@ -432,7 +432,7 @@ class run(object):
 
       else:
 
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pzrootdir+test)
+        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
         output,input = p.stdout, p.stdin
         jobstring=jobstring0
 
@@ -440,7 +440,7 @@ class run(object):
         export LIKE=""
         """
 
-        for nofz in os.listdir(config.pzrootdir+test+'/nofz'):
+        for nofz in os.listdir(config.pztestdir+test+'/nofz'):
           if pz0.pztype+'.txt' in nofz:
             if 'notomo' in nofz:
               #jobstring2="""export SAVEXI="save_xi_2d"
@@ -562,30 +562,30 @@ class make(object):
   @staticmethod
   def nofz(pz0,test):
 
-    if not os.path.exists(config.pzrootdir+test):
-      os.makedirs(config.pzrootdir+test)
-    if not os.path.exists(config.pzrootdir+test+'/nofz'):
-      os.makedirs(config.pzrootdir+test+'/nofz')
-    if not os.path.exists(config.pzrootdir+test+'/out'):
-      os.makedirs(config.pzrootdir+test+'/out')
+    if not os.path.exists(config.pztestdir+test):
+      os.makedirs(config.pztestdir+test)
+    if not os.path.exists(config.pztestdir+test+'/nofz'):
+      os.makedirs(config.pztestdir+test+'/nofz')
+    if not os.path.exists(config.pztestdir+test+'/out'):
+      os.makedirs(config.pztestdir+test+'/out')
 
     out=np.vstack((pz0.bin,pz0.pz[0,:]))
     out=np.row_stack(([0.,0.],out.T,[pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),0.]))
-    np.savetxt(config.pzrootdir+test+'/nofz/notomo_'+pz0.pztype+'.txt',out)
+    np.savetxt(config.pztestdir+test+'/nofz/notomo_'+pz0.pztype+'.txt',out)
 
     out=np.vstack((pz0.bin,[pz0.pz[i+1,:] for i in range(pz0.tomo-1)]))
     out=np.row_stack(([0. for i in range(pz0.tomo)],out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
-    np.savetxt(config.pzrootdir+test+'/nofz/'+pz0.pztype+'.txt',out)
+    np.savetxt(config.pztestdir+test+'/nofz/'+pz0.pztype+'.txt',out)
 
     if hasattr(pz0, 'spec'):
 
       out=np.vstack((pz0.bin,pz0.spec[0,:]))
       out=np.row_stack(([0.,0.],out.T,[pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),0.]))
-      np.savetxt(config.pzrootdir+test+'/nofz/notomo_spec_'+pz0.pztype+'.txt',out)
+      np.savetxt(config.pztestdir+test+'/nofz/notomo_spec_'+pz0.pztype+'.txt',out)
 
       out=np.vstack((pz0.bin,[pz0.spec[i+1,:] for i in range(pz0.tomo-1)]))
       out=np.row_stack(([0. for i in range(pz0.tomo)],out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
-      np.savetxt(config.pzrootdir+test+'/nofz/spec_'+pz0.pztype+'.txt',out)
+      np.savetxt(config.pztestdir+test+'/nofz/spec_'+pz0.pztype+'.txt',out)
 
     if hasattr(pz0,'boot'):
 
@@ -593,10 +593,10 @@ class make(object):
 
         out=np.vstack((pz0.bin,pz0.bootspec[0,j,:]))
         out=np.row_stack(([0.,0.],out.T,[pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),0.]))
-        np.savetxt(config.pzrootdir+test+'/nofz/notomo_'+pz0.pztype+'_'+str(j)+'.txt',out)
+        np.savetxt(config.pztestdir+test+'/nofz/notomo_'+pz0.pztype+'_'+str(j)+'.txt',out)
 
         out=np.vstack((pz0.bin,[pz0.bootspec[i+1,j,:] for i in range(pz0.tomo-1)]))
         out=np.row_stack(([0. for i in range(pz0.tomo)],out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
-        np.savetxt(config.pzrootdir+test+'/nofz/'+pz0.pztype+'_'+str(j)+'.txt',out)
+        np.savetxt(config.pztestdir+test+'/nofz/'+pz0.pztype+'_'+str(j)+'.txt',out)
 
     return

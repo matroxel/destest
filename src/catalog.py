@@ -228,7 +228,7 @@ class PZStore(object):
 
   :name:      str - A label for identifying the catalog in output. Multiple catalog classes can be defined, but each should have a unique name.
   :setup:     bool - Read in data and setup class structure? If false, only basic structure is created. Used for custom catalogs to feed into functions that expect a PZStore object.
-  :cattype:   str - This identifies which photo-z code is stored in the class. In SV was used for dealing with multiple formats. Hopefully deprecated in Y1 analysis.
+  :pztype:    str - This identifies which photo-z code is stored in the class. In SV was used for dealing with multiple formats. Hopefully deprecated in Y1 analysis. For now identifies h5 table name.
   :filetype:  bool - Type of file to be read. dict - standard dict file for passing n(z) for spec validation, h5 - h5 file of pdfs, fits - fits file of pdfs. Non-dict file support not migrated from SV code yet - can use setup=False to store pdf information in class manually, though.
   :file:      str - File to be read in.
   """
@@ -259,8 +259,19 @@ class PZStore(object):
             self.bootspec[i,j,:]=d['spec'][i][j+1]
             self.bootpz[i,j,:]=d['phot'][i][j+1]
       elif filetype=='h5':
-        #store=pd.HDFStore('/share/des/sv/WL_REDSHIFT.h5', mode='r')
-        return
+        store=pd.HDFStore(config.pzdir+file, mode='r')
+        pz0=store[pztype]
+        self.coadd=pz0.index.values
+        zm0=pz0.z_mean.values
+        self.z_mean_full=zm0.astype('float32')
+        zm0=pz0.z_peak.values
+        self.z_peak_full=zm0.astype('float32')
+        pz0=pz0[['pdf_{}'.format(i) for i in xrange(200)]].values
+        self.bins=200
+        self.bin=(np.linspace(0.005, 1.8, 201)[1:] + np.linspace(0.005, 1.8, 201)[0:-1])/2.0
+        self.pz_full=pz0.astype('float32')
+        self.w=np.ones(len(self.z_mean_full))
+        store.close()
       elif filetype=='fits':
         return
 
