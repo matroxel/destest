@@ -834,3 +834,143 @@ class CatalogMethods(object):
       fits.close()
       
     return
+
+  @staticmethod
+  def download_cat_desdm(query,name='gold',table='NSEVILLA.Y1A1_GOLD_1_0_1',dir='/share/des/sv/ngmix/v010/',order=True,num=1000000):
+
+    from astropy.table import Table
+    from desdb import Connection
+
+    conn = Connection()
+
+    if order:
+      sorder='order by coadd_objects_id'
+    else:
+      sorder=''
+
+    for tile in range(130):
+      print tile
+      q = 'select * from ( select /*+ FIRST_ROWS(n) */ A.*, ROWNUM rnum from ( select * from '+table+' '+sorder+') A where ROWNUM < '+str((tile+1.)*num)+' ) where rnum  >= '+str(tile*num)
+      print q
+      data=conn.quick(q, array=False)
+      params = data[0].keys()
+      tables = {}
+      for p in params:
+        arr = [(d[p] if (d[p] is not None) else np.nan) for d in data ]
+        arr = np.array(arr)
+        tables[p] = arr
+      t = Table(tables)
+      t.write(dir+name+'_'+str(tile)+'.fits.gz')
+
+    return
+
+  @staticmethod
+  def select_random_pts(nran,mask,fits=False,map=False,nest=False,rannside=262144,masknside=4096):
+    import healpy as hp
+    import time
+    import numpy.random as rand
+
+    if map:
+      hpmap=hp.read_map(mask,nest=nest)
+      hpmap=np.copy(np.nonzero(hpmap)[0])
+    else:
+      if fits:
+        fits=fio.FITS(maskmap)
+        tmp=fits[-1].read()
+        hpmap=tmp['HPIX'][tmp['FRACGOOD']>.5]
+        hpmap=hp.ring2nest(masknside,hpmap)
+      else:
+        hpmap=np.loadtxt(mask)
+        print hpmap
+        hpmap=hp.ring2nest(masknside,hpmap.astype(int))
+
+    ranmap=hp.nside2npix(rannside)
+    print ranmap
+    hpmin=np.min(hpmap)
+    hpmax=np.max(hpmap)
+
+    ran=np.zeros((nran))
+
+    tmp0=2**12
+
+    t1=time.time()
+
+    i=0
+    iran=0
+    while iran<nran:
+      i+=1
+      if i>1e8:
+        print 'broken'
+        break
+      tmp=rand.randint(hpmin*tmp0,high=hpmax*tmp0)
+      if tmp/tmp0 in hpmap:
+        ran[iran]=tmp
+        iran+=1
+
+    dec,ra=hp.pix2ang(rannside,ran.astype(int),nest=True)
+    dec=90.-dec*180./np.pi
+    ra=ra*180./np.pi
+
+    print time.time()-t1
+
+    return ra,dec
+
+
+
+  @staticmethod
+  def create_random_cat(nran,mask,fits=False,map=False,nest=False,label=''):
+    from mpi4py import MPI
+
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
+    for i in xrange(100):
+
+      ra,dec=CatalogMethods.select_random_pts(nran,mask,fits=fits,map=map,nest=next)
+      print 'after',i,rank
+      
+      x=np.empty((len(ra)*size))
+      y=np.empty((len(dec)*size))
+
+      comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
+      comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+
+      if rank == 0:
+        print 'end',i,rank
+        if i!=0:
+          x0=np.load(label+'ra.npy')
+          y0=np.load(label+'dec.npy')
+          x=np.hstack((x,x0))
+          y=np.hstack((y,y0))
+        np.save(label+'ra.npy',x)
+        np.save(label+'dec.npy',y)
+
+    return
+
+  @staticmethod
+  def create_random_cat_finalise(label=''):
+
+    def unique(a):
+      order = np.lexsort(a.T)
+      a = a[order]
+      diff = np.diff(a, axis=0)
+      ui = np.ones(len(a), 'bool')
+      ui[1:] = (diff != 0).any(axis=1) 
+      return a[ui],ui
+
+    ra=np.load(label+'ra.npy')
+    dec=np.load(label+'dec.npy')
+
+    a=np.vstack((ra,dec)).T
+    u,i=unique(a)
+    a=a[i]
+
+    ra=a[:,0].T
+    dec=a[:,1].T
+
+    np.save(label+'ra.npy',ra)
+    np.save(label+'dec.npy',dec)
+    
+    return
+
