@@ -4,21 +4,25 @@ import numpy as np
 
 mockdir = '/share/des/sv/BCC-SVA1-WL-v3.0/'
 golddir = '/share/des/disc2/y1/gold_v101/'
-pzdir = '/share/des/sv/photoz/DES_PDF_Stacker/'
+pzdir = '/share/des/disc2/y1/photo_z/'
 pztestdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
-cosmosisrootdir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
-wcsfile = '/share/des/disc2/y1/y1a1_image_wcs_info.txt'
+cosmosiscosmodir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
+cosmosisrootdir = '/home/troxel/cosmosis/'
+wcsfile = '/share/des/disc2/y1/wcs/y1a1_wcs.fits.gz'
 spointsfile = 'y1a1_special_field_points.fits'
 pointingfile = '/home/troxel/catcutDES/y1a1_telradec2.txt'
 y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
 svsysmapdir = '/share/des/sv/systematics_maps/'
-redmagicdir = '/share/des/sv/redmagicv6.3.3/'
+redmagicdir = '/share/des/disc2/y1/redmagicv6.4.4/'
+y1blacklist = '/home/troxel/testsuite/blacklist-y1.txt'
+coaddtiles = '/share/des/coadd_tiles.fits'
 
+cosmosissource = 'source my-source'
 # Dictionaries
 
 cfg = {
   
-  'lbins':10,
+  'lbins':50,
   'sbins':2,
   'slop':0.1,
   'tbins':8,
@@ -29,6 +33,71 @@ cfg = {
   'bs':False,
   'wt':False,
   'pzrw':False
+
+}
+
+ra_lim = {
+  
+  's82':(-45,10),
+  'sptc':(50,105),
+  'sptb':(0,50),
+  'spta':(-65,0)
+
+}
+
+dec_lim = {
+  
+  's82':(-3,3),
+  'sptc':(-70,-35),
+  'sptb':(-70,-35),
+  'spta':(-70,-35)
+
+}
+
+error_name = {
+  
+  0:r'Complete failure',
+  1:r'Minimizer failed',
+  2:r'e$<$1e-4',
+  3:r'e$>$1',
+  4:r'Radius$>$20 arcsec',
+  5:r'Rgpprp$>$6',
+  6:r'Neg. or NaN rgpprp',
+  7:r'SNR$<$1',
+  8:r'Chi2 per eff. pixel$>$3',
+  9:r'Normed residual $<$ -20',
+  10:r'Normed residual$>$20',
+  11:r'Deltau$>$10 arcsec',
+  12:r'Deltav$>$10 arcsec',
+  13:r'Failed FWHM of PSF or gal',
+  14:r'Sextractor flag in r-band$>$0x4'
+
+}
+
+info_name = {
+  
+  0:r'Gold footprint',
+  1:r'Gold bad region',
+  2:r'Modest class',
+  3:r'Mask fraction$>$0.75',
+  4:r'Evals$>$10000',
+  5:r'Sextractor r-band flag$>$0',
+  6:r'Sextractor r-band flag$>$1',
+  7:r'Unmasked flux fraction$>$0.75',
+  8:r'SNR$<$10',
+  9:r'SNR$>$10000',
+  10:r'Rgpprp$<$1.1',
+  11:r'Rgpprp$>$3.5',
+  12:r'Radius$>$5',
+  13:r'Radius$<$0.1',
+  14:r'Position offset>1 arcsec',
+  15:r'Chi2 per pix$<$0.5',
+  16:r'Chi2 per pix$>$1.5',
+  17:r'Minimum residual$<$-0.2',
+  18:r'Maximum residual$>$0.2',
+  19:r'PSF FWHM$>$7',
+  20:r'PSF FWHM$<$0',
+  21:r'Error flag$>$0'
 
 }
 
@@ -62,8 +131,8 @@ i3_col_lookup = {
   'dec':'dec',
   'e1':'e1',
   'e2':'e2',
-  'psf1':'mean_hsm_psf_e1_sky',
-  'psf2':'mean_hsm_psf_e2_sky',
+  'psf1':'mean_psf_e1_sky',
+  'psf2':'mean_psf_e2_sky',
   'hsmpsf1':'mean_hsm_psf_e1_sky',
   'hsmpsf2':'mean_hsm_psf_e2_sky',
   'psffwhm':'mean_psf_fwhm',
@@ -94,8 +163,8 @@ i3_col_lookup = {
   'cov12':'covmat_2_3',
   'nexp':'n_exposure',
   'stamp':'stamp_size',
-  'flagi':'sex_flag_i',
-  'flagr':'sex_flag_r',
+  'flagi':'flags_i',
+  'flagr':'flags_r',
   'info':'info_flag',
   'error':'error_flag',
   'chi2pix':'chi2_pixel',
@@ -124,7 +193,7 @@ i3_col_lookup = {
   'r':'mag_auto_r',
   'i':'mag_auto_i',
   'z':'mag_auto_z',
-  'pz':'desdm_pz',
+  'pz':'desdm_zp',
   'gold_flag':'gold_flag',
   'gold_mask':'gold_mask'
 

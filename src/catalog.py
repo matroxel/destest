@@ -29,7 +29,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1'):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000):
 
     if setup:
 
@@ -68,7 +68,7 @@ class CatalogStore(object):
           catdir=catdir+'*fits*'
 
         cols1=[table.get(x,None) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles)):
+        for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows)):
           setattr(self,cols[i],x)
 
       else:
@@ -90,6 +90,12 @@ class CatalogStore(object):
           self.ccd-=1
         if 'like' in cols:
           self.nlike=-self.like
+
+      if ('ra' in cols):
+        ra=self.ra
+        ra[self.ra>180]=self.ra[self.ra>180]-360
+        self.ra=ra
+
 
       self.name=name
       self.cat=cattype
@@ -259,6 +265,7 @@ class PZStore(object):
             self.bootspec[i,j,:]=d['spec'][i][j+1]
             self.bootpz[i,j,:]=d['phot'][i][j+1]
       elif filetype=='h5':
+        self.pdftype='full'
         store=pd.HDFStore(config.pzdir+file, mode='r')
         pz0=store[pztype]
         self.coadd=pz0.index.values
@@ -269,11 +276,23 @@ class PZStore(object):
         pz0=pz0[['pdf_{}'.format(i) for i in xrange(200)]].values
         self.bins=200
         self.bin=(np.linspace(0.005, 1.8, 201)[1:] + np.linspace(0.005, 1.8, 201)[0:-1])/2.0
+        self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
+        self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
         self.pz_full=pz0.astype('float32')
         self.w=np.ones(len(self.z_mean_full))
         store.close()
       elif filetype=='fits':
-        return
+        self.pdftype='sample'
+        fits=fio.FITS(config.pzdir+file)
+        self.bin=fits[1].read()['redshift']
+        self.coadd=fits[2].read()['coadd_objects_id'].astype(int)
+        self.z_peak_full=fits[3].read()['mode_z']
+        self.z_mean_full=fits[4].read()['mean_z']
+        self.pz_full=fits[5].read()['sample_z']
+        self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
+        self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
+        self.bins=len(self.bin)
+        self.w=np.ones(len(self.z_mean_full))
 
       self.pztype=pztype
       self.name=name
@@ -307,7 +326,7 @@ class CatValError(Exception):
 class CatalogMethods(object):
 
   @staticmethod
-  def get_cat_cols(dir,cols,table,cuts,tiles=None,maxiter=999999,hdu=-1):
+  def get_cat_cols(dir,cols,table,cuts,tiles=None,maxiter=999999,hdu=-1,maxrows=1):
 
     import fitsio as fio
     import re
@@ -315,24 +334,20 @@ class CatalogMethods(object):
     noval=999999
 
     lenst=0
+    #array=[list() for i in xrange(len(cols))]
     for ifile,file in enumerate(glob.glob(dir)):
       if ifile>maxiter:
         break
       if hasattr(tiles, '__len__'):
-        m=re.search('.*/(DES\d\d\d\d-\d\d\d\d).*',file)
+        m=re.search('.*/(DES\d\d\d\d[+-]\d\d\d\d).*',file)
         if m:
           if m.group(1) not in tiles:
             continue
-      print 'file',ifile,file
       try:
         fits=fio.FITS(file)
       except IOError:
         print 'error loading fits file: ',file
         return
-
-      tmparray=fits[hdu].read()
-      lenst+=len(tmparray)
-      print 'len',len(tmparray),lenst
 
       colex,colist=CatalogMethods.col_exists(cols,fits[hdu].get_colnames())
       if colex<1:
@@ -343,20 +358,32 @@ class CatalogMethods(object):
       if colex<1:
         raise ColError('cut columns '+colist+' do not exist in file: '+file)
 
+      tmparray=fits[hdu].read(columns=cutcols)
+
       mask=np.array([])
       for icut,cut in enumerate(cuts): 
         mask=CatalogMethods.cuts_on_col(mask,tmparray,cutcols[icut],cut['min'],cut['eq'],cut['max'])
 
       tmparray=fits[hdu].read(columns=cols)
+      if lenst==0:
+        array=np.empty((maxrows), dtype=tmparray.dtype.descr)
 
-      if lenst==len(tmparray):
-        array=tmparray[mask]
-      else:
-        array=np.append(array,tmparray[mask],axis=0)
+      array[lenst:lenst+np.sum(mask)]=tmparray[mask]
+
+      lenst+=np.sum(mask)
+      print ifile,np.sum(mask),lenst,file
+        
+      # for i,col in enumerate(cols):
+      #   array[i].extend(tmparray[col][mask])
+
+      # if lenst==len(tmparray):
+      #   array=tmparray[mask]
+      # else:
+      #   array=np.append(array,tmparray[mask],axis=0)
 
       fits.close()
 
-    return [(array[col]) for col in cols]
+    return [array[col][:lenst] for i,col in enumerate(cols)]
 
 
 
@@ -517,6 +544,14 @@ class CatalogMethods(object):
     sort1=np.argsort(a1[mask1])[np.argsort(np.argsort(a2[mask2]))]
     sort2=np.argsort(a2[mask2])[np.argsort(np.argsort(a1[mask1]))]
 
+    # def intersect_indices_unique(x, y):
+    #   u_idx_x = np.argsort(x)
+    #   u_idx_y = np.argsort(y)
+    #   i_xy = np.intersect1d(x, y, assume_unique=True)
+    #   i_idx_x = u_idx_x[x[u_idx_x].searchsorted(i_xy)]
+    #   i_idx_y = u_idx_y[y[u_idx_y].searchsorted(i_xy)]
+    #   return i_idx_x, i_idx_y    
+
     return mask1,sort1,mask2,sort2
 
   @staticmethod
@@ -559,6 +594,54 @@ class CatalogMethods(object):
     cuts=CatalogMethods.add_cut(np.array([]),'coadd',0,noval,noval)
 
     return cuts
+
+  @staticmethod
+  def i3_cuts():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
+    cuts=CatalogMethods.add_cut(np.array([]),'info',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'psf1',-1.,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def i3_cuts2():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
+    cuts=CatalogMethods.add_cut(np.array([]),'info',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'psf1',-1.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'nexp',2,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def i3_cuts3():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
+    cuts=CatalogMethods.add_cut(np.array([]),'info',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'psf1',-1.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'nexp',3,noval,noval)
+
+    return cuts
+
 
   @staticmethod
   def redmagic():
@@ -675,8 +758,8 @@ class CatalogMethods(object):
     """
 
     import healpy as hp
-    gdmask=hp.read_map(config.goldir+'y1a1_gold_1.0.1_wide_footprint_4096.fit')
-    badmask=hp.read_map(config.goldir+'y1a1_gold_1.0.1_wide_badmask_4096.fit')
+    gdmask=hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_footprint_4096.fit')
+    badmask=hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_badmask_4096.fit')
 
     pix=hp.ang2pix(4096, np.pi/2.-np.radians(i3.dec),np.radians(i3.ra), nest=False)
     i3.gold_mask=(gdmask[pix] >=1)
@@ -836,7 +919,7 @@ class CatalogMethods(object):
     return
 
   @staticmethod
-  def download_cat_desdm(query,name='gold',table='NSEVILLA.Y1A1_GOLD_1_0_1',dir='/share/des/sv/ngmix/v010/',order=True,num=1000000):
+  def download_cat_desdm(query,name='gold',table='NSEVILLA.Y1A1_GOLD_1_0_1',dir='/share/des/sv/ngmix/v010/',order=True,num=1000000,start=0):
 
     from astropy.table import Table
     from desdb import Connection
@@ -848,7 +931,9 @@ class CatalogMethods(object):
     else:
       sorder=''
 
-    for tile in range(130):
+    for tile in range(140):
+      if tile<start:
+        continue
       print tile
       q = 'select * from ( select /*+ FIRST_ROWS(n) */ A.*, ROWNUM rnum from ( select * from '+table+' '+sorder+') A where ROWNUM < '+str((tile+1.)*num)+' ) where rnum  >= '+str(tile*num)
       print q
@@ -973,4 +1058,43 @@ class CatalogMethods(object):
     np.save(label+'dec.npy',dec)
     
     return
+
+  @staticmethod
+  def save_cat(cat):
+
+    for x in dir(cat):
+      obj = getattr(cat,x)
+      if isinstance(obj,np.ndarray):
+        if len(obj)==len(cat.coadd):
+          fio.write(x+'.fits.gz',obj,clobber=True)
+
+    return
+
+  @staticmethod
+  def load_cat(cat):
+
+    for ifile,file in enumerate(glob.glob('/home/troxel/destest/*fits.gz')):
+      fits=fio.FITS(file)
+      setattr(cat,file[21:-8],fits[-1].read())
+
+    return
+
+  @staticmethod
+  def footprint_area(cat,ngal=1,mask=None,nside=4096,nest=True):
+    import healpy as hp
+
+    mask=CatalogMethods.check_mask(cat.coadd,mask)
+
+    pix=CatalogMethods.radec_to_hpix(cat.ra,cat.dec,nside=nside)
+    area=hp.nside2pixarea(nside)*(180./np.pi)**2
+    print 'pixel area (arcmin)', area*60**2
+    print 'footprint area (degree)', np.sum(np.bincount(pix[mask])>ngal)*area
+
+    return 
+
+  @staticmethod
+  def radec_to_hpix(ra,dec,nside=4096,nest=True):
+    import healpy as hp
+
+    return hp.ang2pix(nside, np.pi/2.-np.radians(dec),np.radians(ra), nest=nest)
 

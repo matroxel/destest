@@ -263,7 +263,7 @@ class fitting(object):
     return m,b,merr,berr
 
   @staticmethod
-  def sys_lin_fit(x,cat,mask=None,log=False,noe=False,mock=False,bins=100):
+  def sys_lin_fit(x,cat,mask=None,log=False,noe=False,mock=False):
     """
     Find linear fit corresponding to mean shears in bins of x.
     """
@@ -271,9 +271,9 @@ class fitting(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     if cat.wt:
-      edge=linear_methods.find_bin_edges(x[mask],bins,cat.w[mask])
+      edge=linear_methods.find_bin_edges(x[mask],cat.lbins,cat.w[mask])
     else:
-      edge=linear_methods.find_bin_edges(x[mask],bins)
+      edge=linear_methods.find_bin_edges(x[mask],cat.lbins)
     xbin=np.digitize(x,edge)-1
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
@@ -495,7 +495,7 @@ class footprint(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     if vals==[]:
-      fig.plot_methods.plot_footprint(cat,mask=mask,label=label,bins=100)
+      fig.plot_methods.plot_footprint(cat,mask=mask,label=label,bins=bins)
 
     else:
       for val in vals:
@@ -503,7 +503,7 @@ class footprint(object):
         for i in xrange(summary_stats.n_bits_array(cat,val)):
           if np.sum((flag & 2**i) != 0)>100:
             print 'footprint flag',val,i
-            fig.plot_methods.plot_footprint(cat,mask=((flag & 2**i) != 0)&mask,label=val+'_'+str(i),bins=100)
+            fig.plot_methods.plot_footprint(cat,mask=((flag & 2**i) != 0)&mask,label=getattr(config,val+'_name').get(i),bins=bins)
 
     return
 

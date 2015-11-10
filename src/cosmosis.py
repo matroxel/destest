@@ -2,6 +2,7 @@ import numpy as np
 import os
 
 import catalog
+import config
 import fig
 import txt
 
@@ -87,19 +88,19 @@ dc1_params = {
   'omnuh2' : (0.0, 0.00065, 0.001),
   'massless_nu' : (1.0, 2.046, 4.0),
   'massive_nu' : (0, 1, 2),
-  'bias_1' : (-0.3, 0., 0.3),
-  'bias_2' : (-0.3, 0., 0.3),
-  'bias_3' : (-0.3, 0., 0.3),
-  'bias_4' : (-0.3, 0., 0.3),
-  'bias_5' : (-0.3, 0., 0.3),
-  'bias_6' : (-0.3, 0., 0.3),
-  'm1' : (-0.2, 0., 0.2),
-  'm2' : (-0.2, 0., 0.2),
-  'm3' : (-0.2, 0., 0.2),
-  'm4' : (-0.2, 0., 0.2),
-  'm5' : (-0.2, 0., 0.2),
-  'm6' : (-0.2, 0., 0.2),
-  'A' : (-5., 1., 5.0),
+  'bias_1' : (-0.1, 0., 0.1),
+  'bias_2' : (-0.1, 0., 0.1),
+  'bias_3' : (-0.1, 0., 0.1),
+  'bias_4' : (-0.1, 0., 0.1),
+  'bias_5' : (-0.1, 0., 0.1),
+  'bias_6' : (-0.1, 0., 0.1),
+  'm1' : (-0.1, 0., 0.1),
+  'm2' : (-0.1, 0., 0.1),
+  'm3' : (-0.1, 0., 0.1),
+  'm4' : (-0.1, 0., 0.1),
+  'm5' : (-0.1, 0., 0.1),
+  'm6' : (-0.1, 0., 0.1),
+  'A' : (-3., 1., 5.0),
   'alpha' : (-5., 0., 5.0),
   'a_planck' : (.5,1.,1.5)
 
@@ -153,7 +154,7 @@ class run(object):
     return
 
   @staticmethod
-  def submit(label='dc1',nodes=1,procs=32,hr=48,pts=1000,mneff=0.5,mntol=0.5,ia=False,pz=False,mbias=False,planck=False,tomobins=3,params=dc1_params,priors=dc1_priors,data='data/datavector_cosmosis.txt',cov='data/cov.npy',nofz='data/n_of_zs.txt',cldir=''):
+  def submit(label='dc1',nodes=1,procs=32,hr=48,pts=200,mneff=0.8,mntol=0.5,ia=False,pz=False,mbias=False,planck=False,tomobins=3,params=dc1_params,priors=dc1_priors,data='data/datavector_cosmosis.txt',cov='data/cov.npy',nofz='data/n_of_zs.txt',cldir='',resume=False,submit=True):
     """
     A wrapper to submit cosmosis runs. Currently works for my PBS environment. Will add alternate option to just print necessary commands to a file to run as desired.
 
@@ -171,7 +172,7 @@ class run(object):
     vary['sigma8_input']=True
     vary['omega_m']=True
     vary['h0']=True
-    vary['ns']=True
+    vary['n_s']=True
     vary['tau']=True
     vary['omega_b']=True
     vary['w']=True
@@ -180,11 +181,13 @@ class run(object):
     name=label
     sout=label+'_pz-'+str(pz)+'_m-'+str(mbias)+'_ia-'+str(ia)+'_planck-'+str(planck)
     outfile='out/'+sout+'.txt' #'multinest-'+str(pts)+'_'+str(mneff)+'_'+str(mntol)+
-    spriors=config.cosmosisrootdir+sout+'_priors.ini'
-    sparams=config.cosmosisrootdir+sout+'_values.ini'
+    mnoutfile='out/'+sout+'.multinest'
+    spriors=config.cosomsiscosmodir+sout+'_priors.ini'
+    sparams=config.cosomsiscosmodir+sout+'_values.ini'
 
 
     mods=r' '
+    like=r'xipm '
     like=r'wl '
     if pz:
       mods+=r'photoz_bias '
@@ -216,10 +219,10 @@ class run(object):
     if make.priors(priors,prior,ia,pz,mbias,planck,tomobins,spriors)==0:
       spriors=''    
 
-    p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.cosmosisrootdir)
+    p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.cosomsiscosmodir)
     output,input = p.stdout, p.stdin
 
-    config.job_string = """#!/bin/bash
+    job_string = """#!/bin/bash
     #PBS -l nodes=%s:ppn=%s
     #PBS -l walltime=%s:00:00
     #PBS -N %s
@@ -247,8 +250,10 @@ class run(object):
     export PRIORS="%s"
     export PARAMS="%s"
     export CLDIR="%s"
+    export MNOUT="%s"
+    export MNRESUME="%s"
     mpirun -n %s cosmosis --mpi data_in.ini
-    postprocess -o plots -p %s %s""" % (str(nodes),str(procs),str(hr),name,sout,config.cosmosisrootdir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,str(procs),sout,outfile)    
+    postprocess -o plots -p %s %s""" % (str(nodes),str(procs),str(hr),name,sout,config.cosomsiscosmodir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,mnoutfile,str(resume),str(procs),sout,outfile)    
 
     output,outputerr=p.communicate(input=job_string)
 
@@ -260,7 +265,7 @@ class run(object):
     return
 
   @staticmethod
-  def submit_pz_spec_test(pz0,test,boot=False,cosmo=False,nodes=1,procs=32,hr=48,params=dc1_params,priors=dc1_priors):
+  def submit_pz_spec_test(pz0,test,boot=False,cosmo=False,nodes=1,procs=32,hr=48,params=dc1_params,priors=dc1_priors,submit=True):
     """
     A wrapper to submit cosmosis runs specifically for photo-z spec validation. Currently works for my PBS environment. Will add alternate option to just print necessary commands to a file to run as desired. Needs work. Currently works with Cls due to need of synthetic covariance, but will switch back to xi if used in WL analysis once covariances are available. Could also make it optional which (xi vs cl) to use.
 
@@ -271,9 +276,10 @@ class run(object):
 
     """
 
-    from popen2 import popen2
-    import subprocess as sp
-    import time
+    if submit:
+      from popen2 import popen2
+      import subprocess as sp
+      import time
 
     if pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+pz0.pztype+'.txt'
@@ -296,25 +302,33 @@ class run(object):
     spriors=config.pztestdir+test+'/priors.ini'
     sparams=config.pztestdir+test+'/values.ini'
 
-    make.values(params,False,False,False,sparams)
+    make.values(params,vary,False,False,False,False,0,sparams)
 
-    jobstring0="""#!/bin/bash
-    #PBS -l nodes=%s:ppn=%s
-    #PBS -l walltime=%s:00:00
-    #PBS -N %s
-    #PBS -o %s.log
-    #PBS -j oe
-    #PBS -m abe 
-    #PBS -M michael.troxel@manchester.ac.uk
-    module use /home/zuntz/modules/module-files
-    module load python
-    module use /etc/modulefiles/
-    cd /home/troxel/cosmosis/
-    source my-source
-    cd %s
-    cd $PBS_O_WORKDIR
-    export DIR="%s"
-    """ % (str(nodes),str(procs),str(hr),test,test,config.pztestdir,config.pztestdir+test)
+    if submit:
+      jobstring0="""#!/bin/bash
+      #PBS -l nodes=%s:ppn=%s
+      #PBS -l walltime=%s:00:00
+      #PBS -N %s
+      #PBS -o %s.log
+      #PBS -j oe
+      #PBS -m abe 
+      #PBS -M michael.troxel@manchester.ac.uk
+      module use /home/zuntz/modules/module-files
+      module load python
+      module use /etc/modulefiles/
+      cd /home/troxel/cosmosis/
+      source my-source
+      cd %s
+      cd $PBS_O_WORKDIR
+      export DIR="%s"
+      """ % (str(nodes),str(procs),str(hr),test,test,config.pztestdir,config.pztestdir+test)
+    else:
+      jobstring0="""#!/bin/bash
+      cd %s
+      %s
+      cd %s
+      """ % (config.cosmosisrootdir,config.cosmosissource,config.pztestdir)
+
 
     if boot:
 
@@ -326,8 +340,9 @@ class run(object):
         """ % (config.pztestdir)
 
         jobstring=jobstring0
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
-        output,input = p.stdout, p.stdin
+        if submit:
+          p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
+          output,input = p.stdout, p.stdin
 
         jobstring3="""cosmosis %sdata_in.ini
         """ % (config.pztestdir)
@@ -362,16 +377,19 @@ class run(object):
             """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],dir+test,nofz[:-4])
             jobstring+=jobstring4
 
-
-        print jobstring
-        output,outputerr=p.communicate(input=jobstring)
-        time.sleep(0.1)
+        if submit:
+          output,outputerr=p.communicate(input=jobstring)
+          time.sleep(0.1)
+        else:
+          with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
+            f.write(jobstring)
 
       else:
 
         jobstring=jobstring0
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
-        output,input = p.stdout, p.stdin
+        if submit:
+          p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
+          output,input = p.stdout, p.stdin
 
         jobstring1="""export SAMP="test"
         export LIKE=""
@@ -386,8 +404,12 @@ class run(object):
             """ % (nofz[:-4],nofz[:-4])
             jobstring+=jobstring1+jobstring2+jobstring3
 
-        output,outputerr=p.communicate(input=jobstring)
-        time.sleep(0.1)
+        if submit:
+          output,outputerr=p.communicate(input=jobstring)
+          time.sleep(0.1)
+        else:
+          with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
+            f.write(jobstring)        
 
     else:
 
@@ -400,8 +422,10 @@ class run(object):
         """ % (config.pztestdir)
 
         jobstring=jobstring0
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
-        output,input = p.stdout, p.stdin
+        if submit:
+          p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
+          output,input = p.stdout, p.stdin
+
         jobstring3="""cosmosis %sdata_in.ini
         """ % (config.pztestdir)
 
@@ -434,16 +458,20 @@ class run(object):
 
             jobstring+=jobstring4 
 
-        #print jobstring           
 
-        output,outputerr=p.communicate(input=jobstring)
-        time.sleep(0.1)
+        if submit:
+          output,outputerr=p.communicate(input=jobstring)
+          time.sleep(0.1)
+        else:
+          with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
+            f.write(jobstring)          
 
       else:
 
-        p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
-        output,input = p.stdout, p.stdin
         jobstring=jobstring0
+        if submit:
+          p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
+          output,input = p.stdout, p.stdin
 
         jobstring1="""export SAMP="test"
         export LIKE=""
@@ -465,10 +493,12 @@ class run(object):
               """ % (nofz[:-4],nofz[:-4])
             jobstring+=jobstring1+jobstring2+jobstring3
 
-        output,outputerr=p.communicate(input=jobstring)
-        time.sleep(0.1)
-
-    time.sleep(0.1)
+        if submit:
+          output,outputerr=p.communicate(input=jobstring)
+          time.sleep(0.1)
+        else:
+          with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
+            f.write(jobstring)          
 
     return
 

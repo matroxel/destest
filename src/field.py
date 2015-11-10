@@ -1,6 +1,8 @@
 import numpy as np
+import fitsio as fio
 
 import catalog
+import config
 import fig
 import txt
 import lin
@@ -117,8 +119,16 @@ class field(object):
     Used to build parts of catalog of special points.
     """
 
-    s='S25,S3,S3,S8,S8'+',f8'*30
-    tmp=np.genfromtxt(config.wcsfile,names=True,dtype=s)
+    dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/40
+    ia=dchunk*chunk
+    print ia
+    ib=dchunk*(chunk+1)
+    if chunk==39:
+      ib=int(fio.FITS(config.wcsfile)[-1].get_nrows()) 
+    print ib
+
+    tmp=fio.FITS(config.wcsfile)[-1][ia:ib]
+    tiles=fio.FITS(config.coaddtiles)[-1].read()
 
     image=np.empty(tmp.shape, dtype=tmp.dtype.descr + [('naxis1',int)]+[('naxis2',int)])
     for name in tmp.dtype.names:
@@ -127,27 +137,35 @@ class field(object):
     image['naxis1']=np.ones(len(image))*2048
     image['naxis2']=np.ones(len(image))*4096
 
-    dchunk=len(image)/40
-    ia=dchunk*chunk
-    ib=dchunk*(chunk+1)
-    if chunk==39:
-      ib=len(image)
-
-    for i in range(ia,ib):
-      if 'bkg' in str(image['imagename'][i]):
-        continue
+    for i in range(ib-ia):
       print i
-      line=str(i)+' '+str(image['imagename'][i])+' '
+      print str(image['expnum'][i])+' '+str(image['ccdnum'][i])
+      line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
       radec=field_methods.translate_to_wcs([1024,2048],image[i])
-      line+=str(radec[0])+' '+str(radec[1])+' '
+      if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
+        line+=str(radec[0])+' '+str(radec[1])+' '
+      else:
+        line+=str(999)+' '+str(999)+' '        
       radec=field_methods.translate_to_wcs([0,0],image[i])
-      line+=str(radec[0])+' '+str(radec[1])+' '
+      if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
+        line+=str(radec[0])+' '+str(radec[1])+' '
+      else:
+        line+=str(999)+' '+str(999)+' '        
       radec=field_methods.translate_to_wcs([2048,0],image[i])
-      line+=str(radec[0])+' '+str(radec[1])+' '
+      if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
+        line+=str(radec[0])+' '+str(radec[1])+' '
+      else:
+        line+=str(999)+' '+str(999)+' '        
       radec=field_methods.translate_to_wcs([0,4096],image[i])
-      line+=str(radec[0])+' '+str(radec[1])+' '
+      if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
+        line+=str(radec[0])+' '+str(radec[1])+' '
+      else:
+        line+=str(999)+' '+str(999)+' '        
       radec=field_methods.translate_to_wcs([2048,4096],image[i])
-      line+=str(radec[0])+' '+str(radec[1])+' '
+      if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
+        line+=str(radec[0])+' '+str(radec[1])+' '
+      else:
+        line+=str(999)+' '+str(999)+' '        
       with open('y1a1_special_points_'+str(chunk)+'.txt','a') as f:
         f.write(line+'\n')
 
@@ -160,39 +178,53 @@ class field(object):
     """
 
     import fitsio as fio
-    import re
 
-    s='S30,f8,f8'
-    pointing=np.genfromtxt(config.pointingfile,names=True,dtype=s)
+    tmp=fio.FITS(config.wcsfile)[-1].read()
+    a=np.sort(np.unique(tmp['expnum']))
+    b=np.sort(np.unique(tmp['ccdnum']))-1
+    store=np.empty((len(a)*(len(b)+1)),dtype=[('exposure',int)]+[('ccd',int)]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
+    for i in range(len(a)):
+      store['exposure'][i*len(b):(i+1)*len(b)]=a[i]
+      for j in range(len(b)):
+        store['ccd'][i*len(b)+j]=b[j]
 
-    ind=-1
-    array=np.zeros((2065069*5+len(pointing)), dtype=[('exposure',int)]+[('ccd',int)]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
-    s='i8,S30'+',f8'*10
     for i in range(40):
-      tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',dtype=s)
+      print i
+      tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',names=['index','exposure','ccd','racenter','deccenter','rall','decll','raul','decul','ralr','declr','raur','decur'])
       for j in range(len(tmp)):
-        if 'bkg' in tmp[j][1]:
-          continue
-        # print tmp[j][1]
-        # if 'DECam_00257429_35.fits' in tmp[j][1]:
-        #   print tmp[j]
-        m=re.search('.*DECam_(\d\d\d\d\d\d\d\d)_(\d\d).*',tmp[j][1])
-        for k in range(5):
-          ind+=1
-          array['exposure'][ind]=m.group(1)
-          array['ccd'][ind]=m.group(2)
-          array['type'][ind]=k
-          array['ra'][ind]=tmp[j][k*2+2]
-          array['dec'][ind]=tmp[j][k*2+3]
+        if j%1000==0:
+          print j
+        mask=(store['exposure']==tmp['exposure'][j])&(store['ccd']==tmp['ccd'][j])
+        if tmp['racenter'][j]!=999:
+          store['type'][mask]=0
+          store['ra'][mask]=tmp['racenter'][j]
+          store['dec'][mask]=tmp['deccenter'][j]
+        if tmp['rall'][j]!=999:
+          store['type'][mask]=1
+          store['ra'][mask]=tmp['rall'][j]
+          store['dec'][mask]=tmp['decll'][j]
+        if tmp['raul'][j]!=999:
+          store['type'][mask]=2
+          store['ra'][mask]=tmp['raul'][j]
+          store['dec'][mask]=tmp['decul'][j]
+        if tmp['ralr'][j]!=999:
+          store['type'][mask]=3
+          store['ra'][mask]=tmp['ralr'][j]
+          store['dec'][mask]=tmp['declr'][j]
+        if tmp['raur'][j]!=999:
+          store['type'][mask]=4
+          store['ra'][mask]=tmp['raur'][j]
+          store['dec'][mask]=tmp['decur'][j]
 
-    for i in range(len(pointing)):
-      ind+=1
-      m=re.search('.*DECam_(\d\d\d\d\d\d\d\d).*',pointing['exposurename'][i])
-      array['exposure'][ind]=m.group(1)
-      array['ccd'][ind]=-1
-      array['type'][ind]=-1
-      array['ra'][ind]=pointing['telra'][i]
-      array['dec'][ind]=pointing['teldec'][i]
+    for i in range(len(a)):
+      if i%1000==0:
+        print i
+      store['exposure'][len(a)*len(b)+i]=a[i]
+      store['ccd'][len(a)*len(b)+i]=-1
+      store['type'][len(a)*len(b)+i]=-1
+      mask=(store['exposure']==store['exposure'][len(a)*len(b)+i])&(store['type']==0)&((store['ccd']==27)|(store['ccd']==34))
+      store['ra'][len(a)*len(b)+i]=np.mean(store['ra'][mask])
+      store['dec'][len(a)*len(b)+i]=np.mean(store['dec'][mask])
 
     fio.write(config.spointsfile,array,clobber=True)
 
@@ -401,3 +433,15 @@ class field_methods(object):
     ra,dec=wcs.image2sky(pos[0],pos[1])
 
     return ra,dec
+
+  @staticmethod
+  def get_coadd_tile(ra,dec,tiles=None):
+
+    if tiles is None:
+      tiles=fio.FITS(config.coaddtiles)[-1].read()
+
+    tmp=tiles['TILENAME'][(ra<tiles['URAUR'])&(dec<tiles['UDECUR'])&(ra>tiles['URALL'])&(dec>tiles['UDECLL'])]
+    if len(tmp)==0:
+      tmp=tiles['TILENAME'][((ra+360)<tiles['URAUR'])&(dec<tiles['UDECUR'])&((ra+360)>tiles['URALL'])&(dec>tiles['UDECLL'])]
+
+    return tmp[0].rstrip()

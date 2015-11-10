@@ -138,7 +138,7 @@ class split_methods(object):
     return array
 
   @staticmethod
-  def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,label='',plot=False):
+  def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,label='',plot=False,fit=True):
     """
     Split catalog cat into cat.lbins equal (weighted) parts along val. Plots mean shear in bins and outputs slope and error information.
     """
@@ -152,7 +152,10 @@ class split_methods(object):
 
     arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,mask=mask,mock=mock,log=log)
 
-    m1,m2,b1,b2,m1err,m2err,b1err,b2err=lin.fitting.sys_lin_fit(array,cat,mask=mask,log=False,noe=False,bins=10)
+    if fit:
+      m1,m2,b1,b2,m1err,m2err,b1err,b2err=lin.fitting.sys_lin_fit(array,cat,mask=mask,log=False,noe=False)
+    else:
+      m1,m2,b1,b2,m1err,m2err,b1err,b2err=0.,0.,0.,0.,0.,0.,0.,0.
 
     # if (jkon)&(cat.use_jk==1):
     #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
@@ -160,7 +163,7 @@ class split_methods(object):
     #   me1err,me2err,slp1err,slp2err,b1err,b2err=BCC_Methods.jk_iter_lin(array,cat,label,parallel=parallel)
 
     if plot:
-      fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log)
+      fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label)
 
     return arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err
 

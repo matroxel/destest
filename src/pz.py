@@ -10,7 +10,7 @@ import txt
 class pz_methods(object):
 
   @staticmethod
-  def build_nofz_bins(pz0,pzlow,pzhigh,cat=None,bins=3,split='mean',pzmask=None,catmask=None):
+  def build_nofz_bins(pz0,pzlow=0.0,pzhigh=2.5,cat=None,bins=3,split='mean',pzmask=None,catmask=None):
     """
     Build n(z) for a PZStore object that contains full pdf information. Optionally match to a catalog. Masking for both pz's and catalog optional. split determines which point estimate is used for binning. bins is number of tomographic bins. pzlow, pzhigh are bounds of reliable photo-zs. Stores result in PZStore object.
     """    
@@ -41,16 +41,25 @@ class pz_methods(object):
     xbins=np.digitize(pointz,edge)-1
 
     nofz=np.zeros((bins+1,pz0.bins))
-    nofz[0,:]=np.sum(pz0.pz_full[pzmask],axis=0)
-    nofz[0,:]/=np.sum(nofz[0,:])
+    mask0=(pointz>=pzlow)&(pointz<=pzhigh)
 
-    for i in xrange(bins):
-      mask=(xbins==i)&(pointz>=pzlow)&(pointz<=pzhigh)
-      if cat is None:
-        nofz[i+1,:]=np.sum(pz0.pz_full[pzmask&mask],axis=0)
-      else:
-        nofz[i+1,:]=np.sum((pz0.pz_full[pzmask&mask].T*w[mask]).T,axis=0)
-      nofz[i+1,:]/=np.sum(nofz[i+1,:])
+    if pz0.pdftype=='sample':
+      nofz[0,:],b=np.histogram(pz0.pz_full[pzmask&mask0],bins=np.append(pz0.binlow,pz0.binhigh[-1]))
+      nofz[0,:]/=np.sum(nofz[0,:])
+
+      for i in xrange(bins):
+        mask=(xbins==i)
+        nofz[i+1,:],b=np.histogram(pz0.pz_full[pzmask&mask0&mask],bins=np.append(pz0.binlow,pz0.binhigh[-1]),weights=w[mask&mask0])
+        nofz[i+1,:]/=np.sum(nofz[i+1,:])
+
+    else:
+      nofz[0,:]=np.sum(pz0.pz_full[pzmask&mask0],axis=0)
+      nofz[0,:]/=np.sum(nofz[0,:])
+
+      for i in xrange(bins):
+        mask=(xbins==i)
+        nofz[i+1,:]=np.sum((pz0.pz_full[pzmask&mask0&mask].T*w[mask&mask0]).T,axis=0)
+        nofz[i+1,:]/=np.sum(nofz[i+1,:])
 
     pz0.pz=nofz
     pz0.tomo=bins+1

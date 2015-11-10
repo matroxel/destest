@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
 from matplotlib.colors import LogNorm
 import pylab
+import healpy as hp
 
 import catalog
 import config
@@ -68,6 +69,21 @@ class plot_methods(object):
   @staticmethod
   def plot_hexbin(x1,cat,mask=None,bins=500,name='',label=''):
 
+    s82=mask&(cat.dec>-10)
+    spta=mask&(~s82)&(cat.ra<0)
+    sptc=mask&(~s82)&(cat.ra>50)
+    sptb=mask&(~s82)&(~spta)&(~sptc)
+
+    plot_methods.plot_hexbin_base(x1,cat,mask=mask&s82,label=label,bins=bins,part='s82',name=name)
+    plot_methods.plot_hexbin_base(x1,cat,mask=mask&spta,label=label,bins=bins,part='spta',name=name)
+    plot_methods.plot_hexbin_base(x1,cat,mask=mask&sptb,label=label,bins=bins,part='sptb',name=name)
+    plot_methods.plot_hexbin_base(x1,cat,mask=mask&sptc,label=label,bins=bins,part='sptc',name=name)
+
+    return
+
+  @staticmethod
+  def plot_hexbin_base(x1,cat,mask=None,bins=500,name='',label='',part=''):
+
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     plt.figure()
@@ -80,7 +96,8 @@ class plot_methods(object):
     if config.log_val.get(label,None):
       s='log '+s
     cb.set_label(s)
-    plt.savefig('plots/footprint/hexbin_'+name+'_'+label+'.png', bbox_inches='tight')
+    plt.gca().set_aspect('equal', 'box')
+    plt.savefig('plots/footprint/hexbin_'+name+'_'+label+'_'+part+'.png', dpi=500,bbox_inches='tight')
     plt.close()
 
     plt.figure()
@@ -93,7 +110,8 @@ class plot_methods(object):
     if config.log_val.get(label,None):
       s='log '+s
     cb.set_label(s)
-    plt.savefig('plots/footprint/hexbin_'+name+'_'+label+'_log.png', bbox_inches='tight')
+    plt.gca().set_aspect('equal', 'box')
+    plt.savefig('plots/footprint/hexbin_'+name+'_'+label+'_'+part+'_log.png', dpi=500,bbox_inches='tight')
     plt.close()
 
     return
@@ -101,22 +119,56 @@ class plot_methods(object):
   @staticmethod
   def plot_footprint(cat,mask=None,label='',bins=100):
 
-    dra=np.max(cat.ra[mask])-np.min(cat.ra[mask])
-    ddec=np.max(cat.dec[mask])-np.min(cat.dec[mask])
+    s82=mask&(cat.dec>-10)
+    spta=mask&(~s82)&(cat.ra<0)
+    sptc=mask&(~s82)&(cat.ra>50)
+    sptb=mask&(~s82)&(~spta)&(~sptc)
 
-    plt.figure()
-    a=plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=((np.min(cat.ra[mask])-.1*dra,np.max(cat.ra[mask])+.1*dra),(np.min(cat.dec[mask])-.1*ddec,np.max(cat.dec[mask])+.1*ddec)),normed=True, cmap=plt.cm.afmhot)
-    cb = plt.colorbar()
-    plt.gca().set_aspect('equal', 'box')
-    plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'.png', dpi=500, bbox_inches='tight')
-    plt.close()    
+    plot_methods.plot_footprint_base(cat,mask=mask&s82,label=label,bins=bins,part='s82')
+    plot_methods.plot_footprint_base(cat,mask=mask&spta,label=label,bins=bins,part='spta')
+    plot_methods.plot_footprint_base(cat,mask=mask&sptb,label=label,bins=bins,part='sptb')
+    plot_methods.plot_footprint_base(cat,mask=mask&sptc,label=label,bins=bins,part='sptc')
 
-    plt.figure()
-    plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=((np.min(cat.ra[mask])-.1*dra,np.max(cat.ra[mask])+.1*dra),(np.min(cat.dec[mask])-.1*ddec,np.max(cat.dec[mask])+.1*ddec)),normed=True,norm=LogNorm(), cmap=plt.cm.afmhot)
-    cb = plt.colorbar()
-    plt.gca().set_aspect('equal', 'box')
-    plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'_log.png', dpi=500, bbox_inches='tight')
-    plt.close()    
+    return
+
+  @staticmethod
+  def plot_footprint_base(cat,mask=None,label='',bins=100,part=''):
+
+    if not hasattr(cat, 'gdmask'):
+      cat.gdmask=hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_footprint_4096.fit')
+      cat.badmask=hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_badmask_4096.fit')
+    if not hasattr(cat,'pix'):
+      cat.pix=hp.ang2pix(4096, np.pi/2.-np.radians(cat.dec),np.radians(cat.ra), nest=False)
+
+    mask0=(cat.gdmask>=1)&(cat.badmask==0)
+
+    hpmap=np.ones((12*4096**2))*hp.UNSEEN
+    hpmap[(cat.gdmask>=1)]=0
+    cnt=np.zeros(12*4096**2)
+    cnt[:np.max(cat.pix[mask])+1]=np.bincount(cat.pix[mask])
+    hpmap[mask0]=cnt[mask0]
+    hp.cartview(hpmap,latra=config.dec_lim.get(part),lonra=config.ra_lim.get(part),xsize=10000,title=label)
+    plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'_'+part+'.png', dpi=1000,bbox_inches='tight')
+    plt.close()
+
+    # dra=config.ra_lim.get(part)[1]-config.ra_lim.get(part)[0]
+    # ddec=config.dec_lim.get(part)[1]-config.dec_lim.get(part)[0]
+
+    # plt.figure()
+    # tmp=config.ra_lim.get(part),config.dec_lim.get(part)
+    # a=plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=tmp,normed=True, cmap=plt.cm.afmhot)
+
+    # cb = plt.colorbar(orientation='horizontal')
+    # plt.gca().set_aspect('equal', 'box')
+    # plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'_'+part+'.png', dpi=500, bbox_inches='tight')
+    # plt.close()
+
+    # plt.figure()
+    # plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=((np.min(cat.ra[mask])-.1*dra,np.max(cat.ra[mask])+.1*dra),(np.min(cat.dec[mask])-.1*ddec,np.max(cat.dec[mask])+.1*ddec)),normed=True,norm=LogNorm(), cmap=plt.cm.afmhot)
+    # #cb = plt.colorbar()
+    # plt.gca().set_aspect('equal', 'box')
+    # plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'_log.png', dpi=500, bbox_inches='tight')
+    # plt.close()    
 
     return
 
@@ -132,7 +184,7 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False):
+  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False,label=''):
 
     plt.figure()
     plt.errorbar(x,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
@@ -151,7 +203,7 @@ class plot_methods(object):
     y2=np.max(np.maximum(e1,e2))
     plt.ylim((np.min([y1-(y2-y1)/10.,-.005]),np.max([y2+(y2-y1)/10.,.005])))
     plt.minorticks_on()
-    plt.savefig('plots/split/lin_split_'+cat.name+'_'+val+'_bs-'+str(cat.bs)+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/lin_split_'+cat.name+'_'+val+'_bs-'+str(cat.bs)+label+'.png', bbox_inches='tight')
     plt.close()
 
     return
@@ -573,12 +625,13 @@ class plot_methods(object):
     return 
 
   @staticmethod
-  def plot_nofz(pz0,test):
+  def plot_nofz(pz0,test,spec=True):
 
     col=['k','r','g','b','r','g','b']
     for i in xrange(len(pz0.pz)-1):
       plt.plot(pz0.bin,pz0.pz[i+1,:],color=col[i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label='')
-      plt.plot(pz0.bin,pz0.spec[i+1,:],color=col[i+1],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
+      if spec:
+        plt.plot(pz0.bin,pz0.spec[i+1,:],color=col[i+1],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
     plt.xlabel(r'$z$')
     plt.ylabel(r'$n(z)$')
     plt.savefig('pz_nofz_'+test+'.png')
