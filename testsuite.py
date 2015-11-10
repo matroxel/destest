@@ -73,7 +73,6 @@ def single_tests(epochcat,epochmask,cat,mask,lenscat):
 
 if __name__ == '__main__':
 
-
   ###   Shear testing Examples    ###
 
 
@@ -83,7 +82,7 @@ if __name__ == '__main__':
   tiles=['DES0428-5205', 'DES0428-5622', 'DES0428-5914', 'DES0429-4414','DES0429-4457', 'DES0429-5248', 'DES0429-5705', 'DES0430-5331','DES0430-5414', 'DES0430-5957', 'DES0431-5457', 'DES0431-5748','DES0431-6039', 'DES0432-4540', 'DES0432-4623', 'DES0432-4706','DES0432-4748', 'DES0432-4831', 'DES0432-4914', 'DES0432-4957']
 
   #Select a set of columns to read in from catalog files. A dictionary in config.py translates these shortnames to the actual column names in the files.
-  cols=['modelmu','bamp','cov12','cov11','modelsig','stamp','damp','nexp','chi2pix','psffwhm','coadd','info','like','cov22','bflux','mu','flux','rsnr','rgp','dec','evals','rad','dec_off','ra_off','dflux','fluxfrac','psf1','psf2','hsmpsf1','hsmpsf2','modmax','modmin','sig','ra','resmax','tile','maskfrac','error','snr','resmin','e1','e2','flagi','flagr','iter','pz','r','g','i','z']
+  cols=['stamp','nexp','chi2pix','psffwhm','coadd','info','like','flux','rgp','dec','evals','rad','dec_off','ra_off','dflux','fluxfrac','psf1','psf2','hsmpsf1','hsmpsf2','modmax','modmin','ra','resmax','tile','maskfrac','snr','resmin','e1','e2','flagi','flagr','iter','pz','r','g','i','z','bflux','dflux','flux']
 
   #Read in files and build catalog class. See catalog.py for further details.
   i3=catalog.CatalogStore('y1_i3_sv_v1',cutfunc=None,cattype='i3',cols=cols,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/',release='y1',tiles=tiles)
@@ -116,7 +115,7 @@ if __name__ == '__main__':
 
   # Build photo-z bins from PZStore object
 
-  pz.pz_methods.build_nofz_bins(sn,0.3,1.3,cat=None,bins=3,split='mean',pzmask=None,catmask=None)
+  pz.pz_methods.build_nofz_bins(sn,pzlow=0.3,pzhigh=1.3,cat=None,bins=3,split='mean',pzmask=None,catmask=None)
 
   # Load photo-z n(z)'s and bootstrap samples from standard dict file used for spec validation.
   
@@ -131,12 +130,13 @@ if __name__ == '__main__':
   cosmosis.make.nofz(sn,'pz_test')
 
   # Submit cosmosis runs for spec validation
+  # With submit=False, this produces bash scripts in the root directory of destest that must be run separately.
 
-  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=False,cosmo=False)
-  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=True,cosmo=False)
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=False,cosmo=False,submit=False)
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=True,cosmo=False,submit=False)
   # First two jobs must finish writing simulated data before running second two commands
-  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=False,cosmo=True)
-  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=True,cosmo=True)
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=False,cosmo=True,submit=False)
+  cosmosis.run.submit_pz_spec_test(sn,'pz_test',boot=True,cosmo=True,submit=False)
 
   # When cosmosis jobs finished, calculate output figures and stats
 
