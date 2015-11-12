@@ -129,7 +129,6 @@ class CatalogStore(object):
         tmp=np.load(ranfile)
         self.ran_ra=tmp[:,0]
         self.ran_dec=tmp[:,1]
-        mask=(self.ran_ra>60)&(self.ran_ra<95)&(self.ran_dec>-61)&(self.ran_dec<-42)
         self.ran_ra=self.ran_ra[mask]
         self.ran_dec=self.ran_dec[mask] 
 
@@ -707,8 +706,8 @@ class CatalogMethods(object):
 
     cuts=CatalogMethods.add_cut(np.array([]),'error',noval,0,noval)
     cuts=CatalogMethods.add_cut(cuts,'l',0,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
-    cuts=CatalogMethods.add_cut(cuts,'dec',-61,noval,-42.)
+    # cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
+    # cuts=CatalogMethods.add_cut(cuts,'dec',-61,noval,-42.)
     # Add gold match cut...
 
     return cuts
@@ -950,71 +949,57 @@ class CatalogMethods(object):
     return
 
   @staticmethod
-  def select_random_pts(nran,mask,fits=False,map=False,nest=False,rannside=262144,masknside=4096):
-    import healpy as hp
-    import time
-    import numpy.random as rand
+  def select_random_pts(nran,hpmap,rannside=262144,masknside=4096):
+    """
+    This function does the work on each processor for create_random_cat(). Options are passed from that function.
+    """
 
-    if map:
-      hpmap=hp.read_map(mask,nest=nest)
-      hpmap=np.copy(np.nonzero(hpmap)[0])
-    else:
-      if fits:
-        fits=fio.FITS(maskmap)
-        tmp=fits[-1].read()
-        hpmap=tmp['HPIX'][tmp['FRACGOOD']>.5]
-        hpmap=hp.ring2nest(masknside,hpmap)
-      else:
-        hpmap=np.loadtxt(mask)
-        print hpmap
-        hpmap=hp.ring2nest(masknside,hpmap.astype(int))
+    import healpy as hp
+    import numpy.random as rand
 
     ranmap=hp.nside2npix(rannside)
     print ranmap
     hpmin=np.min(hpmap)
     hpmax=np.max(hpmap)
 
-    ran=np.zeros((nran))
+    tmp0=hp.nside2npix(rannside)//hp.nside2npix(masknside)
 
-    tmp0=2**12
+    ran=[]
+    while len(ran)<nran:
+      print nran,len(ran)
 
-    t1=time.time()
+      tmp=rand.randint(hpmin*tmp0,high=hpmax*tmp0,size=nran)
+      mask=np.in1d(tmp//tmp0,hpmap,assume_unique=False)
+      ran=np.append(ran,tmp[mask])
 
-    i=0
-    iran=0
-    while iran<nran:
-      i+=1
-      if i>1e8:
-        print 'broken'
-        break
-      tmp=rand.randint(hpmin*tmp0,high=hpmax*tmp0)
-      if tmp/tmp0 in hpmap:
-        ran[iran]=tmp
-        iran+=1
-
+    ran=ran[:nran]
     dec,ra=hp.pix2ang(rannside,ran.astype(int),nest=True)
     dec=90.-dec*180./np.pi
     ra=ra*180./np.pi
 
-    print time.time()-t1
-
-    return ra,dec
-
-
+    return ra,dec,ran
 
   @staticmethod
-  def create_random_cat(nran,mask,fits=False,map=False,nest=False,label=''):
+  def create_random_cat(nran,maskpix,label='',rannside=262144,masknside=4096):
+    """
+    This will create a uniform (currently, will update as needed) random catalog from a mask defined via healpixels (maskpix). Input maskpix should be in nest form. label prepends a label to the output file. masknside is the nside of the mask, rannside is the pixelisation of the random distribution - defaults to about 2/3 arcsecond area pixels.
+
+    This will produce a fits file with 'ra','dec' columns that contains nran*100*MPI.size() randoms.
+    """
+
     from mpi4py import MPI
+    import time
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    for i in xrange(100):
+    t1=time.time()
+    for i in xrange(1):
 
-      ra,dec=CatalogMethods.select_random_pts(nran,mask,fits=fits,map=map,nest=next)
-      print 'after',i,rank
-      
+      ra,dec,ran=CatalogMethods.select_random_pts(nran,maskpix,rannside=rannside,masknside=masknside)
+      print 'after',i,rank,time.time()-t1
+
       x=np.empty((len(ra)*size))
       y=np.empty((len(dec)*size))
 
@@ -1031,10 +1016,17 @@ class CatalogMethods(object):
         np.save(label+'ra.npy',x)
         np.save(label+'dec.npy',y)
 
-    return
+    if rank == 0:
+      CatalogMethods.create_random_cat_finalise(label=label)
+
+    return ran
 
   @staticmethod
   def create_random_cat_finalise(label=''):
+    """
+    This function removes duplicate randoms from the results of create_random_cat() and writes a fits file with the random catalog.
+    """
+    import os
 
     def unique(a):
       order = np.lexsort(a.T)
@@ -1044,18 +1036,18 @@ class CatalogMethods(object):
       ui[1:] = (diff != 0).any(axis=1) 
       return a[ui],ui
 
-    ra=np.load(label+'ra.npy')
-    dec=np.load(label+'dec.npy')
-
-    a=np.vstack((ra,dec)).T
+    a=np.vstack((np.load(label+'ra.npy'),np.load(label+'dec.npy'))).T
     u,i=unique(a)
     a=a[i]
 
-    ra=a[:,0].T
-    dec=a[:,1].T
+    ran=np.empty(len(a), dtype=[('ra','f8')]+[('dec','f8')])
+    ran['ra']=a[:,0].T
+    ran['dec']=a[:,1].T
 
-    np.save(label+'ra.npy',ra)
-    np.save(label+'dec.npy',dec)
+    os.remove(label+'ra.npy')
+    os.remove(label+'dec.npy')
+
+    fio.write(label+'random.fits.gz',ran,clobber=True)
     
     return
 
