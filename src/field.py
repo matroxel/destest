@@ -79,6 +79,7 @@ class field(object):
     x1=cat.row[mask]
     y1=cat.col[mask]
     for i in xrange(len(cx)):
+      print 'chip', i
       x0=[]
       y0=[]
       pos0=[]
@@ -95,8 +96,8 @@ class field(object):
           e0=np.append(e0,np.sqrt(np.mean(e1[mask1])**2.+np.mean(e2[mask1])**2.))
           psf0=np.append(psf0,np.sqrt(np.mean(psf1[mask1])**2.+np.mean(psf2[mask1])**2.))
 
-      fig.plot_methods.plot_whisker(y0,x0,np.sin(pos0)*e0,np.cos(pos0)*e0,name=cat.name,label='chip_'+str(i)+'_shear',scale=.01,key=r'$\langle e\rangle$')
-      fig.plot_methods.plot_whisker(y0,x0,np.sin(psfpos0)*psf0,np.cos(psfpos0)*psf0,name=cat.name,label='chip_'+str(i)+'_psf',scale=.01,key=r'$\langle$ PSF $e\rangle$')
+      fig.plot_methods.plot_whisker(y0,x0,np.sin(pos0)*e0,np.cos(pos0)*e0,name=cat.name,label='chip_'+str(i)+'_shear',scale=.01,key=r'$\langle e\rangle$',chip=True)
+      fig.plot_methods.plot_whisker(y0,x0,np.sin(psfpos0)*psf0,np.cos(psfpos0)*psf0,name=cat.name,label='chip_'+str(i)+'_psf',scale=.01,key=r'$\langle$ PSF $e\rangle$',chip=True)
 
     return
 
@@ -109,7 +110,7 @@ class field(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     cat.ra,cat.dec=field_methods.get_field_pos(cat)
-    fig.plot_methods.plot_footprint(cat,mask=mask,label='field',bins=2)
+    fig.plot_methods.plot_field_footprint(cat,mask=mask,label='field',bins=2)
 
     return
 
@@ -191,10 +192,11 @@ class field(object):
     for i in range(40):
       print i
       tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',names=['index','exposure','ccd','racenter','deccenter','rall','decll','raul','decul','ralr','declr','raur','decur'])
+      mask1=(store['exposure']==tmp['exposure'][j])
       for j in range(len(tmp)):
         if j%1000==0:
           print j
-        mask=(store['exposure']==tmp['exposure'][j])&(store['ccd']==tmp['ccd'][j])
+        mask=mask1&(store['ccd']==tmp['ccd'][j])
         if tmp['racenter'][j]!=999:
           store['type'][mask]=0
           store['ra'][mask]=tmp['racenter'][j]
@@ -226,7 +228,7 @@ class field(object):
       store['ra'][len(a)*len(b)+i]=np.mean(store['ra'][mask])
       store['dec'][len(a)*len(b)+i]=np.mean(store['dec'][mask])
 
-    fio.write(config.spointsfile,array,clobber=True)
+    fio.write(config.spointsfile,store,clobber=True)
 
     return
 
