@@ -29,7 +29,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999):
 
     if setup:
 
@@ -68,7 +68,7 @@ class CatalogStore(object):
           catdir=catdir+'*fits*'
 
         cols1=[table.get(x,None) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows)):
+        for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)):
           setattr(self,cols[i],x)
 
       else:
@@ -129,8 +129,6 @@ class CatalogStore(object):
         tmp=np.load(ranfile)
         self.ran_ra=tmp[:,0]
         self.ran_dec=tmp[:,1]
-        self.ran_ra=self.ran_ra[mask]
-        self.ran_dec=self.ran_dec[mask] 
 
       if jkbuild:
         X=np.vstack((self.ra,self.dec)).T
@@ -934,7 +932,10 @@ class CatalogMethods(object):
       if tile<start:
         continue
       print tile
-      q = 'select * from ( select /*+ FIRST_ROWS(n) */ A.*, ROWNUM rnum from ( select * from '+table+' '+sorder+') A where ROWNUM < '+str((tile+1.)*num)+' ) where rnum  >= '+str(tile*num)
+      if num==0:
+        q = 'select '+query+' from '+table
+      else:
+        q = 'select '+query+' from ( select /*+ FIRST_ROWS(n) */ A.*, ROWNUM rnum from ( select * from '+table+' '+sorder+') A where ROWNUM < '+str((tile+1.)*num)+' ) where rnum  >= '+str(tile*num)
       print q
       data=conn.quick(q, array=False)
       params = data[0].keys()
@@ -945,6 +946,8 @@ class CatalogMethods(object):
         tables[p] = arr
       t = Table(tables)
       t.write(dir+name+'_'+str(tile)+'.fits.gz')
+      if num==0:
+        break
 
     return
 
@@ -1072,15 +1075,36 @@ class CatalogMethods(object):
     return
 
   @staticmethod
-  def footprint_area(cat,ngal=1,mask=None,nside=4096,nest=True):
+  def footprint_area(cat,ngal=1,mask=None,nside=4096,nest=True,label=''):
     import healpy as hp
+    import matplotlib
+    matplotlib.use ('agg')
+    import matplotlib.pyplot as plt
+    plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
+    from matplotlib.colors import LogNorm
+    import pylab
 
     mask=CatalogMethods.check_mask(cat.coadd,mask)
 
-    pix=CatalogMethods.radec_to_hpix(cat.ra,cat.dec,nside=nside)
+    if not hasattr(cat, 'pix'):
+      cat.pix=CatalogMethods.radec_to_hpix(cat.ra,cat.dec,nside=nside,nest=True)
     area=hp.nside2pixarea(nside)*(180./np.pi)**2
     print 'pixel area (arcmin)', area*60**2
-    print 'footprint area (degree)', np.sum(np.bincount(pix[mask])>ngal)*area
+    mask1=np.bincount(cat.pix[mask])>ngal
+    print 'footprint area (degree)', np.sum(mask1)*area
+
+    pix=np.arange(len(mask1))[mask1]
+    print pix
+    tmp=np.zeros((12*nside**2), dtype=[('hpix','int')])
+    tmp['hpix'][pix.astype(int)]=1
+    print tmp['hpix'][pix.astype(int)]
+    fio.write('footprint_hpix'+label+'.fits.gz',tmp,clobber=True)
+
+    tmp2=np.zeros(12*nside**2)
+    tmp2[tmp.astype(int)]=1
+    hp.cartview(tmp2,nest=True)
+    plt.savefig('footprint_hpix'+label+'.png')
+    plt.close()
 
     return 
 
