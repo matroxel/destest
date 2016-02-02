@@ -168,7 +168,7 @@ class split_methods(object):
     return arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err
 
   @staticmethod
-  def split_gals_2pt_along(cat,cat2,val,mask=None,mean=True,jkon=False,mock=False,log=False,plot=False):
+  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False):
     """
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
@@ -180,7 +180,12 @@ class split_methods(object):
     if log:
       array=np.log10(array)
 
-    m,w1,w2,split=split_methods.get_mask_wnz(cat,array,mask,mean)
+    s=config.lbl.get(val,None)
+    if config.log_val.get(val,None):
+      s='log '+s
+
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.pz,mask=mask,label=s,plot=plot)
+    return
 
     for j in xrange(2):
       if j==0:
@@ -188,9 +193,9 @@ class split_methods(object):
         theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&m,wa=w1)
         theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(~m),wa=w2)
       else:
-        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&m,wb=w1)
-        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(~m),wb=w2)   
+        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask,ran=False)
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&m,wb=w1,ran=False)
+        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(~m),wb=w2,ran=False) 
 
       # if (jkon)&(cat.use_jk==1):
       #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
@@ -221,45 +226,46 @@ class split_methods(object):
 
     return xi,gt,split
 
-
   @staticmethod
-  def get_mask_wnz(cat,array,mask=None,mean=True):
+  def get_mask_wnz(cat,array,nz,mask=None,label='',plot=False):
     """
-    Calculate splitting and redshift reweighting. Redshift reweighting currently not migrated from SV code.
+    Calculate splitting and redshift reweighting. 
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    if mean:
-      if cat.wt:
-        split=np.average(array[mask],weights=cat.w[mask])
-      else:
-        split=np.mean(array[mask])
-    else:
-      split=find_bin_edges(array[mask],2,w=cat.w[mask])[1]
-
-    m=array<split
+    w=np.ones(len(cat.coadd))
+    edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
+    bins=np.digitize(array[mask],edge)-1
 
     if cat.pzrw:
-      w1=np.ones(len(m)).astype(bool)
-      w2=w1
+      w=split_methods.pz_weight(nz[mask],bins)
     else:
-      w1=np.ones(len(m)).astype(bool)
-      w2=w1
+      w=np.ones(np.sum([mask]))
 
-    return m,w1,w2,split
+    if plot:
+      fig.plot_methods.plot_pzrw(cat,nz,bins,w,label,edge)
+
+    return bins,w,edge
 
   @staticmethod
-  def pz_weight(nz,pz,a,label='',plot=False):
+  def pz_weight(nz,bins,binnum=200,pdf=False):
     """
-    Not migrated yet.
+    Reweight portions of galaxy population to match redshift distributions to that of the whole population.
     """
 
-    from sklearn.linear_model import Ridge
-    
-    r=Ridge(alpha=a)
-    r.fit(nz,pz)
-    w=r.coef_
+    w=np.ones(len(nz))
+    if pdf:
+      print 'transfer pdf support'
+      return
+    else:
+      h0,b0=np.histogram(nz,bins=binnum)
+      for j in xrange(np.max(bins)+1):
+        binmask=(bins==j)
+        h,b=np.histogram(nz[binmask],bins=b0)
+        w[binmask]=1.*h0/h
+
+      print np.sum(np.isnan(w)),np.sum(np.isinf(w))
 
     return w
 

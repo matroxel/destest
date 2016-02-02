@@ -126,9 +126,19 @@ class CatalogStore(object):
       self.pzrw=config.cfg.get('pzrw',None) 
 
       if (cattype=='gal')&(ranfile is not None):
-        tmp=np.load(ranfile)
-        self.ran_ra=tmp[:,0]
-        self.ran_dec=tmp[:,1]
+        tmp=fio.FITS(ranfile)[-1].read()
+        try:
+          self.ran_ra=tmp['ra']
+          self.ran_dec=tmp['dec']
+        except ValueError:
+          self.ran_ra=tmp['RA']
+          self.ran_dec=tmp['DEC']
+        ra=self.ran_ra
+        ra[self.ran_ra>180]=self.ran_ra[self.ran_ra>180]-360
+        self.ran_ra=ra
+        self.ran_ra=self.ran_ra[ra>60]
+        self.ran_dec=self.ran_dec[ra>60]
+
 
       if jkbuild:
         X=np.vstack((self.ra,self.dec)).T
@@ -263,20 +273,92 @@ class PZStore(object):
             self.bootpz[i,j,:]=d['phot'][i][j+1]
       elif filetype=='h5':
         self.pdftype='full'
-        store=pd.HDFStore(config.pzdir+file, mode='r')
-        pz0=store[pztype]
-        self.coadd=pz0.index.values
-        zm0=pz0.z_mean.values
-        self.z_mean_full=zm0.astype('float32')
-        zm0=pz0.z_peak.values
-        self.z_peak_full=zm0.astype('float32')
-        pz0=pz0[['pdf_{}'.format(i) for i in xrange(200)]].values
-        self.bins=200
-        self.bin=(np.linspace(0.005, 1.8, 201)[1:] + np.linspace(0.005, 1.8, 201)[0:-1])/2.0
+        store=pd.HDFStore(file, mode='r')
+        if hasattr(store,pztype):
+          pz0=store[pztype]
+        elif hasattr(store,'pdf'):
+          pz0=store['pdf']
+          print 'First h5 is pdf',pz0.columns
+          if hasattr(store,'point_predictions'):
+            pz1=store['point_predictions']
+            print 'Second h5 is point_predictions',pz1.columns
+          elif hasattr(store,'point_pred'):
+            pz1=store['point_pred']
+            print 'Second h5 is point_pred',pz1.columns
+          else:
+            print 'No second h5'
+            pz1=pz0
+        else:
+          print pztype+' does not exist in dataframe'
+          return
+
+        self.coadd=CatalogMethods.find_col_h5('coadd_objects_id',pz0,pz1)
+        zm0=CatalogMethods.find_col_h5('z_mean',pz0,pz1)
+        if zm0 is not None:
+          self.z_mean_full=zm0.astype('float32')
+        elif file==config.pzdir+'BPZ_v1_probs_DEC15_trainvalid.hdf5':
+          tmp=fio.FITS(config.pzdir+'DEC15_trainvalid_magauto_BPZv1_point.fits')[-1].read()
+          self.z_mean_full=tmp['MEAN_Z'].astype('float32')
+        else:
+          zm0=CatalogMethods.find_col_h5('mean_z',pz0,pz1)
+          self.z_mean_full=zm0.astype('float32')
+        print 'mean',np.min(zm0),np.max(zm0),np.min(self.z_mean_full),np.max(self.z_mean_full)
+        zm0=CatalogMethods.find_col_h5('z_peak',pz0,pz1)
+        if zm0 is not None:
+          self.z_peak_full=zm0.astype('float32')
+        elif file==config.pzdir+'BPZ_v1_probs_DEC15_trainvalid.hdf5':
+          tmp=fio.FITS(config.pzdir+'DEC15_trainvalid_magauto_BPZv1_point.fits')[-1].read()
+          self.z_peak_full=tmp['Z_PEAK'].astype('float32')
+        else:
+          zm0=CatalogMethods.find_col_h5('mode_z',pz0,pz1)
+          self.z_peak_full=zm0.astype('float32')
+        print 'peak',np.min(zm0),np.max(zm0),np.min(self.z_peak_full),np.max(self.z_peak_full)
+        zm0=CatalogMethods.find_col_h5('z_mc',pz0,pz1)
+        if zm0 is not None:
+          self.z_mc_full=zm0.astype('float32')
+        elif file==config.pzdir+'BPZ_v1_probs_DEC15_trainvalid.hdf5':
+          tmp=fio.FITS(config.pzdir+'DEC15_trainvalid_magauto_BPZv1_point.fits')[-1].read()
+          self.z_mc_full=tmp['Z_MC'].astype('float32')
+        else:
+          zm0=CatalogMethods.find_col_h5('hwe_z',pz0,pz1)
+          self.z_mc_full=zm0.astype('float32')
+        print 'peak',np.min(zm0),np.max(zm0),np.min(self.z_mc_full),np.max(self.z_mc_full)
+        self.spec_full=CatalogMethods.find_col_h5('z_spec',pz0,pz1)
+        if file==config.pzdir+'BPZ_v1_probs_DEC15_trainvalid.hdf5':
+          tmp=fio.FITS(config.pzdir+'DEC15_trainvalid_magauto_BPZv1_point.fits')[-1].read()
+          self.spec_full=tmp['Z_SPEC'].astype('float32')
+        self.bins=config.pz_binning.get(pztype,[0,0,0])[2]
+        self.bin=np.linspace(config.pz_binning.get(pztype,[0,0,0])[0],config.pz_binning.get(pztype,[0,0,0])[1],config.pz_binning.get(pztype,[0,0,0])[2])
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
-        self.pz_full=pz0.astype('float32')
-        self.w=np.ones(len(self.z_mean_full))
+        pz=pz0[np.sort([col for col in pz0.columns if 'pdf' in col])].values
+        if len(pz)==0:
+          pz=CatalogMethods.find_col_h5('z_mc',pz0,pz1)
+        self.pz_full=pz.astype('float32')
+
+        tmp=np.load(config.pzdir+'spec_jk_regs.npy')
+        if len(self.coadd)==len(tmp):
+          print 'using jk regions'
+          m1,s1,m2,s2=CatalogMethods.sort(self.coadd,tmp[:,0])
+          tmp=tmp[m2][s2]
+          self.regs=tmp[:,1]
+          self.num_reg=len(np.unique(self.regs))
+        if hasattr(store,'pdf'):
+          tmp=np.load(config.pzdir+'gold_weights_v1.npy')
+          print 'loading weights'
+          m1,s1,m2,s2=CatalogMethods.sort(self.coadd,tmp[:,0])
+          tmp=tmp[m2][s2]
+          self.w=tmp[:,1]
+          self.coadd=self.coadd[m1]
+          self.z_mean_full=self.z_mean_full[m1]
+          self.z_peak_full=self.z_peak_full[m1]
+          self.z_mc_full=self.z_mc_full[m1]
+          self.spec_full=self.spec_full[m1]
+          self.pz_full=self.pz_full[m1]
+        else:
+          self.w=np.ones(len(self.z_mean_full))
+        self.wt=False
+
         store.close()
       elif filetype=='fits':
         self.pdftype='sample'
@@ -348,12 +430,21 @@ class CatalogMethods(object):
 
       colex,colist=CatalogMethods.col_exists(cols,fits[hdu].get_colnames())
       if colex<1:
-        raise ColError('columns '+colist+' do not exist in file: '+file)
+        for i,x in enumerate(cols):
+          cols[i]=x.lower()
+        colex,colist=CatalogMethods.col_exists(cols,fits[hdu].get_colnames())
+        if colex<1:
+          raise ColError('columns '+colist+' do not exist in file: '+file)
 
       cutcols=[table.get(x,None) for x in cuts['col']]
       colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
       if colex<1:
-        raise ColError('cut columns '+colist+' do not exist in file: '+file)
+        # for i,x in enumerate(cuts['col']):
+        #   cuts['col'][i]=x.lower()
+        cutcols=[table.get(x,None).lower() for x in cuts['col']]
+        colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
+        if colex<1:
+          raise ColError('cut columns '+colist+' do not exist in file: '+file)
 
       tmparray=fits[hdu].read(columns=cutcols)
 
@@ -538,6 +629,7 @@ class CatalogMethods(object):
 
     mask1=np.in1d(a1,a2,assume_unique=True)
     mask2=np.in1d(a2,a1,assume_unique=True)
+    print len(mask1),len(a1),len(mask2),len(a2)
     sort1=np.argsort(a1[mask1])[np.argsort(np.argsort(a2[mask2]))]
     sort2=np.argsort(a2[mask2])[np.argsort(np.argsort(a1[mask1]))]
 
@@ -702,8 +794,7 @@ class CatalogMethods(object):
     Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
     """
 
-    cuts=CatalogMethods.add_cut(np.array([]),'error',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'l',0,noval,noval)
+    cuts=CatalogMethods.add_cut(np.array([]),'lum',0,noval,noval)
     # cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
     # cuts=CatalogMethods.add_cut(cuts,'dec',-61,noval,-42.)
     # Add gold match cut...
@@ -729,10 +820,14 @@ class CatalogMethods(object):
     """
 
     for x in dir(cat):
+      if x=='coadd':
+        continue
       obj = getattr(cat,x)
       if isinstance(obj,np.ndarray):
         if len(obj)==len(cat.coadd):
           setattr(cat,x,obj[mask])
+
+    cat.coadd=cat.coadd[mask]
 
     return
 
@@ -746,6 +841,24 @@ class CatalogMethods(object):
       return np.ones(len(array)).astype(bool)
     else:
       return mask
+
+  @staticmethod
+  def find_col_h5(col,h5a,h5b):
+
+    if col in h5a.columns:
+      print 'using '+col+' from first h5'
+      return h5a[col].values
+    if col.upper() in h5a.columns:
+      print 'using '+col+' from first h5'
+      return h5a[col.upper()].values
+    if col in h5b.columns:
+      print 'using '+col+' from second h5'
+      return h5b[col].values
+    if col.upper() in h5b.columns:
+      print 'using '+col+' from second h5'
+      return h5b[col.upper()].values
+
+    return None
 
 
   @staticmethod
@@ -1043,7 +1156,8 @@ class CatalogMethods(object):
     u,i=unique(a)
     a=a[i]
 
-    ran=np.empty(len(a), dtype=[('ra','f8')]+[('dec','f8')])
+    ran=np.empty(len(a), dtype=[('coadd_objects_id','f8')]+[('ra','f8')]+[('dec','f8')])
+    ran['coadd_objects_id']=np.arange(len(a))
     ran['ra']=a[:,0].T
     ran['dec']=a[:,1].T
 

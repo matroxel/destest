@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import scipy.interpolate as interp
 
 import catalog
 import config
@@ -106,7 +107,6 @@ dc1_params = {
 
 }
 
-
 dc1_priors = {
   
   'omega_m' : (0.3156, 0.5),
@@ -122,12 +122,12 @@ dc1_priors = {
   'omnuh2' : (0.00065, .0001),
   'massless_nu' : (2.046, 1.),
   'massive_nu' : (1, 1),
-  'bias_1' : (0., 0.02),
-  'bias_2' : (0., 0.02),
-  'bias_3' : (0., 0.02),
-  'bias_4' : (0., 0.02),
-  'bias_5' : (0., 0.02),
-  'bias_6' : (0., 0.02),
+  'bias_1' : (0., 0.1),
+  'bias_2' : (0., 0.1),
+  'bias_3' : (0., 0.1),
+  'bias_4' : (0., 0.1),
+  'bias_5' : (0., 0.1),
+  'bias_6' : (0., 0.1),
   'm1' : (0., 0.02),
   'm2' : (0., 0.02),
   'm3' : (0., 0.02),
@@ -154,7 +154,7 @@ class run(object):
     return
 
   @staticmethod
-  def submit(label='dc1',nodes=1,procs=32,hr=48,pts=200,mneff=0.8,mntol=0.5,ia=False,pz=False,mbias=False,planck=False,tomobins=3,params=dc1_params,priors=dc1_priors,data='data/datavector_cosmosis.txt',cov='data/cov.npy',nofz='data/n_of_zs.txt',cldir='',resume=False,submit=True):
+  def submit(label='dc1',nodes=1,procs=32,hr=48,pts=200,mneff=0.8,mntol=0.5,ia=False,pz=False,mbias=False,planck=False,tomobins=3,paramlist=['sigma8_input'],params=dc1_params,priors=dc1_priors,data='data/datavector_cosmosis.txt',cov='data/cov.npy',nofz='data/n_of_zs.txt',cldir='',resume=False,submit=True):
     """
     A wrapper to submit cosmosis runs. Currently works for my PBS environment. Will add alternate option to just print necessary commands to a file to run as desired.
 
@@ -169,22 +169,15 @@ class run(object):
     import subprocess as sp
     import time
 
-    vary['sigma8_input']=True
-    vary['omega_m']=True
-    vary['h0']=True
-    vary['n_s']=True
-    vary['tau']=True
-    vary['omega_b']=True
-    vary['w']=True
-    vary['wa']=False
+    for param in paramlist:
+      vary[param]=True
 
     name=label
     sout=label+'_pz-'+str(pz)+'_m-'+str(mbias)+'_ia-'+str(ia)+'_planck-'+str(planck)
     outfile='out/'+sout+'.txt' #'multinest-'+str(pts)+'_'+str(mneff)+'_'+str(mntol)+
     mnoutfile='out/'+sout+'.multinest'
-    spriors=config.cosomsiscosmodir+sout+'_priors.ini'
-    sparams=config.cosomsiscosmodir+sout+'_values.ini'
-
+    spriors=config.cosmosiscosmodir+sout+'_priors.ini'
+    sparams=config.cosmosiscosmodir+sout+'_values.ini'
 
     mods=r' '
     like=r'xipm '
@@ -219,46 +212,72 @@ class run(object):
     if make.priors(priors,prior,ia,pz,mbias,planck,tomobins,spriors)==0:
       spriors=''    
 
-    p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.cosomsiscosmodir)
-    output,input = p.stdout, p.stdin
+    if submit:
 
-    job_string = """#!/bin/bash
-    #PBS -l nodes=%s:ppn=%s
-    #PBS -l walltime=%s:00:00
-    #PBS -N %s
-    #PBS -o %s.log
-    #PBS -j oe
-    #PBS -m abe 
-    #PBS -M michael.troxel@manchester.ac.uk
-    module use /home/zuntz/modules/module-files
-    module load python
-    module use /etc/modulefiles/
-    cd /home/troxel/cosmosis/
-    source my-source
-    cd %s
-    cd $PBS_O_WORKDIR
-    export POINTS="%s"
-    export MNEFF="%s"
-    export MNTOL="%s"
-    export OUTFILE="%s"
-    export DATA="%s"
-    export COV="%s"
-    export NOFZ="%s"
-    export IA="%s"
-    export MODS="%s"
-    export LIKE="%s"
-    export PRIORS="%s"
-    export PARAMS="%s"
-    export CLDIR="%s"
-    export MNOUT="%s"
-    export MNRESUME="%s"
-    mpirun -n %s cosmosis --mpi data_in.ini
-    postprocess -o plots -p %s %s""" % (str(nodes),str(procs),str(hr),name,sout,config.cosomsiscosmodir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,mnoutfile,str(resume),str(procs),sout,outfile)    
+      p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.cosmosiscosmodir)
+      output,input = p.stdout, p.stdin
 
-    output,outputerr=p.communicate(input=job_string)
+      job_string = """#!/bin/bash
+      #PBS -l nodes=%s:ppn=%s
+      #PBS -l walltime=%s:00:00
+      #PBS -N %s
+      #PBS -o %s.log
+      #PBS -j oe
+      #PBS -m abe 
+      #PBS -M michael.troxel@manchester.ac.uk
+      module use /home/zuntz/modules/module-files
+      module load python
+      module use /etc/modulefiles/
+      cd /home/troxel/cosmosis/
+      source my-source
+      cd %s
+      cd $PBS_O_WORKDIR
+      export POINTS="%s"
+      export MNEFF="%s"
+      export MNTOL="%s"
+      export OUTFILE="%s"
+      export DATA="%s"
+      export COV="%s"
+      export NOFZ="%s"
+      export IA="%s"
+      export MODS="%s"
+      export LIKE="%s"
+      export PRIORS="%s"
+      export PARAMS="%s"
+      export CLDIR="%s"
+      export MNOUT="%s"
+      export MNRESUME="%s"
+      mpirun -n %s cosmosis --mpi data_in.ini
+      postprocess -o plots -p %s %s""" % (str(nodes),str(procs),str(hr),name,sout,config.cosmosiscosmodir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,mnoutfile,str(resume),str(procs),sout,outfile)    
+      output,outputerr=p.communicate(input=job_string)
+      print job_string
+      print output
+    else:
 
-    print job_string
-    print output
+      jobstring="""#!/bin/bash
+      cd /home/troxel/cosmosis/
+      source my-source
+      cd %s
+      cd $PBS_O_WORKDIR
+      export POINTS="%s"
+      export MNEFF="%s"
+      export MNTOL="%s"
+      export OUTFILE="%s"
+      export DATA="%s"
+      export COV="%s"
+      export NOFZ="%s"
+      export IA="%s"
+      export MODS="%s"
+      export LIKE="%s"
+      export PRIORS="%s"
+      export PARAMS="%s"
+      export CLDIR="%s"
+      export MNOUT="%s"
+      export MNRESUME="%s"
+      mpirun -n %s cosmosis --mpi data_in.ini
+      postprocess -o plots -p %s %s""" % (config.cosmosiscosmodir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,mnoutfile,str(resume),str(procs),sout,outfile)  
+      with open('cosmosis_cosmo.submit','w') as f:
+        f.write(jobstring)
 
     time.sleep(0.1)
 
@@ -280,6 +299,11 @@ class run(object):
       from popen2 import popen2
       import subprocess as sp
       import time
+
+    if cosmo:
+      procs=32
+    else:
+      procs=1
 
     if pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+pz0.pztype+'.txt'
@@ -336,8 +360,8 @@ class run(object):
       """ % (config.pztestdir)
 
       if cosmo:
-        jobstring3="""mpirun -n 32 cosmosis --mpi %sdata_in.ini
-        """ % (config.pztestdir)
+        jobstring3="""mpirun -n %s cosmosis --mpi %sdata_in.ini
+        """ % (str(procs),config.pztestdir)
 
         jobstring=jobstring0
         if submit:
@@ -374,7 +398,7 @@ class run(object):
             jobstring+=jobstring1+jobstring2+jobstring3
 
             jobstring4="""postprocess %s/out/spec_%s_%s.txt -o %s/out/sim_data_%s
-            """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],dir+test,nofz[:-4])
+            """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],config.pztestdir+test,nofz[:-4])
             jobstring+=jobstring4
 
         if submit:
@@ -418,8 +442,8 @@ class run(object):
  
       if cosmo:
 
-        jobstring3="""mpirun -n 32 cosmosis --mpi %sdata_in.ini
-        """ % (config.pztestdir)
+        jobstring3="""mpirun -n %s cosmosis --mpi %sdata_in.ini
+        """ % (str(procs),config.pztestdir)
 
         jobstring=jobstring0
         if submit:
@@ -603,12 +627,16 @@ class make(object):
 
     return cnt
 
-
   @staticmethod
-  def nofz(pz0,test):
+  def nofz(pz0,test,zmax=None,zbins=None):
     """
     Writes n(z) files in cosmosis format for photo-z spec validation testing.
     """
+
+    test+='_'+str(pz0.tomo-1)
+    if pz0.wt:
+      test+='_weighted'
+
 
     if not os.path.exists(config.pztestdir+test):
       os.makedirs(config.pztestdir+test)
@@ -617,22 +645,53 @@ class make(object):
     if not os.path.exists(config.pztestdir+test+'/out'):
       os.makedirs(config.pztestdir+test+'/out')
 
-    out=np.vstack((pz0.bin,pz0.pz[0,:]))
-    out=np.row_stack(([0.,0.],out.T,[pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),0.]))
+    if zmax is None:
+      mask=np.ones(len(pz0.bin)).astype(bool)
+    else:
+      mask=pz0.bin<zmax
+
+    if zbins is None:
+      zz=pz0.bin[mask]
+      pzz=pz0.pz[:,mask]
+    else:
+      if zmax is None:
+        print 'need zmax'
+        return
+      else:
+        zz=np.linspace(np.min(pz0.bin),zmax,zbins)
+        pzz=make.modify_pdf(pz0,nbins=zbins,zmax=zmax)
+
+    out=np.vstack((zz,pzz[0,:]))
+    print np.shape(out)
+    if out.T[0,0]>0:
+      out=np.row_stack(([0.,0.],out.T))
+      out=out.T
+    print np.shape(out),np.shape([zz[-1]+(zz[1]-zz[0]),0.])
+    out=np.row_stack((out.T,[zz[-1]+(zz[1]-zz[0]),0.]))
     np.savetxt(config.pztestdir+test+'/nofz/notomo_'+pz0.pztype+'.txt',out)
 
-    out=np.vstack((pz0.bin,[pz0.pz[i+1,:] for i in range(pz0.tomo-1)]))
-    out=np.row_stack(([0. for i in range(pz0.tomo)],out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
+    out=np.vstack((zz,[pzz[i+1,:] for i in range(pz0.tomo-1)]))
+    if out.T[0,0]>0:
+      out=np.row_stack(([0. for i in range(pz0.tomo)],out.T))
+      out=out.T
+    out=np.row_stack((out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
     np.savetxt(config.pztestdir+test+'/nofz/'+pz0.pztype+'.txt',out)
 
     if hasattr(pz0, 'spec'):
+      print 'spec',pz0.spec
 
       out=np.vstack((pz0.bin,pz0.spec[0,:]))
-      out=np.row_stack(([0.,0.],out.T,[pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),0.]))
+      if out.T[0,0]>0:
+        out=np.row_stack(([0.,0.],out.T))
+        out=out.T
+      out=np.row_stack((out.T,[zz[-1]+(zz[1]-zz[0]),0.]))
       np.savetxt(config.pztestdir+test+'/nofz/notomo_spec_'+pz0.pztype+'.txt',out)
 
       out=np.vstack((pz0.bin,[pz0.spec[i+1,:] for i in range(pz0.tomo-1)]))
-      out=np.row_stack(([0. for i in range(pz0.tomo)],out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
+      if out.T[0,0]>0:
+        out=np.row_stack(([0. for i in range(pz0.tomo)],out.T))
+        out=out.T
+      out=np.row_stack((out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
       np.savetxt(config.pztestdir+test+'/nofz/spec_'+pz0.pztype+'.txt',out)
 
     if hasattr(pz0,'boot'):
@@ -640,11 +699,50 @@ class make(object):
       for j in xrange(pz0.boot):
 
         out=np.vstack((pz0.bin,pz0.bootspec[0,j,:]))
-        out=np.row_stack(([0.,0.],out.T,[pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),0.]))
+        if out.T[0,0]>0:
+          out=np.row_stack(([0.,0.],out.T))
+          out=out.T
+        out=np.row_stack((out.T,[zz[-1]+(zz[1]-zz[0]),0.]))
         np.savetxt(config.pztestdir+test+'/nofz/notomo_'+pz0.pztype+'_'+str(j)+'.txt',out)
 
         out=np.vstack((pz0.bin,[pz0.bootspec[i+1,j,:] for i in range(pz0.tomo-1)]))
-        out=np.row_stack(([0. for i in range(pz0.tomo)],out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
+        if out.T[0,0]>0:
+          out=np.row_stack(([0. for i in range(pz0.tomo)],out.T))
+          out=out.T
+        out=np.row_stack((out.T,np.append(pz0.bin[-1]+(pz0.bin[1]-pz0.bin[0]),[0. for i in range(pz0.tomo-1)])))
         np.savetxt(config.pztestdir+test+'/nofz/'+pz0.pztype+'_'+str(j)+'.txt',out)
 
     return
+
+
+
+  @staticmethod
+  def modify_pdf(pz0,nbins=200,zmax=3.0):
+
+    from scipy import array
+
+    def extrap1d(i):
+      xs = i.x
+      ys = i.y
+
+      def x0(x):
+          if x < xs[0]:
+              return ys[0]+(x-xs[0])*(ys[1]-ys[0])/(xs[1]-xs[0])
+          elif x > xs[-1]:
+              return ys[-1]+(x-xs[-1])*(ys[-1]-ys[-2])/(xs[-1]-xs[-2])
+          else:
+              return i(x)
+
+      def func(xs):
+          return array(map(x0, array(xs)))
+
+      return func
+
+    tmp=np.zeros((pz0.tomo,nbins))
+    for i in range(len(pz0.pz)):
+
+      f=interp.interp1d(pz0.bin,pz0.pz[i],kind='cubic',fill_value=0.)
+      f2=extrap1d(f)
+      tmp[i]=f2(np.linspace(np.min(pz0.bin),zmax,nbins))
+
+    return tmp

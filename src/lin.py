@@ -87,7 +87,7 @@ class linear_methods(object):
     return e1[mask],e2[mask],w[mask],ms[mask]
 
   @staticmethod
-  def calc_mean_stdev_rms_e(cat,mask=None,mock=False):
+  def calc_mean_stdev_rms_e(cat,mask=None,mock=False,full=True):
     """
     For a general CatalogStore object cat, return mean, std dev, rms of ellipticities.
     """
@@ -99,15 +99,20 @@ class linear_methods(object):
     ww=np.sum(w**2)
     mean1=np.sum(w*e1)/wms
     mean2=np.sum(w*e2)/wms
-    std1=np.sqrt(np.sum(w*(e1-mean1)**2)/wms)
-    std2=np.sqrt(np.sum(w*(e2-mean2)**2)/wms)
-    rms1=np.sqrt(np.sum((w*e1)**2)/ww)
-    rms2=np.sqrt(np.sum((w*e2)**2)/ww)
+    if full:
+      std1=np.sqrt(np.sum(w*(e1-mean1)**2)/wms)
+      std2=np.sqrt(np.sum(w*(e2-mean2)**2)/wms)
+      rms1=np.sqrt(np.sum((w*e1)**2)/ww)
+      rms2=np.sqrt(np.sum((w*e2)**2)/ww)
 
-    return mean1,mean2,std1,std2,rms1,rms2
+      return mean1,mean2,std1,std2,rms1,rms2
+    else:
+      return mean1,mean2
+
+    return
 
   @staticmethod
-  def calc_mean_stdev_rms(cat,x,mask=None,mock=False):
+  def calc_mean_stdev_rms(cat,x,mask=None,mock=False,full=True):
     """
     For a general CatalogStore object cat, return mean, std dev, rms of array x in cat.
     """
@@ -122,10 +127,15 @@ class linear_methods(object):
     w=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)[2]
 
     mean=np.sum(w*x1[mask])/np.sum(w)
-    std=np.sqrt(np.sum(w*(x1[mask]-mean)**2)/np.sum(w))
-    rms=np.sqrt(np.sum((w*x1[mask])**2)/np.sum(w**2))
+    if full:
+      std=np.sqrt(np.sum(w*(x1[mask]-mean)**2)/np.sum(w))
+      rms=np.sqrt(np.sum((w*x1[mask])**2)/np.sum(w**2))
+      return mean,std,rms
+    else:
+      return mean
 
-    return mean,std,rms
+    return
+
 
   @staticmethod    
   def find_bin_edges(x,nbins,w=None):
@@ -389,17 +399,17 @@ class hist(object):
       x1=tmp[x]
       if config.log_val.get(x,False):
         x1=np.log10(x1)
-      fig.plot_methods.plot_hist(x1,name=cat.name,label=x+'_tile',bins=20)
+      fig.plot_methods.plot_hist(x1,name=cat.name,label=x,bins=20,tile='mean')
 
       x1=tmp[x+'_std']
       if config.log_val.get(x,False):
         x1=np.log10(x1)
-      fig.plot_methods.plot_hist(x1,name=cat.name,label=x+'_std_tile',bins=20)
+      fig.plot_methods.plot_hist(x1,name=cat.name,label=x,bins=20,tile='std')
 
       x1=tmp[x+'_rms']
       if config.log_val.get(x,False):
         x1=np.log10(x1)
-      fig.plot_methods.plot_hist(x1,name=cat.name,label=x+'_rms_tile',bins=20)
+      fig.plot_methods.plot_hist(x1,name=cat.name,label=x,bins=20,tile='rms')
 
     return
 
@@ -440,7 +450,7 @@ class hist(object):
         if config.log_val.get(y,False):
           y1=np.log10(y1)
 
-        fig.plot_methods.plot_2D_hist(x1,y1,bins=20,xname=cat.name,yname=yname,xlabel=x+'_tile',ylabel=y+'_tile')
+        fig.plot_methods.plot_2D_hist(x1,y1,bins=20,xname=cat.name,yname=yname,xlabel=x,ylabel=y,xtile='mean',ytile='mean')
 
     return
 
@@ -469,25 +479,38 @@ class footprint(object):
     A version of hexbin_tests that maps mean value tile-by-tile instead of by hexbin cell.
     """
 
+    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+
     s='S12,f8'+',f8'*len(vals)*3
     tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
-    cat.tile_=np.zeros(len(cat.coadd))
 
     for j,x in enumerate(vals):
 
       x1=np.zeros(len(cat.coadd))
-
       for i in xrange(len(tmp)):
         mask0=(cat.tile==tmp['tile'][i])
-
         x1[mask0]=np.ones(np.sum(mask0))*tmp[x][i]
 
-      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x+'_tile')
+      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x,tile='mean')
+
+      x1=np.zeros(len(cat.coadd))
+      for i in xrange(len(tmp)):
+        mask0=(cat.tile==tmp['tile'][i])
+        x1[mask0]=np.ones(np.sum(mask0))*tmp[x+'_std'][i]
+
+      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x,tile='std')
+
+      x1=np.zeros(len(cat.coadd))
+      for i in xrange(len(tmp)):
+        mask0=(cat.tile==tmp['tile'][i])
+        x1[mask0]=np.ones(np.sum(mask0))*tmp[x+'_rms'][i]
+
+      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x,tile='rms')
 
     return
 
   @staticmethod
-  def footprint_tests(cat,vals,mask=None,bins=100,label=''):
+  def footprint_tests(cat,vals,mask=None,bins=100,label='',cap=None):
     """
     If vals==[], produces a galaxy density plot over the survey fottprint for the catalog with mask. If vals contains a list of flag columns, it maps the density of objects that fail each flag value.
     """
@@ -495,15 +518,17 @@ class footprint(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     if vals==[]:
-      fig.plot_methods.plot_footprint(cat,mask=mask,label=label,bins=bins)
+      fig.plot_methods.plot_footprint(cat,mask=mask,label=label,bins=bins,cap=cap)
 
     else:
       for val in vals:
         flag=getattr(cat,val)
         for i in xrange(summary_stats.n_bits_array(cat,val)):
-          if np.sum((flag & 2**i) != 0)>100:
+          if np.sum((flag & 2**i) != 0)>1000:
             print 'footprint flag',val,i
-            fig.plot_methods.plot_footprint(cat,mask=((flag & 2**i) != 0)&mask,label=getattr(config,val+'_name').get(i),bins=bins)
+            if (val=='info')&(i<21):
+              continue
+            fig.plot_methods.plot_footprint(cat,mask=((flag & 2**i) != 0)&mask,label=getattr(config,val+'_name').get(i),bins=bins,cap=cap)
 
     return
 
@@ -531,13 +556,13 @@ class summary_stats(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
 
-    txt.write_methods.heading('error flags',cat,label='flags_dist',create=True)
-    for i in xrange(summary_stats.n_bits_array(cat,'error')):
-      txt.write_methods.write_append(str(i)+'  '+str(np.sum((cat.error & 2**i) != 0))+'  '+str(np.sum(cat.error == 2**i)),cat,label='flags_dist',create=False)
+    # txt.write_methods.heading('error flags',cat,label='flags_dist',create=True)
+    # for i in xrange(summary_stats.n_bits_array(cat,'error')):
+    #   txt.write_methods.write_append(str(i)+'  '+str(np.sum((cat.error & 2**i) != 0))+'  '+str(np.sum(cat.error == 2**i)),cat,label='flags_dist',create=False)
 
-    txt.write_methods.heading('info flags',cat,label='flags_dist',create=False)
-    for i in xrange(summary_stats.n_bits_array(cat,'info')):
-      txt.write_methods.write_append(str(i)+'  '+str(np.sum((cat.info & 2**i) != 0))+'  '+str(np.sum(cat.info == 2**i)),cat,label='flags_dist',create=False)
+    # txt.write_methods.heading('info flags',cat,label='flags_dist',create=False)
+    # for i in xrange(summary_stats.n_bits_array(cat,'info')):
+    #   txt.write_methods.write_append(str(i)+'  '+str(np.sum((cat.info[mask] & 2**i) != 0))+'  '+str(np.sum(cat.info[mask] == 2**i)),cat,label='flags_dist',create=False)
 
     txt.write_methods.heading('checking for bad values',cat,label='flags_dist',create=False)
 

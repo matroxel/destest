@@ -10,14 +10,17 @@ cosmosiscosmodir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
 cosmosisrootdir = '/home/troxel/cosmosis/'
 wcsfile = '/share/des/disc2/y1/wcs/y1a1_wcs.fits.gz'
 spointsfile = 'y1a1_special_field_points.fits'
-pointingfile = '/home/troxel/catcutDES/y1a1_telradec2.txt'
 y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
 svsysmapdir = '/share/des/sv/systematics_maps/'
 redmagicdir = '/share/des/disc2/y1/redmagicv6.4.4/'
-y1blacklist = '/home/troxel/testsuite/blacklist-y1.txt'
+y1blacklist = '/share/des/disc2/y1/blacklist-y1.txt'
 coaddtiles = '/share/des/coadd_tiles.fits'
+tapebumps = '/home/troxel/destest/tape_bumps.fits'
+e2edir = '/home/troxel/des-shear-pipeline-code/end-to-end/end-to-end_code/'
 
+# Cosmosis source command
 cosmosissource = 'source my-source'
+
 # Dictionaries
 
 cfg = {
@@ -98,6 +101,16 @@ info_name = {
   19:r'PSF FWHM$>$7',
   20:r'PSF FWHM$<$0',
   21:r'Error flag$>$0'
+
+}
+
+pz_binning = {
+  
+  'skynet':(.005,1.8,201),
+  'ada':(0.,2.49,250),
+  'hwe':(0.,3.7037037037,741),
+  'dnf':(.005,1.985,199),
+  'bpz':(.01,2.5,250)
 
 }
 
@@ -226,8 +239,10 @@ gal_col_lookup = {
   'ra':'RA',
   'dec':'DEC',
   'zp':'ZREDMAGIC',
-  'l':'ZLUM',
-  'error':'REDMAGICFLAG'
+  'error':'REDMAGICFLAG',
+  'e1':'e1',
+  'e2':'e2',
+  'lum':'ZLUM'
 
 }
 
