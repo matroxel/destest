@@ -233,7 +233,7 @@ class linear_methods(object):
 
 
   @staticmethod
-  def bin_means(x,cat,mask=None,mock=False,log=False,noe=False):
+  def bin_means(x,cat,mask=None,mock=False,log=False,noe=False,y=None):
     """
     For array x in CatalogStore object cat, calculate the means of shear in equal bins of x. Returns errors in both x and y directions.
     """
@@ -249,8 +249,14 @@ class linear_methods(object):
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
     if noe:
-      return x_mean,x_err
-    e1_mean,e1_err,e2_mean,e2_err=linear_methods.binned_mean_e(xbin,cat,mask,mock=mock)
+      if y is None:
+        return x_mean,x_err
+      else:
+        e1_mean,e1_err=linear_methods.binned_mean_x(xbin,y,cat,mask,mock=mock)
+        e2_mean=np.zeros(len(e1_mean))
+        e2_err=np.zeros(len(e1_mean))
+    else:
+      e1_mean,e1_err,e2_mean,e2_err=linear_methods.binned_mean_e(xbin,cat,mask,mock=mock)
 
     return x_mean,x_err,e1_mean,e1_err,e2_mean,e2_err
 
@@ -320,6 +326,32 @@ class hist(object):
         x1=np.log10(x1)
 
       fig.plot_methods.plot_hist(x1,name=cat.name,label=x)
+
+    return
+
+  @staticmethod
+  def hist_comp_tests(vals,cat,cat2,mask=None,mask2=None):
+    """
+    Loop over array vals, containing stored catalog column variables in CatalogStore object cat. Optionally mask the elements used.
+
+    Produces plots of 1D histograms for each element in vals.
+    """
+
+    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    mask2=catalog.CatalogMethods.check_mask(cat2.coadd,mask2)
+
+    for x in vals:
+
+      print 'hist',x
+
+      x1=getattr(cat,x)[mask]
+      if config.log_val.get(x,False):
+        x1=np.log10(x1)
+      x2=getattr(cat2,x)[mask2]
+      if config.log_val.get(x,False):
+        x2=np.log10(x2)
+
+      fig.plot_methods.plot_comp_hist(x1,x2,name=cat.name,name2=cat2.name,label=x)
 
     return
 
