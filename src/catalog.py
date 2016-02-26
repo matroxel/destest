@@ -643,6 +643,23 @@ class CatalogMethods(object):
 
     return mask1,sort1,mask2,sort2
 
+
+  @staticmethod
+  def sort2(x,y):
+    """
+    Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
+
+    """
+
+    u_idx_x = np.argsort(x)
+    u_idx_y = np.argsort(y)
+    i_xy = np.intersect1d(x, y, assume_unique=True)
+    i_idx_x = u_idx_x[x[u_idx_x].searchsorted(i_xy)]
+    i_idx_y = u_idx_y[y[u_idx_y].searchsorted(i_xy)]
+
+    return i_idx_x, i_idx_y    
+
+
   @staticmethod
   def get_new_nbcw(cat,file,w=True,prune=False):
     """
