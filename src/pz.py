@@ -5,13 +5,14 @@ import catalog
 import lin
 import fig
 import txt
-import cosmosis
+import cosmo
+import config
 
 
 class pz_methods(object):
 
   @staticmethod
-  def build_nofz_bins(pz0,pzref=None,pzlow=0.0,pzhigh=2.5,cat=None,bins=3,split='mean',nztype='pdf',pzmask=None,catmask=None,spec=False,boot=None):
+  def build_nofz_bins(pz0,label=None,pzref=None,pzlow=0.0,pzhigh=2.5,cat=None,bins=3,split='mean',nztype='pdf',pzmask=None,catmask=None,spec=False,boot=None):
     """
     Build n(z) for a PZStore object that contains full pdf information. Optionally match to a catalog. Masking for both pz's and catalog optional. split determines which point estimate is used for binning. bins is number of tomographic bins. pzlow, pzhigh are bounds of reliable photo-zs. Stores result in PZStore object.
     """
@@ -76,23 +77,41 @@ class pz_methods(object):
 
     nofz,specnofz=pz_methods.nofz_bins(pz0,pointz,pzdist,mask0,w,pointw,bins=bins,pzmask=pzmask,spec=spec,point=point)
 
-    pz0.pz=nofz
+    if label is None:
+      pz0.pz=nofz
+    else:
+      setattr(pz0,'pz'+label,nofz)
     if spec:
-      pz0.spec=specnofz
+      if label is None:
+        pz0.spec=specnofz
+      else:
+        setattr(pz0,'spec'+label,specnofz)
 
     if boot is not None:
       pz0.boot=boot
-      pz0.bootspec=np.zeros((pz0.tomo,pz0.boot,pz0.bins))
-      pz0.bootpz=np.zeros((pz0.tomo,pz0.boot,pz0.bins))
+      if label is None:
+        pz0.bootspec=np.zeros((pz0.tomo,pz0.boot,pz0.bins))
+        pz0.bootpz=np.zeros((pz0.tomo,pz0.boot,pz0.bins))        
+      else:
+        setattr(pz0,'bootspec'+label,np.zeros((pz0.tomo,pz0.boot,pz0.bins)))
+        setattr(pz0,'bootpz'+label,np.zeros((pz0.tomo,pz0.boot,pz0.bins)))
+
       for i in xrange(boot):
         bootmask=np.zeros(len(mask0),dtype=int)
         bootmask[np.random.choice(np.where(mask0)[0],np.sum(mask0),replace=True)]=1
 
-        nofz,specnofz=pz_methods.nofz_bins(pz0,pointz,pzdist,bootmask.astype(bool),w,bins=bins,pzmask=pzmask,spec=spec,point=point)
+        nofz,specnofz=pz_methods.nofz_bins(pz0,pointz,pzdist,bootmask.astype(bool),w,pointw,bins=bins,pzmask=pzmask,spec=spec,point=point)
 
-        pz0.bootpz[:,i,:]=nofz
+        if label is None:
+          pz0.bootpz=nofz
+        else:
+          getattr(pz0,'bootpz'+label)[:,i,:]=nofz
+
         if spec:
-          pz0.bootspec[:,i,:]=specnofz
+          if label is None:
+            pz0.bootspec=specnofz
+          else:
+            getattr(pz0,'bootspec'+label)[:,i,:]=specnofz
 
     return
 
@@ -168,68 +187,74 @@ class pz_methods(object):
 class pz_spec_validation(object):
 
   @staticmethod
-  def calc_bootstrap(pz,test,dir,tomobins,notomo=False):
+  def calc_bootstrap(pz,test,hdu):
     """
     Calculate bootstrap for correlation functions in spec validation tests.
     """
 
-    ratio=np.zeros((tomobins,pz.boot))
-    var=np.zeros((tomobins))
+    import math
+    import fitsio as fio
 
-    if notomo:
-      data0=np.loadtxt(dir+test+'/out/sim_data_notomo_spec_'+pz.name+'/data.txt')[2:]
-    else:
-      data0=np.loadtxt(dir+test+'/out/sim_data_spec_'+pz.name+'/data.txt')[:,2:]
+    spec=fio.FITS(config.pztestdir+test+'/out/spec_'+pz.name+'.fits.gz')[hdu].read()
+    bins=np.vstack((spec['BIN1'],spec['BIN2'])).T[np.arange(0,len(spec),len(np.unique(spec['ANG'])))]
 
-    for i in xrange(pz.boot):
-      if notomo:
-        data=np.loadtxt(dir+test+'/out/sim_data_notomo_'+pz.name+'_'+str(i)+'/data.txt')[2:]
-      else:
-        data=np.loadtxt(dir+test+'/out/sim_data_'+pz.name+'_'+str(i)+'/data.txt')[:,2:]
+    ratio=np.zeros((pz.boot,len(bins)+1))
+    var=np.zeros((len(bins)+1))
+    for i in range(pz.boot):
+      spec=fio.FITS(config.pztestdir+test+'/out/spec_'+pz.name+'_'+str(i)+'.fits.gz')[hdu].read()
+      pza=fio.FITS(config.pztestdir+test+'/out/'+pz.name+'_'+str(i)+'.fits.gz')[hdu].read()
 
-      for bin in range(tomobins):
-        if notomo:
-          if bin>0:
-            continue
-          ratio[bin,i]=np.mean((data-data0)/data0)
-        else:
-          ratio[bin,i]=np.mean((data[bin,:]-data0[bin,:])/data0[bin,:])
+      spec_notomo=fio.FITS(config.pztestdir+test+'/out/spec_notomo_'+pz.name+'_'+str(i)+'.fits.gz')[hdu].read()
+      pz_notomo=fio.FITS(config.pztestdir+test+'/out/notomo_'+pz.name+'_'+str(i)+'.fits.gz')[hdu].read()
+   
+      ratio[i,0]=np.mean((pz_notomo['VALUE']-spec_notomo['VALUE'])/spec_notomo['VALUE'])
 
-    for bin in range(tomobins):
-      if notomo&(bin>0):
-        continue
-      var[bin]=np.sum((ratio[bin,:]-np.mean(ratio[bin,:]))*(ratio[bin,:]-np.mean(ratio[bin,:])))/(pz.boot-1.)
+      for k in range(len(bins)):
+        mask=(spec['BIN1']==bins[k,0])&(spec['BIN2']==bins[k,1])
+        ratio[i,k+1]=np.mean((pza['VALUE'][mask]-spec['VALUE'][mask])/spec['VALUE'][mask])
 
-    if notomo:
-      return np.sqrt(var[0])
-
-    print var
+    for k in range(len(bins)+1):
+      var[k]=np.sum((ratio[:,k]-np.mean(ratio[:,k]))*(ratio[:,k]-np.mean(ratio[:,k])))/(pz.boot-1.)
 
     return np.sqrt(var)
 
   @staticmethod
-  def calc_bootstrap_sig8(pz,test,dir,param,notomo=False):
+  def calc_bootstrap_param(pz,test,param,testtype,notomo=False):
     """
     Calculate bootstrap for cosmological parameters in spec validation tests.
     """
 
-    from astropy.table import Table
+    if notomo:
+      notomo='notomo_'
+    else:
+      notomo=''
 
-    mean=[]
-    for i in xrange(50):
-      if notomo:
-        mean0=Table.read(dir+test+'/out/sim_data_notomo_'+pz.name+'_'+str(i)+'/means.txt', format='ascii')
-      else:
-        mean0=Table.read(dir+test+'/out/sim_data_'+pz.name+'_'+str(i)+'/means.txt', format='ascii')
+    boot0=np.zeros(pz.boot)
+    for i in xrange(pz.boot):
+      param0=np.genfromtxt(config.pztestdir+test+'/out/'+testtype+'_spec_'+notomo+pz.name+'_'+str(i)+'_'+notomo+pz.name+'_'+str(i)+'_means.txt',names=True,dtype=None)
+      boot0[i]=param0['mean'][param0['parameter']==param]
 
-      for row in mean0:
-        if param in row['parameter']:
-          mean=np.append(mean,row['mean'])
-    print mean
+    var=np.sum((boot0-np.mean(boot0))*(boot0-np.mean(boot0)))/(pz.boot-1.)
 
-    var=np.sum((mean-np.mean(mean))*(mean-np.mean(mean)))/(pz.boot-1.)
+    return np.sqrt(var)
 
-    print var
+  @staticmethod
+  def calc_bao_pos(pz,test,param,testtype,notomo=False):
+    """
+    Calculates BAO position via code Ashley.
+    """
+
+    if notomo:
+      notomo='notomo_'
+    else:
+      notomo=''
+
+    boot0=np.zeros(pz.boot)
+    for i in xrange(pz.boot):
+      param0=np.genfromtxt(config.pztestdir+test+'/out/'+testtype+'_spec_'+notomo+pz.name+'_'+str(i)+'_'+notomo+pz.name+'_'+str(i)+'_means.txt',names=True,dtype=None)
+      boot0[i]=param0['mean'][param0['parameter']==param]
+
+    var=np.sum((boot0-np.mean(boot0))*(boot0-np.mean(boot0)))/(pz.boot-1.)
 
     return np.sqrt(var)
 
@@ -282,19 +307,19 @@ class pz_spec_validation(object):
 
     pz_methods.build_nofz_bins(pz0,pzlow=0.0,pzhigh=5.,cat=None,bins=3,split='mean',pzmask=None,catmask=None,spec=False,point=False)
     pz0.spec=np.copy(pz0.pz)
-    cosmosis.make.nofz(pz0,'test_zbins_3bin_251',zmax=5.3)
-    cosmosis.make.nofz(pz0,'test_zbins_3bin_200',zmax=5.01,zbins=200)
-    cosmosis.make.nofz(pz0,'test_zbins_3bin_150',zmax=5.01,zbins=150)
-    cosmosis.make.nofz(pz0,'test_zbins_3bin_100',zmax=5.01,zbins=100)
-    cosmosis.make.nofz(pz0,'test_zbins_3bin_50',zmax=5.01,zbins=50)
+    cosmo.make.nofz(pz0,'test_zbins_3bin_251',zmax=5.3)
+    cosmo.make.nofz(pz0,'test_zbins_3bin_200',zmax=5.01,zbins=200)
+    cosmo.make.nofz(pz0,'test_zbins_3bin_150',zmax=5.01,zbins=150)
+    cosmo.make.nofz(pz0,'test_zbins_3bin_100',zmax=5.01,zbins=100)
+    cosmo.make.nofz(pz0,'test_zbins_3bin_50',zmax=5.01,zbins=50)
 
     pz_methods.build_nofz_bins(pz0,pzlow=0.0,pzhigh=5.,cat=None,bins=6,split='mean',pzmask=None,catmask=None,spec=False,point=False)
     pz0.spec=np.copy(pz0.pz)
-    cosmosis.make.nofz(pz0,'test_zbins_6bin_251',zmax=5.3)
-    cosmosis.make.nofz(pz0,'test_zbins_6bin_200',zmax=5.01,zbins=200)
-    cosmosis.make.nofz(pz0,'test_zbins_6bin_150',zmax=5.01,zbins=150)
-    cosmosis.make.nofz(pz0,'test_zbins_6bin_100',zmax=5.01,zbins=100)
-    cosmosis.make.nofz(pz0,'test_zbins_6bin_50',zmax=5.01,zbins=50)
+    cosmo.make.nofz(pz0,'test_zbins_6bin_251',zmax=5.3)
+    cosmo.make.nofz(pz0,'test_zbins_6bin_200',zmax=5.01,zbins=200)
+    cosmo.make.nofz(pz0,'test_zbins_6bin_150',zmax=5.01,zbins=150)
+    cosmo.make.nofz(pz0,'test_zbins_6bin_100',zmax=5.01,zbins=100)
+    cosmo.make.nofz(pz0,'test_zbins_6bin_50',zmax=5.01,zbins=50)
 
     return
 
@@ -304,21 +329,21 @@ class pz_spec_validation(object):
 
     pz_methods.build_nofz_bins(pz0,pzlow=0.0,pzhigh=5.,cat=None,bins=3,split='mean',pzmask=None,catmask=None,spec=False,point=False)
     pz0.spec=np.copy(pz0.pz)
-    cosmosis.make.nofz(pz0,'test_zmax_3bin_50',zmax=5.3)
-    cosmosis.make.nofz(pz0,'test_zmax_3bin_30',zmax=3.)
-    cosmosis.make.nofz(pz0,'test_zmax_3bin_25',zmax=2.5)
-    cosmosis.make.nofz(pz0,'test_zmax_3bin_20',zmax=2.)
-    cosmosis.make.nofz(pz0,'test_zmax_3bin_175',zmax=1.75)
-    cosmosis.make.nofz(pz0,'test_zmax_3bin_15',zmax=1.5)
+    cosmo.make.nofz(pz0,'test_zmax_3bin_50',zmax=5.3)
+    cosmo.make.nofz(pz0,'test_zmax_3bin_30',zmax=3.)
+    cosmo.make.nofz(pz0,'test_zmax_3bin_25',zmax=2.5)
+    cosmo.make.nofz(pz0,'test_zmax_3bin_20',zmax=2.)
+    cosmo.make.nofz(pz0,'test_zmax_3bin_175',zmax=1.75)
+    cosmo.make.nofz(pz0,'test_zmax_3bin_15',zmax=1.5)
 
     pz_methods.build_nofz_bins(pz0,pzlow=0.0,pzhigh=5.,cat=None,bins=6,split='mean',pzmask=None,catmask=None,spec=False,point=False)
     pz0.spec=np.copy(pz0.pz)
-    cosmosis.make.nofz(pz0,'test_zmax_6bin_50',zmax=5.3)
-    cosmosis.make.nofz(pz0,'test_zmax_6bin_30',zmax=3.)
-    cosmosis.make.nofz(pz0,'test_zmax_6bin_25',zmax=2.5)
-    cosmosis.make.nofz(pz0,'test_zmax_6bin_20',zmax=2.)
-    cosmosis.make.nofz(pz0,'test_zmax_6bin_175',zmax=1.75)
-    cosmosis.make.nofz(pz0,'test_zmax_6bin_15',zmax=1.5)
+    cosmo.make.nofz(pz0,'test_zmax_6bin_50',zmax=5.3)
+    cosmo.make.nofz(pz0,'test_zmax_6bin_30',zmax=3.)
+    cosmo.make.nofz(pz0,'test_zmax_6bin_25',zmax=2.5)
+    cosmo.make.nofz(pz0,'test_zmax_6bin_20',zmax=2.)
+    cosmo.make.nofz(pz0,'test_zmax_6bin_175',zmax=1.75)
+    cosmo.make.nofz(pz0,'test_zmax_6bin_15',zmax=1.5)
 
     return
 
@@ -345,7 +370,7 @@ class pz_spec_validation(object):
 
     import cosmology
 
-    c0=cosmology.Cosmo(H0=H0,omega_m=omegam)
+    c0=cosmology.Cosmo(H0=100,omega_m=omegam)
 
     zs,zl=np.meshgrid(z_s,z_l)
 

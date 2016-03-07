@@ -39,6 +39,24 @@ class plot_methods(object):
     return
 
   @staticmethod
+  def plot_comp_hist(x1,x2,bins=50,name='',name2='',label=''):
+
+    plt.figure()
+    plt.hist(x1,bins=bins,alpha=.5,label=name,normed=True)
+    plt.hist(x2,bins=bins,alpha=.5,label=name2,normed=True)
+    plt.ylabel(r'$n$')
+    s=config.lbl.get(label,None)
+    if config.log_val.get(label,None):
+      s='log '+s
+    plt.xlabel(s)
+    plt.minorticks_on()
+    plt.legend(loc='upper right',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
+    plt.savefig('plots/hist/hist_'+name+'_'+name2+'_'+label+'.png', bbox_inches='tight')
+    plt.close()
+
+    return
+
+  @staticmethod
   def plot_2D_hist(x1,y1,bins=500,xname='',yname='',xlabel='',ylabel='',xtile='',ytile=''):
 
     plt.figure()
@@ -228,25 +246,39 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False,label=''):
+  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False,label='',e=True,val2=None):
 
     plt.figure()
+    if e:
+      l1=r'$\langle e_1 \rangle$'
+      l2=r'$\langle e_2 \rangle$'
+    else:
+      l1=r'$\langle e_1 \rangle$'      
     plt.errorbar(x,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
-    plt.errorbar(x+(x[1]-x[0])/5.,e2,yerr=e2err,marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
-    plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
     plt.errorbar(x,m1*x+b1,marker='',linestyle='-',color='r')
-    plt.errorbar(x,m2*x+b2,marker='',linestyle='-',color='b')
-    plt.axhline(.004,color='k')
-    plt.axhline(-.004,color='k')
-    plt.ylabel(r'$\langle e \rangle$')
+    if e:
+      plt.errorbar(x+(x[1]-x[0])/5.,e2,yerr=e2err,marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
+      plt.errorbar(x,m2*x+b2,marker='',linestyle='-',color='b')
+      plt.ylabel(r'$\langle e \rangle$')
+    else:
+      plt.ylabel(r'$\langle $'+config.lbl.get(val2,None)+r'$ \rangle$')
+    plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
+    if e:
+      plt.axhline(.004,color='k')
+      plt.axhline(-.004,color='k')
     if config.log_val.get(val,None):
       plt.xlabel('log '+config.lbl.get(val,None))
     else:
       plt.xlabel(config.lbl.get(val,None))
-    y1=np.min(np.minimum(e1,e2))   
-    y2=np.max(np.maximum(e1,e2))
-    plt.ylim((np.min([y1-(y2-y1)/10.,-.005]),np.max([y2+(y2-y1)/10.,.005])))
+    y1=np.min(np.minimum(e1,e2))
+    if e:   
+      y2=np.max(np.maximum(e1,e2))
+    else:
+      y2=y1
+    # plt.ylim((np.min([y1-(y2-y1)/10.,-.005]),np.max([y2+(y2-y1)/10.,.005])))
     plt.minorticks_on()
+    if val2 is not None:
+      val+='-'+val2
     plt.savefig('plots/split/lin_split_'+cat.name+'_'+val+'_bs-'+str(cat.bs)+label+'.png', bbox_inches='tight')
     plt.close()
 
@@ -482,233 +514,149 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_pz_sig8(test,pz0,label='',boot=False,ylim=0.3,noparam=True):
+  def plot_pz_corr(test,pz0,label='',boot=False,ylim=0.3):
 
     from astropy.table import Table
     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    import fitsio as fio
+    import math
+
+    def get_cov(file,ihdu):
+      cov=fio.FITS(file)['COVMAT']
+      a=cov.read_header()['STRT_'+str(ihdu)]
+      try:
+        b=cov.read_header()['STRT_'+str(ihdu+1)]
+      except ValueError:
+        b=len(cov.read())
+      cov=cov.read()[a:b,a:b]
+      
+      return cov
 
     colors=['k','r','g','b','c','y']
     col=['r','g','b','c','y','b']
 
-    fig, ax = plt.subplots()
-    for i,pz1 in enumerate(pz0):
+    for j,hdu in enumerate(['shear_cl','shear_galaxy_cl','galaxy_cl']):
 
-      theta=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_'+pz1.name+'/ell.txt')
+      fig, ax = plt.subplots()
+      for i,pz1 in enumerate(pz0):
 
-      cov=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_'+pz1.name+'/covmat.txt')
-      cov=np.sqrt(cov[4:])/np.sqrt(len(theta))
-      xi00=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_'+pz1.name+'/data.txt')[2:]
-      sig_notomo=np.mean(cov/xi00)
+        spec=fio.FITS(config.pztestdir+test+'/out/spec_'+pz1.name+'.fits.gz')[hdu].read()
+        pza=fio.FITS(config.pztestdir+test+'/out/'+pz1.name+'.fits.gz')[hdu].read()
 
-      xi00=np.loadtxt(config.pztestdir+test+'/out/sim_data_spec_'+pz1.name+'/data.txt')[:,2:]
-      tomobins=len(xi00)
-      cov=np.loadtxt(config.pztestdir+test+'/out/sim_data_spec_'+pz1.name+'/covmat.txt')
-      tmp=cov[(cov[:,2]==cov[:,0])&(cov[:,3]==cov[:,1])]
-      cov=np.zeros((tomobins,len(theta)))
-      for k in range(tomobins):
-        cov[k,:]=np.sqrt(tmp[k,4:])/np.sqrt(len(theta))
-      sig_tomo=np.mean(cov/xi00,axis=1)
+        spec_notomo=fio.FITS(config.pztestdir+test+'/out/spec_notomo_'+pz1.name+'.fits.gz')[hdu].read()
+        pz_notomo=fio.FITS(config.pztestdir+test+'/out/notomo_'+pz1.name+'.fits.gz')[hdu].read()
 
-      ratio=np.zeros(tomobins+1)
-      sig=np.zeros(tomobins+1)
-      data=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_'+pz1.name+'/data.txt')[2:]
-      data0=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_'+pz1.name+'/data.txt')[2:]
-      ratio[0]=np.mean((data[:]-data0[:])/data0[:])
-      if boot:
-        sig[0]=pz.pz_spec_validation.calc_bootstrap(pz1,test,config.pztestdir,tomobins,notomo=True)
-      else:
-        sig[0]=0. 
+        cov=get_cov(config.pztestdir+test+'/out/spec_'+pz1.name+'.fits.gz',j)
+        cov=np.sqrt(cov)/np.sqrt(len(np.unique(spec['ANG'])))
 
-      data=np.loadtxt(config.pztestdir+test+'/out/sim_data_'+pz1.name+'/data.txt')[:,2:]
-      data0=np.loadtxt(config.pztestdir+test+'/out/sim_data_spec_'+pz1.name+'/data.txt')[:,2:]
-      for bin in range(tomobins):
-        ratio[bin+1]=np.mean((data[bin,:]-data0[bin,:])/data0[bin,:])
-      if boot:
-        sig[1:]=pz.pz_spec_validation.calc_bootstrap(pz1,test,config.pztestdir,tomobins,notomo=False)
-      else:
-        sig[1:]=0.
+        notomocov=get_cov(config.pztestdir+test+'/out/spec_notomo_'+pz1.name+'.fits.gz',j)
+        notomocov=np.sqrt(notomocov)/np.sqrt(len(np.unique(spec_notomo['ANG'])))
 
-      plt.errorbar(np.arange(tomobins+1),ratio,yerr=sig,marker='o',linestyle='',color=col[i],label=pz1.name)
+        bins=np.vstack((spec['BIN1'],spec['BIN2'])).T[np.arange(0,len(spec),len(np.unique(spec['ANG'])))]
+        ratio=np.zeros((len(bins)+1))
+        ratio2=np.zeros((len(bins)+1))
+        ratio3=np.zeros((len(bins)+1))
+        sig0=np.zeros((len(bins)+1))
 
-    plt.fill_between(0-.4+.8*np.arange(100)/100.,-sig_notomo*np.ones(100),sig_notomo*np.ones(100),interpolate=True,color='k',alpha=0.2)
-    for i in range(tomobins):
-      plt.fill_between(i+1-.4+.8*np.arange(100)/100.,-sig_tomo[i]*np.ones(100),sig_tomo[i]*np.ones(100),interpolate=True,color='k',alpha=0.2)
-    plt.plot(np.arange(tomobins+3)-1,np.zeros((tomobins+3)), marker='', linestyle='-',color='k',label='')
-    ax.xaxis.set_major_locator(MultipleLocator(1.))
-    ax.yaxis.set_major_locator(MultipleLocator(ylim/3.))
-    plt.xticks(np.arange(tomobins+3)-1,np.append([' ','2D','11','21','22','31','32','33','41','42','43','44','51','52','53','54','55','61','62','63','64','65','66'][:tomobins+2],[' ']))
-    plt.ylim((-ylim,ylim))
-    plt.xlim((-1,tomobins+1))
-    plt.ylabel(r'$\Delta C_{\ell}/C_{\ell}(\textrm{spec})$')
-    plt.xlabel(r'Bin pairs')
+        print hdu,pz1.name,np.shape(notomocov),np.shape(spec_notomo['VALUE'])
 
-    props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
+        ratio[0]=np.mean((pz_notomo['VALUE']-spec_notomo['VALUE'])/spec_notomo['VALUE'])
+        ratio2[0]=np.max((pz_notomo['VALUE']-spec_notomo['VALUE'])/spec_notomo['VALUE'])
+        ratio3[0]=np.min((pz_notomo['VALUE']-spec_notomo['VALUE'])/spec_notomo['VALUE'])
+        sig0[0]=np.mean(np.diagonal(notomocov)/spec_notomo['VALUE'])
 
-    ax.text(0.82, 0.95, label, transform=ax.transAxes, fontsize=14,
-        verticalalignment='top', bbox=props)
+        for k in range(len(bins)):
+          mask=(spec['BIN1']==bins[k,0])&(spec['BIN2']==bins[k,1])
+          ratio[k+1]=np.mean((pza['VALUE'][mask]-spec['VALUE'][mask])/spec['VALUE'][mask])
+          ratio2[k+1]=np.max((pza['VALUE'][mask]-spec['VALUE'][mask])/spec['VALUE'][mask])
+          ratio3[k+1]=np.min((pza['VALUE'][mask]-spec['VALUE'][mask])/spec['VALUE'][mask])
+          sig0[k+1]=np.mean(cov[mask,mask]/spec['VALUE'][mask])
 
-    plt.legend(loc='upper left',ncol=2, frameon=True,prop={'size':12})
-    plt.savefig('plots/photoz/pz_xi_'+test+'.png',bbox_inches='tight')
-    plt.close()
-
-    if noparam:
-      return
-
-    param='sigma8'
-
-    lines=[]
-    for i,pz1 in enumerate(pz0):
-      if boot:
-        sig8_sig=pz.pz_spec_validation.calc_bootstrap_sig8(pz1,test,config.pztestdir,param,notomo=False)
-        print sig8_sig
-      else:
-        sig8_sig=0.
-
-      mean_notomo0 = Table.read(config.pztestdir+test+'/out/sim_data_notomo_'+pz1.name+'/means.txt', format='ascii')
-      mean0 = Table.read(config.pztestdir+test+'/out/sim_data_'+pz1.name+'/means.txt', format='ascii')
-      #print mean0
-      for row in mean0:
-        if param in row['parameter']:
-          print 'true'
-          mean=row['mean']
-          low=row['std_dev']
-          high=mean+row['std_dev']
-          print pz1.name,(mean-1.)/low
-      lines.append((pz1.name,mean,low,high,low,high,r'$\sigma_{8}$  Tomographic '+pz1.name))
-      for row in mean_notomo0:
-        if param in row['parameter']:
-          mean_notomo=row['mean']
-          low_notomo=row['std_dev']
-          high_notomo=mean_notomo+row['std_dev']
-      lines.append((pz1.name,mean_notomo,low_notomo,high_notomo,low_notomo,high_notomo,r'$\sigma_{8}$  2D '+pz1.name))
-    #print lines
-      
-    #From StackOverflow  thanks, Paul Ivanov
-    def rainbow_text(x,y,ls,lc,**kw):
-        """
-        Take a list of strings ``ls`` and colors ``lc`` and place them next to each
-        other, with text ls[i] being shown in color lc[i].
-
-        This example shows how to do both vertical and horizontal text, and will
-        pass all keyword arguments to plt.text, so you can set the font size,
-        family, etc.
-        """
-        from matplotlib.offsetbox import HPacker, TextArea, AnnotationBbox
-        
-        ax = pylab.gca()
-        texts = [TextArea(s,textprops=dict(color=c, family='serif')) for (s,c) in zip(ls,lc)]
-        txt = HPacker(children=texts, 
-                align="baseline", 
-                pad=0, sep=0) 
-
-        def txt_offset(*kl):
-          return ax.transData.transform_point((x, y))
-        txt.set_offset(txt_offset)
-
-        
-        ax.add_artist(txt)
-
-    bold_lines = [
-    "Fiducial DES-SV cosmic shear",
-    "CFHTLenS (H13) original conservative scales",
-    "Planck (TT+LowP)",
-    ]
-
-    def plot_set(lines, color, start):
-      col=['r','g','b','c','y','b']
-      n=len(lines)
-      yscale = 5.
-      y = np.arange(n)
-      x = [l[1] for l in lines]
-      e=np.zeros((2,n))
-      e95=np.zeros((2,n))
-      for i,l in enumerate(lines):
-        e[0,i] = l[1]-l[3]
-        e[1,i] = l[2]-l[1]
-        e95[0,i] = l[1]-l[5]
-        e95[1,i] = l[4]-l[1]
-
-      for i,l in enumerate(lines):
-        #print i,l
-        pylab.errorbar(l[1],(start-i)*yscale,xerr=l[2], fmt=col[i/2]+'.')
-
-      for i,line in enumerate(lines):
-        text = line[6]
-        if text in bold_lines:
-          weight = "bold"
-          print text, " bold"
+        if boot:
+          sig=pz.pz_spec_validation.calc_bootstrap(pz1,test,hdu)
         else:
-          weight = "normal"
-        if text.startswith("Planck") and text.endswith("DES-SV"):
-          text = [text[:-6], " "+text[-6:]]
-          colors = [color, 'b']
-          rainbow_text(0.95+0.02, (start-i)*yscale-0.5,text, colors, family='serif', weight=weight)
+          sig=0.
+
+        print hdu,pz1.name,ratio,ratio2,ratio3
+
+        plt.errorbar(np.arange(len(bins)+1),ratio,yerr=sig,marker='o',linestyle='',color=col[i],label=pz1.name)
+
+      binlabels=[' ','2D']
+      for i in range(len(bins)):
+        binlabels=np.append(binlabels,[str(bins[i,0])+str(bins[i,1])])
+      binlabels=np.append(binlabels,[' '])
+
+      plt.fill_between(0-.4+.8*np.arange(100)/100.,-sig0[0]*np.ones(100),sig0[0]*np.ones(100),interpolate=True,color='k',alpha=0.2)
+      for i in range(len(bins)):
+        plt.fill_between(i+1-.4+.8*np.arange(100)/100.,-sig0[i+1]*np.ones(100),sig0[i+1]*np.ones(100),interpolate=True,color='k',alpha=0.2)
+      plt.plot(np.arange(len(bins)+3)-1,np.zeros((len(bins)+3)), marker='', linestyle='-',color='k',label='')
+      ax.xaxis.set_major_locator(MultipleLocator(1.))
+      ax.yaxis.set_major_locator(MultipleLocator(ylim/3.))
+      plt.xticks(np.arange(len(bins)+3)-1,binlabels)
+      plt.ylim((-ylim,ylim))
+      plt.xlim((-1,len(bins)+1))
+      plt.ylabel(r'$\Delta C_{\ell}/C_{\ell}(\textrm{spec})$')
+      plt.xlabel(r'Bin pairs')
+
+      props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
+
+      ax.text(0.82, 0.95, label, transform=ax.transAxes, fontsize=14,
+          verticalalignment='top', bbox=props)
+
+      plt.legend(loc='upper left',ncol=2, frameon=True,prop={'size':12})
+      plt.savefig('plots/photoz/pz_'+hdu+'_'+test+'.png',bbox_inches='tight')
+      plt.close()
+
+    return
+
+  @staticmethod
+  def plot_pz_param(test,pz0,bins=3,testtype='wl',boot=False):
+
+    col=['r','g','b','c','y','b']
+
+    if testtype=='lss':
+      params=['ggl_bias_vals--b0','ggl_bias_vals--b1','ggl_bias_vals--b2','ggl_bias_vals--b3','ggl_bias_vals--b4','ggl_bias_vals--b5','ggl_bias_vals--b6']
+      name=['b0','b1','b2','b3','b4','b5','b6']
+      scaling=[0.7,1.,1.2]
+    elif testtype=='wl':
+      params=['cosmological_parameters--sigma8_input']
+      name=[r'$\sigma_{8}$']
+      scaling=[0.7,.8,1.]
+    elif testtype=='tcp':
+      params=['cosmological_parameters--sigma8_input']
+      name=[r'$\sigma_{8}$']
+      scaling=[0.5,.8,1.1]
+
+    for j,param in enumerate(params[:bins]):
+
+      plt.figure(figsize=(12,12))
+      for i,pz1 in enumerate(pz0):
+        notomo=np.genfromtxt(config.pztestdir+test+'/out/'+testtype+'_spec_notomo_'+pz1.name+'_notomo_'+pz1.name+'_means.txt',names=True,dtype=None)
+        tomo=np.genfromtxt(config.pztestdir+test+'/out/'+testtype+'_spec_'+pz1.name+'_'+pz1.name+'_means.txt',names=True,dtype=None)
+
+        if boot:
+          sig=pz.pz_spec_validation.calc_bootstrap_param(pz1,test,param,testtype)
+          if j==0:
+            sig0=pz.pz_spec_validation.calc_bootstrap_param(pz1,test,param,testtype,notomo=True)
         else:
-          pylab.text(1.15+0.005, (start-i)*yscale-0.5, text, color=col[i/2], family='serif', weight=weight)
-        #pylab.plot([line[3]+0.01, 1.04], [(start-i)*yscale, (start-i)*yscale], ':', color='darkgray')
+          sig=0.
+          sig0=0.
 
+        plt.axvspan(scaling[1], scaling[1],alpha=0.2, color='gray')
+        plt.errorbar(tomo['mean'][tomo['parameter']==param],i*2.,xerr=tomo['std_dev'][tomo['parameter']==param], fmt=col[i]+'.')
+        plt.errorbar(scaling[1],i*2.,xerr=sig, fmt='k.')
+        plt.text(scaling[2], i*2., name[j]+' -- Tomographic '+pz1.name, color=col[i], family='serif', weight='bold')
+        plt.errorbar(tomo['mean'][tomo['parameter']==param],i*2.+1,xerr=tomo['std_dev'][tomo['parameter']==param], fmt=col[i]+'.')
+        plt.text(scaling[2], i*2.+1, name[j]+'  -- 2D '+pz1.name, color=col[i], family='serif', weight='bold')
+        plt.errorbar(scaling[1],i*2.+1,xerr=sig0, fmt='k.')
+      plt.ylim((-1,len(pz0)*2+1))
+      plt.xlim((scaling[0], scaling[2]+.2))
+      plt.xlabel(name[j])
+      plt.tick_params(axis='y',which='both',left='off',right='off',labelleft='off')
+      plt.savefig('plots/photoz/pz_param_'+param+'_'+test+'.png',bbox_inches='tight')
+      plt.close()
 
-    pylab.figure(figsize=(12,12))
-
-    pylab.axvspan(1.-sig8_sig, 1.+sig8_sig,alpha=0.2, color='gray')
-    plot_set(lines, 'b', len(lines))
-    pylab.ylim(-2, 52)
-    pylab.xlim(0.85, 1.25)
-
-
-    pylab.tick_params(
-        axis='y',          # changes apply to the x-axis
-        which='both',      # both major and minor ticks are affected
-        left='off',      # ticks along the bottom edge are off
-        right='off',         # ticks along the top edge are off
-        labelleft='off' # labels along the bottom edge are off
-    )
-
-    pylab.tick_params(
-        axis='x',          # changes apply to the x-axis
-        which='major',      # both major and minor ticks are affected
-        bottom='on',      # ticks along the bottom edge are off
-        top='on',         # ticks along the top edge are off
-        length=10,
-        labelsize=20,
-    )
-
-    pylab.tick_params(
-        axis='x',          # changes apply to the x-axis
-        which='minor',      # both major and minor ticks are affected
-        bottom='on',      # ticks along the bottom edge are off
-        top='on',         # ticks along the top edge are off
-        length=5,
-    )
-    a = pylab.gca()
-    fontProperties = {'family':'serif', 'size':20}
-    a.set_xticklabels(a.get_xticks(), fontProperties)
-
-
-    pylab.xlabel("$\sigma_8$", fontsize=20)
-    pylab.savefig('plots/photoz/pz_sig8_'+test+'.png')
-    pylab.close()
-
-
-    # print 'tomo'
-
-    # np.set_printoptions(precision=2)
-    # for i in xrange(4):
-    #   for j in xrange(4):
-    #     if j==0:
-    #       print '\\'+SVA1PZPaper.get_pz_name(i+1,test).lower()+' & ',
-    #     if i==j:
-    #       print '- & ',
-    #     else:
-    #       print str(np.around(np.log(sum0a[i]/sum0a[j]),decimals=2))+' ('+str(np.around(np.log(sum0b[i]/sum0b[j]),decimals=2))+') & ',
-
-    #   print ''
-
-    #   print ''
-
-    # np.set_printoptions(edgeitems=3,infstr='inf',linewidth=75, nanstr='nan', precision=8,suppress=False, threshold=1000, formatter=None)
-
-    return 
+    return
 
   @staticmethod
   def plot_nofz(pz0,test,spec=True):
@@ -742,43 +690,52 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_nofz_comp_pz(pzlist,label='',spec=True,notomo=False):
+  def plot_nofz_comp_pz(pzlist,pztypes=[''],label='',spec=True,notomo=False):
 
     col=['k','r','g','b','c','r','g']
 
-    plt.figure(figsize=(8,16))
-    for i in xrange(len(pzlist[0].pz)):
-      if notomo&(i>0):
-        continue
-      ax=plt.subplot(len(pzlist[0].pz),1,i+1)
-      for pz0i,pz0 in enumerate(pzlist):
-        if spec:
-          plt.plot(pz0.bin,pz0.pz[i,:],color=col[pz0i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label=pz0.name)
-          plt.axvline(x=np.average(pz0.bin,weights=pz0.pz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i+1])
+    plt.figure(figsize=(14,16))
+    for i in xrange(len(getattr(pzlist[0],'pz'+pztypes[0]))):
+      for j,pztype in enumerate(pztypes):
+        if notomo&(i>0):
+          continue
+        ax=plt.subplot(len(getattr(pzlist[0],'pz'+pztype)),len(pztypes),i*len(pztypes)+j+1)
+        for pz0i,pz0 in enumerate(pzlist):
+          pzz=getattr(pz0,'pz'+pztype)
           if pz0i==0:
-            plt.plot(pzlist[0].bin,pzlist[0].spec[i,:],color=col[0],linestyle=':',linewidth=2.,drawstyle='steps-mid',label='')
-            plt.axvline(x=np.average(pz0.bin,weights=pzlist[0].spec[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[0])
+            specz=getattr(pz0,'spec'+pztype)
+          if spec:
+            plt.plot(pz0.bin,pzz[i,:],color=col[pz0i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label=pz0.name)
+            plt.axvline(x=np.average(pz0.bin,weights=pzz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i+1])
+            if pz0i==0:
+              plt.plot(pzlist[0].bin,specz[i,:],color=col[0],linestyle=':',linewidth=2.,drawstyle='steps-mid',label='')
+              plt.axvline(x=np.average(pz0.bin,weights=specz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[0])
+          else:
+            plt.plot(pz0.bin,pzz[i,:],color=col[pz0i],linestyle='-',linewidth=1.,drawstyle='steps-mid',label=pz0.name)
+            plt.axvline(x=np.average(pz0.bin,weights=pz0.pz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i])          
+          print i,np.average(pz0.bin,weights=pzz[i,:])-np.average(pzlist[0].bin,weights=specz[0,:])
+        props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
+        if i==0:
+          ax.text(0.73, 0.95, 'Non-tomographic', transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
         else:
-          plt.plot(pz0.bin,pz0.pz[i,:],color=col[pz0i],linestyle='-',linewidth=1.,drawstyle='steps-mid',label=pz0.name)
-          plt.axvline(x=np.average(pz0.bin,weights=pz0.pz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i])          
-        print i,np.average(pz0.bin,weights=pz0.pz[i,:])-np.average(pzlist[0].bin,weights=pzlist[0].spec[0,:])
-      props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
-      if i==0:
-        ax.text(0.73, 0.95, 'Non-tomographic', transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
-      else:
-        ax.text(0.9, 0.95, 'Bin '+str(i), transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
-      plt.ylabel(r'$n(z)$')
-      ax.minorticks_on()
-      if i<len(pzlist[0].pz)-1:
-        ax.set_xticklabels([])
-      # plt.xscale('log')
-      plt.xlim((0,1.5))
-    plt.xlabel(r'$z$')
+          ax.text(0.9, 0.95, 'Bin '+str(i), transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+        if j==0:
+          plt.ylabel(r'$n(z)$')
+        ax.minorticks_on()
+        if i<len(getattr(pzlist[0],'pz'+pztype))-1:
+          ax.set_xticklabels([])
+        if j>0:
+          ax.set_yticklabels([])
+        # plt.xscale('log')
+        plt.xlim((0,1.5))
+        if i==0:
+          plt.title(pztype)
+      plt.xlabel(r'$z$')
     plt.legend(loc='upper left',ncol=2, frameon=True,prop={'size':12})
     plt.subplots_adjust(hspace=0,wspace=0)
     if label!='':
       label+='_'
-    plt.savefig('plots/photoz/pz_nofz_'+label+str(len(pzlist[0].pz)-1)+'_weight-'+str(pz0.wt)+'.png',bbox_inches='tight')
+    plt.savefig('plots/photoz/pz_nofz_'+label+str(len(getattr(pzlist[0],'pz'+pztype))-1)+'_weight-'+str(pz0.wt)+'.png',bbox_inches='tight')
     plt.close()
 
     return
@@ -790,7 +747,7 @@ class plot_methods(object):
     gs = gridspec.GridSpec(bins+1,1)
     plt.figure(figsize=(8,20))
 
-    col=['k','r','g','b','c','r','g']
+    col=['k','r','g','b','c','y']
 
     for ibin in xrange(bins+1):
       print ibin
@@ -850,7 +807,7 @@ class plot_methods(object):
     gs = gridspec.GridSpec(len(pz0)+1,1)
     plt.figure(figsize=(8,16))
 
-    col=['k','r','g','b','c','r','g']
+    col=['r','g','b','c','y']
 
     for ipz,pz1 in enumerate(pz0):
       ax1=plt.subplot(gs[ipz,0])
@@ -954,10 +911,27 @@ class plot_methods(object):
     col=['r','b','g','c']
     name=['gp','gx','ee','xx']
     for i in xrange(len(out)):
-      plt.errorbar(r[out[i]>0]*(1.+.2*i),out[i][out[i]>0],yerr=err[i][out[i]>0],color=col[i],linestyle='',marker='o',label=name[i])
-      plt.errorbar(r[out[i]<0]*(1.+.2*i),-out[i][out[i]<0],yerr=err[i][out[i]<0],color=col[i],linestyle='',marker='s',label='')
+      plt.errorbar(r[out[i]>0]*(1.+.2*i),out[i][out[i]>0]*np.sqrt(r[out[i]>0]),yerr=err[i][out[i]>0],color=col[i],linestyle='',marker='o',label=name[i])
+      plt.errorbar(r[out[i]<0]*(1.+.2*i),-out[i][out[i]<0]*np.sqrt(r[out[i]<0]),yerr=err[i][out[i]<0],color=col[i],linestyle='',marker='s',label='')
     plt.xscale('log')
     plt.yscale('log')
+    plt.legend(loc='upper right')
+    plt.xlabel('R [Mpc/h]')
+    plt.savefig('plots/IA_'+label+'.png', bbox_inches='tight')
+    plt.close()
+
+    return
+
+  @staticmethod
+  def plot_IA_lin(r,out,err,label):
+
+    col=['r','b','g','c']
+    name=['gp','gx','ee','xx']
+    for i in xrange(len(out)):
+      plt.errorbar(r*(1.+.2*i),-out[i]*np.sqrt(r),yerr=err[i]*np.sqrt(r),color=col[i],linestyle='',marker='o',label=name[i])
+    plt.errorbar(r*(1.+.2*i),np.zeros(len(r)),color='k',linestyle='-',marker='',label='')
+    plt.xscale('log')
+    plt.ylim((-5,5))
     plt.legend(loc='upper right')
     plt.xlabel('R [Mpc/h]')
     plt.savefig('plots/IA_'+label+'.png', bbox_inches='tight')

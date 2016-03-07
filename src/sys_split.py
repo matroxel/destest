@@ -28,9 +28,9 @@ class split(object):
 
       arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=split_methods.split_gals_lin_along(cat,x,mask=mask,log=config.log_val.get(x,None),plot=True)
       
-      txt.write_methods.write_append(x+'  '+str(arr1)+'  '+str(arr1err),cat,label='linear_splits',create=False)
-      txt.write_methods.write_append('e  '+str(e1)+'  '+str(e2),cat,label='linear_splits',create=False)
-      txt.write_methods.write_append('e err  '+str(e1err)+'  '+str(e2err),cat,label='linear_splits',create=False)
+      # txt.write_methods.write_append(x+'  '+str(arr1)+'  '+str(arr1err),cat,label='linear_splits',create=False)
+      # txt.write_methods.write_append('e  '+str(e1)+'  '+str(e2),cat,label='linear_splits',create=False)
+      # txt.write_methods.write_append('e err  '+str(e1err)+'  '+str(e2err),cat,label='linear_splits',create=False)
       txt.write_methods.write_append('slope  '+str(m1)+'  '+str(m2),cat,label='linear_splits',create=False)
       txt.write_methods.write_append('slope err  '+str(m1err)+'  '+str(m2err),cat,label='linear_splits',create=False)
       txt.write_methods.write_append('intercept  '+str(b1)+'  '+str(b2),cat,label='linear_splits',create=False)
@@ -138,7 +138,7 @@ class split_methods(object):
     return array
 
   @staticmethod
-  def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,label='',plot=False,fit=True):
+  def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,label='',plot=False,fit=True,e=True,val2=None):
     """
     Split catalog cat into cat.lbins equal (weighted) parts along val. Plots mean shear in bins and outputs slope and error information.
     """
@@ -146,14 +146,26 @@ class split_methods(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     array=getattr(cat,val)
-
+    if val2 is not None:
+      array2=getattr(cat,val2)
     if log:
       array=np.log10(array)
 
-    arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,mask=mask,mock=mock,log=log)
+    if e:
+      arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,mask=mask,mock=mock,log=log)
+    else:
+      print 'no e'
+      arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,mask=mask,mock=mock,log=log,noe=True,y=array2)
+
+    print 'binning done'
 
     if fit:
-      m1,m2,b1,b2,m1err,m2err,b1err,b2err=lin.fitting.sys_lin_fit(array,cat,mask=mask,log=False,noe=False)
+      m1,b1,m1err,b1err=lin.fitting.lin_fit(arr1,e1,e1err)
+      if e:
+        m2,b2,m2err,b2err=lin.fitting.lin_fit(arr1,e2,e2err)
+      else:
+        print 'no e'
+        m2,b2,m2err,b2err=0.,0.,0.,0.
     else:
       m1,m2,b1,b2,m1err,m2err,b1err,b2err=0.,0.,0.,0.,0.,0.,0.,0.
 
@@ -163,7 +175,10 @@ class split_methods(object):
     #   me1err,me2err,slp1err,slp2err,b1err,b2err=BCC_Methods.jk_iter_lin(array,cat,label,parallel=parallel)
 
     if plot:
-      fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label)
+      if e:
+        fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label,e=True,val2=None)
+      else:
+        fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label,e=False,val2=val2)
 
     return arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err
 

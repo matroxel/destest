@@ -12,7 +12,7 @@ wcsfile = '/share/des/disc2/y1/wcs/y1a1_wcs.fits.gz'
 spointsfile = 'y1a1_special_field_points.fits'
 y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
 svsysmapdir = '/share/des/sv/systematics_maps/'
-redmagicdir = '/share/des/disc2/y1/redmagicv6.4.4/'
+redmagicdir = '/share/des/disc2/y1/redmagicv6.4.11/'
 y1blacklist = '/share/des/disc2/y1/blacklist-y1.txt'
 coaddtiles = '/share/des/coadd_tiles.fits'
 tapebumps = '/home/troxel/destest/tape_bumps.fits'
@@ -107,7 +107,7 @@ info_name = {
 pz_binning = {
   
   'skynet':(.005,1.8,201),
-  'ada':(0.,2.49,250),
+  'ada':(0.025,2.475,50),
   'hwe':(0.,3.7037037037,741),
   'dnf':(.005,1.985,199),
   'bpz':(.01,2.5,250)
@@ -208,7 +208,9 @@ i3_col_lookup = {
   'z':'mag_auto_z',
   'pz':'desdm_zp',
   'gold_flag':'gold_flag',
-  'gold_mask':'gold_mask'
+  'gold_mask':'gold_mask',
+  'ee1':'intrinsic_e1',
+  'ee2':'intrinsic_e2'
 
 }
 
@@ -233,6 +235,16 @@ gold_col_lookup = {
 
 }
 
+buzzard_col_lookup = {
+  
+
+  'coadd':'ID',
+  'ra':'RA',
+  'dec':'DEC',
+  'e1':'EPSILON1',
+  'e2':'EPSILON2'
+
+}
 gal_col_lookup = {
 
   'coadd':'COADD_OBJECTS_ID',
@@ -242,6 +254,7 @@ gal_col_lookup = {
   'error':'REDMAGICFLAG',
   'e1':'e1',
   'e2':'e2',
+  'info':'info_flag',
   'lum':'ZLUM'
 
 }
@@ -319,6 +332,7 @@ lbl = {
   'e2':r'$e_2$',
   'psf1':r'PSF $e_1$',
   'psf2':r'PSF $e_2$',
+  'psfe':r'PSF $|e|$',
   'psffwhm':'PSF FWHM',
   'm':'m',
   'c1':r'$c_1$',
@@ -376,7 +390,10 @@ lbl = {
   'r':r'$r$ magauto',
   'i':r'$i$ magauto',
   'z':r'$z$ magauto',
-  'pz':r'$z$'
+  'pz':r'$z$',
+  'zp':r'$z$',
+  'zmean':r'$zmean$',
+  'zpeak':r'$zpeak$'
 
 }
 

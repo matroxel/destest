@@ -39,6 +39,8 @@ class CatalogStore(object):
         table=config.ng_col_lookup
       elif cattype=='gal':
         table=config.gal_col_lookup
+      elif cattype=='buzzard':
+        table=config.buzzard_col_lookup
       else:
         raise CatValError('No catalog type cattype specified.')
 
@@ -65,7 +67,7 @@ class CatalogStore(object):
         if catdir is None:
           catdir=catfile
         else:
-          catdir=catdir+'*fits*'
+          catdir=catdir+'*fit*'
 
         cols1=[table.get(x,None) for x in cols]
         for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)):
@@ -456,6 +458,10 @@ class CatalogMethods(object):
       if lenst==0:
         array=np.empty((maxrows), dtype=tmparray.dtype.descr)
 
+      if lenst+np.sum(mask)>maxrows:
+        fits.close()
+        return [array[col][:lenst] for i,col in enumerate(cols)]
+        
       array[lenst:lenst+np.sum(mask)]=tmparray[mask]
 
       lenst+=np.sum(mask)
