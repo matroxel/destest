@@ -206,17 +206,49 @@ i3_col_lookup = {
   'r':'mag_auto_r',
   'i':'mag_auto_i',
   'z':'mag_auto_z',
-  'pz':'desdm_zp',
+  'zp':'desdm_zp',
   'gold_flag':'gold_flag',
   'gold_mask':'gold_mask',
   'ee1':'intrinsic_e1',
-  'ee2':'intrinsic_e2'
+  'ee2':'intrinsic_e2',
+  'g1':'true_g1',
+  'g2':'true_g2',
+  'cosid':'cosmos_ident',
+  'czp':'cosmos_photoz',
+  'time':'time'
+
+}
+
+truth_col_lookup = {
+
+  'coadd':'DES_id',
+  'cid':'cosmos_ident',
+  'zp':'cosmos_photoz',
+  'info':'flags',
+  'nflag':'neg_pixel_flag',
+  'pflag':'psf_flag',
+  'e1':'true_g1',
+  'e2':'true_g2',
+  'ee1':'intrinsic_e1',
+  'ee2':'intrinsic_e2',
+  'hlr':'hlr',
+  'ra':'ra',
+  'dec':'dec',
+  'r':'r_mag',
+  'flux':'flux',
+  'nexp':'nexp',
+  'psf1':'mean_psf_e1',
+  'psf2':'mean_psf_e2',
+  'psffwhm':'mean_psf_fwhm',
+  'wcs1':'mean_wcs_e1',
+  'wcs2':'mean_wcs_e2',
+  'wcss':'wcs_scale',
+  'wcst':'wcs_theta'
 
 }
 
 
-gold_col_lookup = {
-  
+gold_col_lookup = {  
 
   'coadd':True,
   'ra':True,
@@ -242,7 +274,8 @@ buzzard_col_lookup = {
   'ra':'RA',
   'dec':'DEC',
   'e1':'EPSILON1',
-  'e2':'EPSILON2'
+  'e2':'EPSILON2',
+  'zp':'ANNZ'
 
 }
 gal_col_lookup = {
@@ -393,7 +426,12 @@ lbl = {
   'pz':r'$z$',
   'zp':r'$z$',
   'zmean':r'$zmean$',
-  'zpeak':r'$zpeak$'
+  'zpeak':r'$zpeak$',
+  'bfrac':r'Bulge Frac',
+  'time':r'time',
+  'cov11':'cov11',
+  'cov22':'cov22',
+  'cov12':'cov12'
 
 }
 
