@@ -1,5 +1,10 @@
 import numpy as np
-import treecorr
+try:
+  import treecorr
+except:
+  print "No treecorr"
+  treecorr=None
+
 import os.path
 from mpi4py import MPI
 import scipy

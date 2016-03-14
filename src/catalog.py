@@ -1,7 +1,12 @@
 import numpy as np
 import glob
 import fitsio as fio
-import pandas as pd
+try:
+  import pandas as pd
+except:
+  print "No Pandas"
+  pd=None
+
 import config
 import pickle
 
