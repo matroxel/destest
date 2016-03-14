@@ -954,3 +954,45 @@ class plot_methods(object):
 
     return
     
+  @staticmethod
+  def bandpowers(ell,bp,bperr,bp2=None,bperr2=None):
+
+    if len(np.shape(bp))==1:
+      bins=1
+    else:
+      bins=len(bp)
+
+    gs = gridspec.GridSpec(bins,bins)
+    plt.figure(figsize=(10,10))
+
+    col=['k','r','g','b','c','y']
+
+    for i in range(bins):
+      for j in range(bins):
+        ax1=plt.subplot(gs[i,j])
+        ax1.minorticks_on()
+
+        ax1.errorbar(ell,bp[i,j,:],yerr=bperr[i,j,:],linestyle='',marker='o')
+        if bp2 is not None:
+          ax1.errorbar(ell+20,bp2[i,j,:],yerr=bperr2[i,j,:],linestyle='',marker='o')
+        ax1.plot(ell,np.zeros(len(ell)),color='k')
+        bintext='('+str(i)+','+str(j)+')'
+        props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
+        ax1.text(0.1, 0.95, bintext, transform=ax1.transAxes, fontsize=14,verticalalignment='top', bbox=props)
+        plt.xlim((np.min(ell)-(ell[1]-ell[0]),np.max(ell)+(ell[1]-ell[0])))
+        if j==0:
+          plt.ylabel(r'$\ell(\ell+1)C_B(\ell)/2/\pi$')
+        else:
+          plt.ylabel('')
+          ax1.set_yticklabels([])
+        if i==bins-1:
+          plt.xlabel(r'$\ell$')
+        else:
+          plt.xlabel('')
+          ax1.set_xticklabels([])
+
+    gs.update(wspace=0.,hspace=0.)
+    plt.savefig('plots/xi/bandpowers_bins-'+str(bins)+'.png', bbox_inches='tight')
+    plt.close()
+
+    return

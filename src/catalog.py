@@ -39,6 +39,8 @@ class CatalogStore(object):
         table=config.ng_col_lookup
       elif cattype=='gal':
         table=config.gal_col_lookup
+      elif cattype=='truth':
+        table=config.truth_col_lookup
       elif cattype=='buzzard':
         table=config.buzzard_col_lookup
       else:
@@ -92,6 +94,10 @@ class CatalogStore(object):
           self.ccd-=1
         if 'like' in cols:
           self.nlike=-self.like
+      if (cattype=='i3')&('dflux' in cols)&('bflux' in cols):
+        self.bfrac=np.zeros(len(self.coadd))
+        self.bfrac[self.dflux==0]=1
+
 
       if ('ra' in cols):
         ra=self.ra
@@ -663,8 +669,7 @@ class CatalogMethods(object):
     i_idx_x = u_idx_x[x[u_idx_x].searchsorted(i_xy)]
     i_idx_y = u_idx_y[y[u_idx_y].searchsorted(i_xy)]
 
-    return i_idx_x, i_idx_y    
-
+    return i_idx_x, i_idx_y
 
   @staticmethod
   def get_new_nbcw(cat,file,w=True,prune=False):
@@ -1250,4 +1255,17 @@ class CatalogMethods(object):
     import healpy as hp
 
     return hp.ang2pix(nside, np.pi/2.-np.radians(dec),np.radians(ra), nest=nest)
+
+  @staticmethod
+  def remove_duplicates(cat):
+
+    a=np.argsort(cat.coadd)
+    mask=np.diff(cat.coadd[a])
+    mask=mask==0
+    mask=~mask
+    mask=a[mask]
+    CatalogMethods.match_cat(cat,mask)
+
+    return
+
 
