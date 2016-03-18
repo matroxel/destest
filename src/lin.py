@@ -330,7 +330,7 @@ class hist(object):
     return
 
   @staticmethod
-  def hist_comp_tests(vals,cat,cat2,mask=None,mask2=None):
+  def hist_comp_tests(vals,cat,cat2,mask=None,mask2=None,bins=50):
     """
     Loop over array vals, containing stored catalog column variables in CatalogStore object cat. Optionally mask the elements used.
 
@@ -351,7 +351,7 @@ class hist(object):
       if config.log_val.get(x,False):
         x2=np.log10(x2)
 
-      fig.plot_methods.plot_comp_hist(x1,x2,name=cat.name,name2=cat2.name,label=x)
+      fig.plot_methods.plot_comp_hist(x1,x2,name=cat.name,name2=cat2.name,bins=bins,label=x)
 
     return
 
