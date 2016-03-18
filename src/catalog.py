@@ -83,6 +83,9 @@ class CatalogStore(object):
       else:
         raise CatValError('Please specify the source of files: catfile, catdir, or goldfile/i3file/ngfile')
 
+      if 'coadd' not in cols:
+        self.coadd=np.arange(len(getattr(self,cols[0])))
+
       if cattype in ['i3','ng']:
         if ('e1' in cols)&('e2' in cols):
           self.pos=0.5*np.arctan2(self.e2,self.e1)+np.pi/2.
