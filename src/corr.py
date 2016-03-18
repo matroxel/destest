@@ -6,7 +6,10 @@ except:
   treecorr=None
 
 import os.path
-from mpi4py import MPI
+import os.environ
+
+if "NERSC_HOST" not in os.environ:
+  from mpi4py import MPI
 import scipy
 import math
 
