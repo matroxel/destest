@@ -48,6 +48,8 @@ class CatalogStore(object):
         table=config.truth_col_lookup
       elif cattype=='buzzard':
         table=config.buzzard_col_lookup
+      elif cattype=='psf':
+        table=config.psf_col_lookup
       else:
         raise CatValError('No catalog type cattype specified.')
 
@@ -717,6 +719,20 @@ class CatalogMethods(object):
     """
 
     cuts=CatalogMethods.add_cut(np.array([]),'coadd',0,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def final_null_cuts_ra():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
+    cuts=CatalogMethods.add_cut(np.array([]),'ra',-99999,noval,noval)
 
     return cuts
 

@@ -137,6 +137,22 @@ ng_col_lookup = {
   
 }
 
+psf_col_lookup = {
+
+  'ra':'ra',
+  'dec':'dec',
+  'e1':'e1',
+  'e2':'e2',
+  'ccd':'ccdnum',
+  'row':'x',
+  'col':'y',
+  'psf_e1':'psfex_e1',
+  'psf_e2':'psfex_e2',
+  'psf_size':'psfex_size',
+  'size':'size'
+
+}
+
 i3_col_lookup = {
   
   'coadd':'coadd_objects_id',
@@ -431,8 +447,9 @@ lbl = {
   'time':r'time',
   'cov11':'cov11',
   'cov22':'cov22',
-  'cov12':'cov12'
-
+  'cov12':'cov12',
+  'g1':r'$g_1$',
+  'g2':r'$g_2$'
 }
 
 map_name_y1 = {
