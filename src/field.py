@@ -54,20 +54,20 @@ class field(object):
       psfpos1=np.append(psfpos1,np.mean(0.5*np.arctan2(psf2,psf1)))
       e1=np.append(e1,np.mean(np.sqrt(e1**2.+e2**2.)))
       psf1=np.append(psf1,np.mean(np.sqrt(psf1**2.+psf2**2.)))
-      # for j in xrange(4):
-      #   for k in xrange(8):
-      #     x0=np.append(x0,cx[i]-field_methods.ccdx/2.+(j+.5)*field_methods.ccdx/8.)
-      #     y0=np.append(y0,cy[i]-field_methods.ccdy/2.+(k+.5)*field_methods.ccdy/4.)
-      #     mask1=(x1>k*dc)&(x1<=(k+1.)*dc)&(y1>j*dc)&(y1<=(j+1.)*dc)
-      #     pos0=np.append(pos0,np.mean(0.5*np.arctan2(e2[mask1],e1[mask1])))
-      #     psfpos0=np.append(psfpos0,np.mean(0.5*np.arctan2(psf2[mask1],psf1[mask1])))
-      #     e0=np.append(e0,np.mean(np.sqrt(e1[mask1]**2.+e2[mask1]**2.)))
-      #     psf0=np.append(psf0,np.mean(np.sqrt(psf1[mask1]**2.+psf2[mask1]**2.)))
+      for j in xrange(4):
+        for k in xrange(8):
+          x0=np.append(x0,cx[i]-field_methods.ccdx/2.+(j+.5)*field_methods.ccdx/8.)
+          y0=np.append(y0,cy[i]-field_methods.ccdy/2.+(k+.5)*field_methods.ccdy/4.)
+          mask1=(x1>k*dc)&(x1<=(k+1.)*dc)&(y1>j*dc)&(y1<=(j+1.)*dc)
+          pos0=np.append(pos0,np.mean(0.5*np.arctan2(e2[mask1],e1[mask1])))
+          psfpos0=np.append(psfpos0,np.mean(0.5*np.arctan2(psf2[mask1],psf1[mask1])))
+          e0=np.append(e0,np.mean(np.sqrt(e1[mask1]**2.+e2[mask1]**2.)))
+          psf0=np.append(psf0,np.mean(np.sqrt(psf1[mask1]**2.+psf2[mask1]**2.)))
 
-    fig.plot_methods.plot_whisker(cy,cx,np.sin(pos1)*e1,np.cos(pos1)*e1,name=cat.name,label='shear2',scale=.01,key=r'$\langle e\rangle$')
-    fig.plot_methods.plot_whisker(cy,cx,np.sin(psfpos1)*psf1,np.cos(psfpos1)*psf1,name=cat.name,label='psf2',scale=.01,key=r'$\langle$ PSF $e\rangle$')
+    # fig.plot_methods.plot_whisker(cy,cx,np.sin(pos1)*e1,np.cos(pos1)*e1,name=cat.name,label='shear2',scale=.01,key=r'$\langle e\rangle$')
+    # fig.plot_methods.plot_whisker(cy,cx,np.sin(psfpos1)*psf1,np.cos(psfpos1)*psf1,name=cat.name,label='psf2',scale=.01,key=r'$\langle$ PSF $e\rangle$')
     # fig.plot_methods.plot_whisker(y0,x0,np.sin(pos0)*e0,np.cos(pos0)*e0,name=cat.name,label='shear',scale=.01,key=r'$\langle e\rangle$')
-    # fig.plot_methods.plot_whisker(y0,x0,np.sin(psfpos0)*psf0,np.cos(psfpos0)*psf0,name=cat.name,label='psf',scale=.01,key=r'$\langle$ PSF $e\rangle$')
+    fig.plot_methods.plot_whisker(y0,x0,np.sin(psfpos0)*psf0,np.cos(psfpos0)*psf0,name=cat.name,label='psf',scale=.01,key=r'$\langle$ PSF $e\rangle$')
 
     return
 
