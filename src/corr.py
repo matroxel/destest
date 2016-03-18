@@ -5,11 +5,10 @@ except:
   print "No treecorr"
   treecorr=None
 
-import os.path
-import os.environ
-
+import os
 if "NERSC_HOST" not in os.environ:
   from mpi4py import MPI
+
 import scipy
 import math
 
