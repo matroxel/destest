@@ -24,36 +24,45 @@ class plot_methods(object):
   """
 
   @staticmethod
-  def plot_hist(x1,bins=500,name='',label='',tile=''):
+  def plot_hist(x1,bins=500,name='',label='',tile='',w=None):
 
     plt.figure()
-    plt.hist(x1,bins=bins)
+    if w is None:
+      plt.hist(x1,bins=bins,histtype='stepfilled')
+    else:
+      plt.hist(x1,bins=bins,alpha=0.25,normed=True,label='unweighted',histtype='stepfilled')
+      plt.hist(x1,bins=bins,alpha=0.25,normed=True,weights=w,label='weighted',histtype='stepfilled')
     plt.ylabel(r'$n$')
-    s=config.lbl.get(label,None)
-    if config.log_val.get(label,None):
+    s=config.lbl.get(label,label)
+    if config.log_val.get(label,False):
       s='log '+s
-    plt.xlabel(s)
+    plt.xlabel(s+' '+tile)
     plt.minorticks_on()
     if tile!='':
       name='tile_'+tile+'_'+name
+    plt.legend(loc='upper right',ncol=2, frameon=True,prop={'size':12})
     plt.savefig('plots/hist/hist_'+name+'_'+label+'.png', bbox_inches='tight')
     plt.close()
 
     return
 
   @staticmethod
-  def plot_comp_hist(x1,x2,bins=50,name='',name2='',label=''):
+  def plot_comp_hist(x1,x2,bins=50,name='',name2='',label='',w=None):
 
     plt.figure()
-    plt.hist(x1,bins=bins,alpha=.5,label=name,normed=True)
-    plt.hist(x2,bins=bins,alpha=.5,label=name2,normed=True)
+    if w is None:
+      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled')
+      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled')
+    else:
+      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled',weights=w)
+      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled',weights=w)
     plt.ylabel(r'$n$')
-    s=config.lbl.get(label,None)
-    if config.log_val.get(label,None):
+    s=config.lbl.get(label,label)
+    if config.log_val.get(label,False):
       s='log '+s
     plt.xlabel(s)
     plt.minorticks_on()
-    plt.legend(loc='upper right',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
+    plt.legend(loc='upper right',ncol=2, frameon=False,prop={'size':12},framealpha=0.2)
     plt.savefig('plots/hist/hist_'+name+'_'+name2+'_'+label+'.png', bbox_inches='tight')
     plt.close()
 
@@ -64,14 +73,14 @@ class plot_methods(object):
 
     plt.figure()
     plt.hist2d(x1,y1,bins=bins)
-    s=config.lbl.get(xlabel,None)
-    if config.log_val.get(xlabel,None):
+    s=config.lbl.get(xlabel,'')
+    if config.log_val.get(xlabel,False):
       s='log '+s
-    plt.xlabel(s)
-    s=config.lbl.get(ylabel,None)
-    if config.log_val.get(ylabel,None):
+    plt.xlabel(s+' '+xtile)
+    s=config.lbl.get(ylabel,'')
+    if config.log_val.get(ylabel,False):
       s='log '+s
-    plt.ylabel(s)
+    plt.ylabel(s+' '+ytile)
     plt.minorticks_on()
     if xtile!='':
       xname='tile_'+xtile+'_'+xname
@@ -80,14 +89,14 @@ class plot_methods(object):
 
     plt.figure()
     plt.hist2d(x1,y1,bins=bins,norm=LogNorm())
-    s=config.lbl.get(xlabel,None)
-    if config.log_val.get(xlabel,None):
+    s=config.lbl.get(xlabel,'')
+    if config.log_val.get(xlabel,False):
       s='log '+s
-    plt.xlabel(s)
-    s=config.lbl.get(ylabel,None)
-    if config.log_val.get(ylabel,None):
+    plt.xlabel(s+' '+xtile)
+    s=config.lbl.get(ylabel,'')
+    if config.log_val.get(ylabel,False):
       s='log '+s
-    plt.ylabel(s)   
+    plt.ylabel(s+' '+ytile)   
     plt.minorticks_on()
     plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel+'_'+ylabel+'_log.png', bbox_inches='tight')
     plt.close()
@@ -127,8 +136,8 @@ class plot_methods(object):
     plt.xlim((ra0-0.1*(ra1-ra0),ra1+0.1*(ra1-ra0)))
     plt.ylim((dec0-0.1*(dec1-dec0),dec1+0.1*(dec1-dec0)))
     plt.minorticks_on()
-    s=config.lbl.get(label,None)
-    if config.log_val.get(label,None):
+    s=config.lbl.get(label,'')
+    if config.log_val.get(label,False):
       s='log '+s
     if tile!='':
       name='tile_'+tile+'_'+name
@@ -143,8 +152,8 @@ class plot_methods(object):
     # plt.xlabel('RA')
     # plt.ylabel('Dec')
     # plt.minorticks_on()
-    # s=config.lbl.get(label,None)
-    # if config.log_val.get(label,None):
+    # s=config.lbl.get(label,'')
+    # if config.log_val.get(label,False):
     #   s='log '+s
     # cb.set_label(s)
     # plt.gca().set_aspect('equal', 'box')
@@ -249,30 +258,37 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False,label='',e=True,val2=None):
+  def get_filename_str(cat):
+    return cat.name+'_bs-'+str(cat.bs)+'_wt-'+str(cat.wt)
+
+  @staticmethod
+  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False,label='',e=True,val2=None,trend=True):
 
     plt.figure()
     if e:
       l1=r'$\langle e_1 \rangle$'
       l2=r'$\langle e_2 \rangle$'
+      plt.errorbar(x,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
     else:
       l1=r'$\langle e_1 \rangle$'      
-    plt.errorbar(x,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
-    plt.errorbar(x,m1*x+b1,marker='',linestyle='-',color='r')
+      plt.errorbar(x,e1,yerr=e1err,marker='o',linestyle='',color='r',label='')
+    if trend:
+      plt.errorbar(x,m1*x+b1,marker='',linestyle='-',color='r')
     if e:
       plt.errorbar(x+(x[1]-x[0])/5.,e2,yerr=e2err,marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
-      plt.errorbar(x,m2*x+b2,marker='',linestyle='-',color='b')
+      if trend:
+        plt.errorbar(x,m2*x+b2,marker='',linestyle='-',color='b')
       plt.ylabel(r'$\langle e \rangle$')
     else:
-      plt.ylabel(r'$\langle $'+config.lbl.get(val2,None)+r'$ \rangle$')
+      plt.ylabel(r'$\langle $'+config.lbl.get(val2,val2)+r'$ \rangle$')
     plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
     if e:
       plt.axhline(.004,color='k')
       plt.axhline(-.004,color='k')
-    if config.log_val.get(val,None):
-      plt.xlabel('log '+config.lbl.get(val,None))
+    if config.log_val.get(val,False):
+      plt.xlabel('log '+config.lbl.get(val,val))
     else:
-      plt.xlabel(config.lbl.get(val,None))
+      plt.xlabel(config.lbl.get(val,val))
     y1=np.min(np.minimum(e1,e2))
     if e:   
       y2=np.max(np.maximum(e1,e2))
@@ -282,58 +298,61 @@ class plot_methods(object):
     plt.minorticks_on()
     if val2 is not None:
       val+='-'+val2
-    plt.savefig('plots/split/lin_split_'+cat.name+'_'+val+'_bs-'+str(cat.bs)+label+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/lin_split_'+plot_methods.get_filename_str(cat)+'_'+val+'_'+label+'.png', bbox_inches='tight')
     plt.close()
 
     return
 
   @staticmethod
-  def plot_2pt_split_sub(cat,val,split,n,yl,xi,i,log):
+  def plot_2pt_split_sub(cat,val,split,n,yl,xi,i,log,blind=True):
 
-      plt.figure(0)
-      ax=plt.subplot(3,3,n)
-      ax.fill_between([1,500],-1,1,facecolor='gray',alpha=0.25)
-      ax.fill_between([1,500],-2,2,facecolor='gray',alpha=0.2)
-      plt.errorbar(xi[0],np.zeros((len(xi[0]))),marker='',linestyle='-',color='k',alpha=.8)
-      plt.errorbar(xi[0],xi[10][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='b')
-      plt.errorbar(xi[0],(xi[1][i]-xi[2][i])/xi[2][i],yerr=xi[7][i]/xi[2][i],marker='v',linestyle='',color='g')
-      plt.errorbar(xi[0],xi[12][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='g')
-      plt.errorbar(xi[0]*1.2,(xi[3][i]-xi[2][i])/xi[2][i],yerr=xi[9][i]/xi[2][i],marker='^',linestyle='',color='b')
-      plt.errorbar(xi[0],xi[11][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='r')
-      plt.errorbar(xi[0]*1.1,(xi[3][i]-xi[1][i])/xi[2][i],yerr=xi[8][i]/xi[2][i],marker='o',linestyle='',color='r')
-      plt.xlabel(r'$\theta$ (arcmin)')
-      plt.xscale('log')
-      plt.ylim(-3,3)
-      plt.xlim(1,500)
-      ax.set_xticklabels([])
-      plt.ylabel(r'$\Delta '+yl+r'/\sigma_{\Delta '+yl+r'}$')
+    if blind:
+      bf=1.+(np.random.rand(1)[0]-.5)*.4
 
-      ax=plt.subplot(3,3,3+n)
-      plt.errorbar(xi[0],xi[0]*xi[2][i],yerr=xi[0]*xi[5][i],marker='o',linestyle='',color='r',label='All (upper-lower in top)')
-      s=config.lbl.get(val,None)
-      if log:
-        s='log '+s
-      plt.errorbar(xi[0]*1.1,xi[0]*xi[1][i],yerr=xi[0]*xi[4][i],marker='v',linestyle='',color='g',label=s+r'$<$'+str(np.around(split,2)))
-      plt.errorbar(xi[0]*1.2,xi[0]*xi[3][i],yerr=xi[0]*xi[6][i],marker='^',linestyle='',color='b',label=s+r'$>$'+str(np.around(split,2)))
-      plt.xlabel(r'$\theta$ (arcmin)')
-      plt.xscale('log')
-      if n==1:
-        leg=plt.legend(loc='upper left',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
-      ax.set_xticklabels([])
-      plt.ylabel(r'$\theta\times'+yl+r'$')
-      plt.xlim(1,500)
+    plt.figure(0)
+    ax=plt.subplot(3,3,n)
+    ax.fill_between([1,500],-1,1,facecolor='gray',alpha=0.25)
+    ax.fill_between([1,500],-2,2,facecolor='gray',alpha=0.2)
+    plt.errorbar(xi[0],np.zeros((len(xi[0]))),marker='',linestyle='-',color='k',alpha=.8)
+    plt.errorbar(xi[0],xi[10][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='b')
+    plt.errorbar(xi[0],(xi[1][i]-xi[2][i])/xi[2][i],yerr=xi[5][i]/xi[2][i],marker='v',linestyle='',color='b')#yerr=xi[7][i]/xi[2][i]
+    plt.errorbar(xi[0],xi[12][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='g')
+    plt.errorbar(xi[0]*1.2,(xi[3][i]-xi[2][i])/xi[2][i],yerr=xi[5][i]/xi[2][i],marker='^',linestyle='',color='g')#,yerr=xi[9][i]/xi[2][i]
+    plt.errorbar(xi[0],xi[11][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='r')
+    plt.errorbar(xi[0]*1.1,(xi[3][i]-xi[1][i])/xi[2][i],yerr=xi[5][i]/xi[2][i],marker='o',linestyle='',color='r')#,yerr=xi[8][i]/xi[2][i]
+    plt.xlabel(r'$\theta$ (arcmin)')
+    plt.xscale('log')
+    plt.ylim(-5,5)
+    plt.xlim(1,500)
+    ax.set_xticklabels([])
+    plt.ylabel(r'$\Delta '+yl+r'/\sigma_{\Delta '+yl+r'}$')
 
-      ax=plt.subplot(3,3,6+n)
-      plt.errorbar(xi[0],xi[2][i],yerr=xi[5][i],marker='o',linestyle='',color='r')
-      plt.errorbar(xi[0]*1.1,xi[1][i],yerr=xi[4][i],marker='v',linestyle='',color='g')
-      plt.errorbar(xi[0]*1.2,xi[3][i],yerr=xi[6][i],marker='^',linestyle='',color='b')
-      plt.xlabel(r'$\theta$ (arcmin)')
-      plt.ylabel(r'$'+yl+r'$')
-      plt.xscale('log')
-      plt.yscale('log')
-      plt.xlim(1,500)
+    ax=plt.subplot(3,3,3+n)
+    plt.errorbar(xi[0],xi[0]*xi[2][i]*bf,yerr=xi[0]*xi[5][i],marker='o',linestyle='',color='r',label='All (upper-lower in top)')
+    s=config.lbl.get(val,None)
+    if log:
+      s='log '+s
+    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][i]*bf,yerr=xi[0]*xi[4][i],marker='v',linestyle='',color='g',label=s+r'$<$'+str(np.around(split,2)))
+    plt.errorbar(xi[0]*1.2,xi[0]*xi[3][i]*bf,yerr=xi[0]*xi[6][i],marker='^',linestyle='',color='b',label=s+r'$>$'+str(np.around(split,2)))
+    plt.xlabel(r'$\theta$ (arcmin)')
+    plt.xscale('log')
+    if n==1:
+      leg=plt.legend(loc='upper left',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
+    ax.set_xticklabels([])
+    plt.ylabel(r'$\theta\times'+yl+r'$')
+    plt.xlim(1,500)
 
-      return
+    ax=plt.subplot(3,3,6+n)
+    plt.errorbar(xi[0],xi[2][i]*bf,yerr=xi[5][i],marker='o',linestyle='',color='r')
+    plt.errorbar(xi[0]*1.1,xi[1][i]*bf,yerr=xi[4][i],marker='v',linestyle='',color='g')
+    plt.errorbar(xi[0]*1.2,xi[3][i]*bf,yerr=xi[6][i],marker='^',linestyle='',color='b')
+    plt.xlabel(r'$\theta$ (arcmin)')
+    plt.ylabel(r'$'+yl+r'$')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlim(1,500)
+
+    return
 
   @staticmethod
   def plot_2pt_split(xi,gt,cat,val,split,log):
@@ -351,7 +370,7 @@ class plot_methods(object):
 
     plt.minorticks_on()
     plt.subplots_adjust(hspace=0,wspace=.4)
-    plt.savefig('plots/split/2pt_split_'+cat.name+'_'+val+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/2pt_split_'+plot_methods.get_filename_str(cat)+'_'+val+'.png', bbox_inches='tight')
     plt.close(0)
 
     return
@@ -880,7 +899,7 @@ class plot_methods(object):
   @staticmethod
   def plot_pzrw(cat,pz,bins,w,label,edge):
 
-    plt.figure(0,figsize=(5,10))
+    plt.figure(0,figsize=(10,5))
     ax=plt.subplot(1,2,1)
 
     col=['r','b','g']
@@ -897,7 +916,7 @@ class plot_methods(object):
 
     plt.axvline(x=1)
     for i in range(cat.sbins):
-      plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,range=[-1, 5])
+      plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
     plt.legend(loc='upper right')
     #plt.xlim((-1,4))
     plt.xlabel('w')

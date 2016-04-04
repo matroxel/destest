@@ -47,4 +47,4 @@ class write_methods(object):
     Default filename.
     """
 
-    return 'text/'+label+'_'+cat.name+'.txt'
+    return 'text/'+label+'_'+cat.name+'_bs-'+str(cat.bs)+'_wt-'+str(cat.wt)+'.txt'
