@@ -1,3 +1,14 @@
+import numpy as np
+import src.catalog as catalog
+import src.config as config
+import src.fig as fig
+import src.lin as lin
+import src.sys_split as sys_split
+import src.corr as corr
+import src.field as field
+import src.pz as pz
+import src.cosmo as cosmo
+
 # Select columns to read from catalog (no cols option indicates to read all columns from appropriate dict in config.py)
 cols=['stamp','nexp','chi2pix','psffwhm','coadd','info','error','like','flux','rgp','dec','evals','rad','dec_off','ra_off','dflux','fluxfrac','psf1','psf2','hsmpsf1','hsmpsf2','modmax','modmin','ra','resmax','tile','maskfrac','snr','resmin','e1','e2','iter','bflux','dflux','flux','cov11','cov22','zp','g','r','i','z','bfrac']
 # Build CatalogStore object for shape catalog - could include cutfunc option that points to a function to, for example, not read objects with error flags set. We want to look at the error distribution, so we don't do this here.
