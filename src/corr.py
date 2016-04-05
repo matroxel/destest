@@ -77,9 +77,9 @@ class xi_2pt(object):
     :label0:        str - Additional (optional) label string used in some outputs.
     :plot:          bool - Plot output?
 
-    Output (len cat.tbins):
+    Output (len cat.tbins cat.sep):
 
-    :theta:         [float] - Treecorr np.exp(meanlogr)
+    :theta:         [float] - Treecorr np.exp(meanlogr). In arcmin.
     :out:           ([float]x4) - Output of signal e.g., (xi+,xi-,xi+im,x-im). For correlations with only one xi output, (xi,0.,xi_im,0.).
     :err:           ([float]x4) - Same but for sqrt(var).
     :chi2:          ([float]x4) - Same but for chi^2 if using jk or sim covariance.
