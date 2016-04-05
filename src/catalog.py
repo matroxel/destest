@@ -83,8 +83,10 @@ class CatalogStore(object):
 
         # Read in columns from file(s)
         cols1=[table.get(x,None) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)):
+        catcols,filenames=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)
+        for i,x in enumerate(catcols):
           setattr(self,cols[i],x)
+        self.filename=filenames
 
       else:
         raise CatValError('Please specify the source of files: catfile, catdir, or goldfile/i3file/ngfile')
@@ -482,20 +484,22 @@ class CatalogMethods(object):
       # If first file, generate storage array to speed up reading in of data
       if lenst==0:
         array=np.empty((maxrows), dtype=tmparray.dtype.descr)
+        filenames=np.empty((maxrows), dtype='S'+str(len(file.split('/')[-1].split('.')[0])))
 
       # If exceeded max number of rows reqested, end iteration and return catalog
       if lenst+np.sum(mask)>maxrows:
         fits.close()
-        return [array[col][:lenst] for i,col in enumerate(cols)]
+        return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst]
         
       array[lenst:lenst+np.sum(mask)]=tmparray[mask]
+      filenames[lenst:lenst+np.sum(mask)]=np.repeat(file.split('/')[-1].split('.')[0],np.sum(mask))
 
       lenst+=np.sum(mask)
       print ifile,np.sum(mask),lenst,file
-        
+
       fits.close()
 
-    return [array[col][:lenst] for i,col in enumerate(cols)]
+    return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst]
 
 
   @staticmethod
