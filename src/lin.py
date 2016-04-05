@@ -156,7 +156,7 @@ class linear_methods(object):
     r=np.zeros((nbins+1))
     ist=0
     for j in xrange(1,nbins):
-      print k[j],r[j-1]
+      # print k[j],r[j-1]
       if k[j]<r[j-1]:
         print 'Random weight approx. failed - attempting brute force approach'
         fail=True
@@ -278,96 +278,67 @@ class fitting(object):
 
     return m,b,merr,berr
 
-  @staticmethod
-  def sys_lin_fit(x,cat,mask=None,log=False,noe=False,mock=False):
-    """
-    Find linear fit corresponding to mean shears in bins of x.
-    """
-
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-
-    if cat.wt:
-      edge=linear_methods.find_bin_edges(x[mask],cat.lbins,cat.w[mask])
-    else:
-      edge=linear_methods.find_bin_edges(x[mask],cat.lbins)
-    xbin=np.digitize(x,edge)-1
-
-    x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
-    if cat.wt:
-      w_mean,w_err=linear_methods.binned_mean_x(xbin,cat.w,cat,mask,mock=mock)
-    else:
-      w_mean,w_err=linear_methods.binned_mean_x(xbin,np.ones(len(cat.coadd)),cat,mask,mock=mock)
-    e1_mean,e1_err,e2_mean,e2_err=linear_methods.binned_mean_e(xbin,cat,mask,mock=mock)
-
-    m1,b1,m1err,b1err=fitting.lin_fit(x_mean,e1_mean,1./w_mean)
-    m2,b2,m2err,b2err=fitting.lin_fit(x_mean,e2_mean,1./w_mean)
-
-    return m1,m2,b1,b2,m1err,m2err,b1err,b2err
-
-
 class hist(object):
 
   @staticmethod
-  def hist_tests(vals,cat,mask=None):
+  def hist_tests(cat,cat2=None,cols=None,mask=None):
     """
-    Loop over array vals, containing stored catalog column variables in CatalogStore object cat. Optionally mask the elements used.
+    Loop over array cols, containing stored catalog column variables in CatalogStore object cat. Optionally mask the elements used.
 
-    Produces plots of 1D histograms for each element in vals.
+    Produces plots of 1D histograms for each element in cols.
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    for x in vals:
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
+    if cat2 is not None:
+      mask2=catalog.CatalogMethods.check_mask(cat2.coadd,mask2)
 
-      print 'hist',x
+    for val in cols:
 
-      x1=getattr(cat,x)[mask]
-      if config.log_val.get(x,False):
+      print 'hist',val
+
+      x1=getattr(cat,val)[mask]
+      if config.log_val.get(val,False):
         x1=np.log10(x1)
 
-      fig.plot_methods.plot_hist(x1,name=cat.name,label=x)
+      if cat2 is None:
+        if cat.wt:
+          fig.plot_methods.plot_hist(x1,name=cat.name,label=val,w=cat.w[mask])
+        else:
+          fig.plot_methods.plot_hist(x1,name=cat.name,label=val)
+      else:
+        x2=getattr(cat2,val)[mask2]
+        if config.log_val.get(val,False):
+          x2=np.log10(x2)
+
+        if cat.wt:
+          fig.plot_methods.plot_comp_hist(x1,x2,name=cat.name,name2=cat2.name,bins=bins,label=x)
+        else:
+          fig.plot_methods.plot_comp_hist(x1,x2,name=cat.name,name2=cat2.name,bins=bins,label=x)
 
     return
 
   @staticmethod
-  def hist_comp_tests(vals,cat,cat2,mask=None,mask2=None):
+  def hist_2D_tests(cat,cat2=None,colsx=None,colsy=None,mask=None,mask2=None,match_col=None):
     """
-    Loop over array vals, containing stored catalog column variables in CatalogStore object cat. Optionally mask the elements used.
+    Loop over array cols(x|y), containing stored catalog column variables in CatalogStore object cat (and cat2). Optionally mask the elements used. 
 
-    Produces plots of 1D histograms for each element in vals.
-    """
-
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-    mask2=catalog.CatalogMethods.check_mask(cat2.coadd,mask2)
-
-    for x in vals:
-
-      print 'hist',x
-
-      x1=getattr(cat,x)[mask]
-      if config.log_val.get(x,False):
-        x1=np.log10(x1)
-      x2=getattr(cat2,x)[mask2]
-      if config.log_val.get(x,False):
-        x2=np.log10(x2)
-
-      fig.plot_methods.plot_comp_hist(x1,x2,name=cat.name,name2=cat2.name,label=x)
-
-    return
-
-  @staticmethod
-  def hist_2D_tests(valsx,valsy,cat,cat2=None,mask=None,mask2=None,match_col=None):
-    """
-    Loop over array vals(x|y), containing stored catalog column variables in CatalogStore object cat (and cat2). Optionally mask the elements used. 
-
-    Produces plots of 2D histograms for each cross pair in valsx and valsy. If both cat and cat2 provided, optionally provide an array name in cat with which to match the two catalogs (default value of None indicates to use the coadd ids). This is useful for matching between data releases.
+    Produces plots of 2D histograms for each cross pair in valsx and colsy. If both cat and cat2 provided, optionally provide an array name in cat with which to match the two catalogs (default value of None indicates to use the coadd ids). This is useful for matching between data releases.
     """
 
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+
+    if colsx is None:
+      colsx=catalog.CatalogMethods.get_cat_colnames(cat)
+
 
     if cat2!=None:
       mask2=catalog.CatalogMethods.check_mask(cat2.coadd,mask2)
+      if colsy is None:
+        colsy=catalog.CatalogMethods.get_cat_colnames(cat2)
 
       if match_col is None:
         coadd=cat.coadd
@@ -377,13 +348,14 @@ class hist(object):
 
       yname=cat2.name
 
-      m1,s1,m2,s2=catalog.CatalogMethods.sort(coadd[mask],cat2.coadd[mask2])
+      s1,s2=catalog.CatalogMethods.sort2(coadd[mask],cat2.coadd[mask2])
     
     else:
       yname=cat.name
+      colsy=colsx
 
-    for ix,x in enumerate(valsx):
-      for iy,y in enumerate(valsy):   
+    for ix,x in enumerate(colsx):
+      for iy,y in enumerate(colsy):   
 
         if cat2 is None:
           if (ix>=iy):
@@ -403,8 +375,8 @@ class hist(object):
         else:
           y1=getattr(cat2,y)[mask2]
 
-          x1=x1[m1]
-          y1=(y1[m2])[s2]
+          x1=x1[s1]
+          y1=y1[s2]
 
         if config.log_val.get(y,False):
           y1=np.log10(y1)
@@ -414,31 +386,34 @@ class hist(object):
     return
 
   @staticmethod
-  def tile_tests(vals,cat):
+  def tile_tests(cat):
     """
-    Loop over array vals, containing stored catalog column variables in CatalogStore object cat that have had means computed tile-by-tile with summary_stats.tile_stats(). This expects the output file from that function to exist.
+    Loop over cols that have had means computed tile-by-tile with summary_stats.tile_stats(). This expects the output from that function to exist.
 
     Produces plots of 1D histograms for each mean value tile-by-tile.
     """
 
-    s='S12,f8'+',f8'*len(vals)*3
-    tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
+    try:
+      cat.tilecols
+    except NameError:
+      print 'you must first call lin.summary_stats.tile_stats(cat)'
+      return
 
-    for i,x in enumerate(vals):
+    for i,x in enumerate(cat.tilecols):
 
       print 'tile hist',x
 
-      x1=tmp[x]
+      x1=cat.tilemean[:,i]
       if config.log_val.get(x,False):
         x1=np.log10(x1)
       fig.plot_methods.plot_hist(x1,name=cat.name,label=x,bins=20,tile='mean')
 
-      x1=tmp[x+'_std']
+      x1=cat.tilestd[:,i]
       if config.log_val.get(x,False):
         x1=np.log10(x1)
       fig.plot_methods.plot_hist(x1,name=cat.name,label=x,bins=20,tile='std')
 
-      x1=tmp[x+'_rms']
+      x1=cat.tilerms[:,i]
       if config.log_val.get(x,False):
         x1=np.log10(x1)
       fig.plot_methods.plot_hist(x1,name=cat.name,label=x,bins=20,tile='rms')
@@ -446,27 +421,36 @@ class hist(object):
     return
 
   @staticmethod
-  def tile_tests_2D(valsx,valsy,cat,cat2=None):
+  def tile_tests_2D(cat,cat2=None):
     """
-    Loop over array vals(x|y), containing stored catalog column variables in CatalogStore object cat (and cat2) that have had means computed tile-by-tile with summary_stats.tile_stats(). This expects the output file from that function to exist.
+    Loop over cols that have had means computed tile-by-tile with summary_stats.tile_stats(). This expects the output from that function to exist.
 
     Produces plots of 2D histograms for each cross pair in valsx and valsy tile-by-tile.
     """
 
-    s='S12,f8'+',f8'*len(valsx)*3
-    tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
-    if cat2!=None:
-      s='S12,f8'+',f8'*len(valsy)*3
-      tmp2=np.genfromtxt(txt.write_methods.get_file(cat2,label='tile_stats'),names=True,dtype=s)
-      yname=cat2.name
+    try:
+      cat.tilecols
+    except NameError:
+      print 'you must first call lin.summary_stats.tile_stats(cat)'
+      return
+
+    if cat2 is not None:
+      try:
+        cat2.tilecols
+      except NameError:
+        print 'you must first call lin.summary_stats.tile_stats(cat)'
+        return
+
+      if cat2.tilecols!=cat.tilecols:
+        print 'tile col lists do not agree between cat and cat2'
+        return
     else:
-      tmp2=tmp
-      yname=cat.name
+      cat2=cat
 
-    for ix,x in enumerate(valsx):
-      for iy,y in enumerate(valsy):
+    for ix,x in enumerate(cat.tilecols):
+      for iy,y in enumerate(cat2.tilecols):
 
-        if cat2 is None:
+        if cat2 is cat:
           if (ix>=iy):
             continue
         else:
@@ -475,69 +459,86 @@ class hist(object):
 
         print 'tile hist 2D',x,y
 
-        x1=tmp[x]
+        x1=cat.tilemean[:,ix]
         if config.log_val.get(x,False):
           x1=np.log10(x1)
-        y1=tmp2[y]
+        y1=cat2.tilemean[:,iy]
         if config.log_val.get(y,False):
           y1=np.log10(y1)
 
-        fig.plot_methods.plot_2D_hist(x1,y1,bins=20,xname=cat.name,yname=yname,xlabel=x,ylabel=y,xtile='mean',ytile='mean')
+        fig.plot_methods.plot_2D_hist(x1,y1,bins=20,xname=cat.name,yname=cat2.name,xlabel=x,ylabel=y,xtile='mean',ytile='mean')
 
     return
 
 class footprint(object):
 
   @staticmethod
-  def hexbin_tests(vals,cat,mask=None):
+  def hexbin_tests(cat,cols=None,mask=None):
     """
-    Produces a set of hexbin plots (mean value in cells across the survey footprint) for each value listed in vals and stored in CatalogeStore object cat. Optionally mask the arrays listed in vals.
+    Produces a set of hexbin plots (mean value in cells across the survey footprint) for each value listed in cols and stored in CatalogeStore object cat. Optionally mask the arrays listed in cols.
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    for x in vals:
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
+
+    for x in cols:
 
       print 'hexbin',x
       x1=getattr(cat,x)[mask]
+      if config.log_val.get(x,False):
+        x1=np.log10(x1)
 
       fig.plot_methods.plot_hexbin(x1,cat,mask=mask,name=cat.name,label=x)
 
     return
 
   @staticmethod
-  def tile_tests(vals,cat,mask=None):
+  def tile_tests(cat,mask=None):
     """
     A version of hexbin_tests that maps mean value tile-by-tile instead of by hexbin cell.
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    s='S12,f8'+',f8'*len(vals)*3
-    tmp=np.genfromtxt(txt.write_methods.get_file(cat,label='tile_stats'),names=True,dtype=s)
+    try:
+      cat.tilecols
+    except NameError:
+      print 'you must first call lin.summary_stats.tile_stats(cat)'
+      return
 
-    for j,x in enumerate(vals):
+    for j,x in enumerate(cat.tilecols):
 
-      x1=np.zeros(len(cat.coadd))
-      for i in xrange(len(tmp)):
-        mask0=(cat.tile==tmp['tile'][i])
-        x1[mask0]=np.ones(np.sum(mask0))*tmp[x][i]
+      x1=np.zeros(np.sum(mask))
+      for i in xrange(len(cat.tilelist)):
+        mask0=(cat.tile[mask]==cat.tilelist[i])
+        x0=cat.tilemean[i,j]
+        if config.log_val.get(x,False):
+          x0=np.log10(x0)
+        x1[mask0]=np.ones(np.sum(mask0))*x0
 
-      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x,tile='mean')
+      fig.plot_methods.plot_hexbin(x1,cat,mask=mask,name=cat.name,label=x,tile='mean')
 
-      x1=np.zeros(len(cat.coadd))
-      for i in xrange(len(tmp)):
-        mask0=(cat.tile==tmp['tile'][i])
-        x1[mask0]=np.ones(np.sum(mask0))*tmp[x+'_std'][i]
+      x1=np.zeros(np.sum(mask))
+      for i in xrange(len(cat.tilelist)):
+        mask0=(cat.tile[mask]==cat.tilelist[i])
+        x0=cat.tilestd[i,j]
+        if config.log_val.get(x,False):
+          x0=np.log10(x0)
+        x1[mask0]=np.ones(np.sum(mask0))*x0
 
-      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x,tile='std')
+      fig.plot_methods.plot_hexbin(x1,cat,mask=mask,name=cat.name,label=x,tile='std')
 
-      x1=np.zeros(len(cat.coadd))
-      for i in xrange(len(tmp)):
-        mask0=(cat.tile==tmp['tile'][i])
-        x1[mask0]=np.ones(np.sum(mask0))*tmp[x+'_rms'][i]
+      x1=np.zeros(np.sum(mask))
+      for i in xrange(len(cat.tilelist)):
+        mask0=(cat.tile[mask]==cat.tilelist[i])
+        x0=cat.tilerms[i,j]
+        if config.log_val.get(x,False):
+          x0=np.log10(x0)
+        x1[mask0]=np.ones(np.sum(mask0))*x0
 
-      fig.plot_methods.plot_hexbin(x1[mask],cat,mask=mask,name=cat.name,label=x,tile='rms')
+      fig.plot_methods.plot_hexbin(x1,cat,mask=mask,name=cat.name,label=x,tile='rms')
 
     return
 
@@ -580,21 +581,20 @@ class summary_stats(object):
     return len(bin(np.max(arr1[mask])))-2
 
   @staticmethod
-  def i3_flags_dist(cat,mask=None):
+  def i3_flags_vals_check(cat,flags=['error','info'],mask=None):
     """
-    Produce a summary of error properties in the catalog. Identifies nan or inf values in arrays and lists the distribution of objects that fail info/error flags. Needs to be updated to accept the name of the flag columns to generalise from im3shape.
+    Produce a summary of error properties in the catalog. Identifies nan or inf values in arrays and lists the distribution of objects that fail flags.
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
+    for flag in flags:
 
-    # txt.write_methods.heading('error flags',cat,label='flags_dist',create=True)
-    # for i in xrange(summary_stats.n_bits_array(cat,'error')):
-    #   txt.write_methods.write_append(str(i)+'  '+str(np.sum((cat.error & 2**i) != 0))+'  '+str(np.sum(cat.error == 2**i)),cat,label='flags_dist',create=False)
-
-    # txt.write_methods.heading('info flags',cat,label='flags_dist',create=False)
-    # for i in xrange(summary_stats.n_bits_array(cat,'info')):
-    #   txt.write_methods.write_append(str(i)+'  '+str(np.sum((cat.info[mask] & 2**i) != 0))+'  '+str(np.sum(cat.info[mask] == 2**i)),cat,label='flags_dist',create=False)
+      txt.write_methods.heading(flag+' flags',cat,label='flags_dist',create=True)
+      for i in xrange(summary_stats.n_bits_array(cat,flag)):
+        total=np.sum((cat.error & 2**i) != 0)
+        unique=np.sum(cat.error == 2**i)
+        txt.write_methods.write_append(str(i)+'  '+str(total)+'  '+str(unique)+'  '+str(np.around(1.*total/len(cat.coadd),5)),cat,label='flags_dist',create=False)
 
     txt.write_methods.heading('checking for bad values',cat,label='flags_dist',create=False)
 
@@ -605,70 +605,82 @@ class summary_stats(object):
           if isinstance(obj[0], str)|('__' in x):
             continue
           line=x
-          if np.sum(np.isnan(obj[mask]))>0:
+          if np.isnan(obj[mask]).any():
             line+='  !!!NANS!!!'
-          if np.sum(np.isinf(obj[mask]))>0:
+          if np.isinf(obj[mask]).any():
             line+='  !!!INF!!!'
           txt.write_methods.write_append(line,cat,label='flags_dist',create=False)
 
     return
 
   @staticmethod
-  def e1_psf_stats(cat,mask=None):
+  def val_stats(cat,cols=None,mask=None):
     """
-    Produce a summary of basic shear and psf properties in the catalog. Writes out the mean, std dev, and rms of e1, e2, psf e1, psf e2 and psf fwhm, along with number of galaxies for some mask. Needs to be updated to be more flexible about what information should be incldued in the summary (which columns).
+    Produce a summary of basic properties in the catalog. Writes out the mean, std dev, and rms of cols, along with number of galaxies for some optional mask.
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     txt.write_methods.heading('Summary',cat,label='summary',create=True)
     txt.write_methods.heading('num gals  '+str(np.sum(mask)),cat,label='summary',create=False)
-    txt.write_methods.heading('e1, e2',cat,label='summary',create=False)
+    txt.write_methods.heading('mean, std, rms, min, max',cat,label='summary',create=False)
 
-    mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask)
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
 
-    txt.write_methods.write_append('mean  '+str(mean1)+'  '+str(mean2),cat,label='summary',create=False)
-    txt.write_methods.write_append('stdev  '+str(std1)+'  '+str(std2),cat,label='summary',create=False)
-    txt.write_methods.write_append('rms  '+str(rms1)+'  '+str(rms2),cat,label='summary',create=False)
-
-    txt.write_methods.heading('psf e1, psf e2, psf fwhm',cat,label='summary',create=False)
-
-    mean1,std1,rms1=linear_methods.calc_mean_stdev_rms(cat,'psf1',mask)
-    mean2,std2,rms2=linear_methods.calc_mean_stdev_rms(cat,'psf2',mask)
-    mean3,std3,rms3=linear_methods.calc_mean_stdev_rms(cat,'psffwhm',mask)
-
-    txt.write_methods.write_append('mean  '+str(mean1)+'  '+str(mean2)+'  '+str(mean3),cat,label='summary',create=False)
-    txt.write_methods.write_append('stdev  '+str(std1)+'  '+str(std2)+'  '+str(std3),cat,label='summary',create=False)
-    txt.write_methods.write_append('rms  '+str(rms1)+'  '+str(rms2)+'  '+str(rms3),cat,label='summary',create=False)
+    for val in cols:
+      mean,std,rms=linear_methods.calc_mean_stdev_rms(cat,val,mask)
+      txt.write_methods.write_append(val+'  '+str(mean)+'  '+str(std)+'  '+str(rms)+'  '+str(np.min(getattr(cat,val)))+'  '+str(np.max(getattr(cat,val))),cat,label='summary',create=False)
 
     return
 
   @staticmethod
-  def tile_stats(cat,vals,mask=None):
+  def tile_stats(cat,cols=None,mask=None):
     """
-    Produce a summary of basic properties tile-by-tile in the catalog. Writes out the mean, std dev, and rms of the values listed in vals for some mask. This output file is used in the other tile functions in module lin.
+    Produce a summary of basic properties tile-by-tile in the catalog. Writes out the mean, std dev, and rms of the values listed in cols for some mask.
     """
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
+
     line='#tile  numgal  '
-    for val in vals:
+    for val in cols:
       line+=val+'  '+val+'_std  '+val+'_rms  '
 
     txt.write_methods.write_append(line,cat,label='tile_stats',create=True)
 
-    for i,x in enumerate(np.unique(cat.tile)):
+    cat.tilelist=np.unique(cat.tile)
+    cat.tilecols=cols
+    cat.tilenums=np.zeros(len(cat.tilelist))
+    cat.tilemean=np.zeros((len(cat.tilelist),len(cols)))
+    cat.tilestd=np.zeros((len(cat.tilelist),len(cols)))
+    cat.tilerms=np.zeros((len(cat.tilelist),len(cols)))
+
+    for i,x in enumerate(cat.tilelist):
       if np.sum(mask&(cat.tile==x))>0:
         line=x+'  '+str(np.sum(mask&(cat.tile==x)))+'  '
+        cat.tilenums[i]=np.sum(mask&(cat.tile==x))
 
-        if ('e1' in vals)|('e2' in vals):
-          e1,e2,e1_std,e2_std,e1_rms,e2_rms=linear_methods.calc_mean_stdev_rms_e(cat,mask&(cat.tile==x))
-          line+=str(np.around(e1,5))+'  '+str(np.around(e2,5))+'  '+str(np.around(e1_std,5))+'  '+str(np.around(e2_std,5))+'  '+str(np.around(e1_rms,5))+'  '+str(np.around(e2_rms,5))+'  '
-        for val in vals:
-          if val in ['e1','e2']:
-            continue
-
-          x1=linear_methods.calc_mean_stdev_rms(cat,val,mask&(cat.tile==x))
-          line+=str(np.around(x1[0],5))+'  '+str(np.around(x1[1],5))+'  '+str(np.around(x1[2],5))+'  '
+        for j,val in enumerate(cols):
+          if val=='e1':
+            e1,e2,e1_std,e2_std,e1_rms,e2_rms=linear_methods.calc_mean_stdev_rms_e(cat,mask&(cat.tile==x))
+            line+=str(np.around(e1,5))+'  '+str(np.around(e1_std,5))+'  '+str(np.around(e1_rms,5))+'  '
+            cat.tilemean[i,j]=e1
+            cat.tilestd[i,j]=e1_std
+            cat.tilerms[i,j]=e1_rms
+          elif val=='e2':
+            e1,e2,e1_std,e2_std,e1_rms,e2_rms=linear_methods.calc_mean_stdev_rms_e(cat,mask&(cat.tile==x))
+            line+=str(np.around(e2,5))+'  '+str(np.around(e2_std,5))+'  '+str(np.around(e2_rms,5))+'  '
+            cat.tilemean[i,j]=e2
+            cat.tilestd[i,j]=e2_std
+            cat.tilerms[i,j]=e2_rms
+          else:
+            x1=linear_methods.calc_mean_stdev_rms(cat,val,mask&(cat.tile==x))
+            line+=str(np.around(x1[0],5))+'  '+str(np.around(x1[1],5))+'  '+str(np.around(x1[2],5))+'  '
+            cat.tilemean[i,j]=x1[0]
+            cat.tilestd[i,j]=x1[1]
+            cat.tilerms[i,j]=x1[2]
 
         txt.write_methods.write_append(line,cat,label='tile_stats',create=False)
 

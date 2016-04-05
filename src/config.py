@@ -3,7 +3,7 @@ import numpy as np
 # Path definitions
 
 mockdir = '/share/des/sv/BCC-SVA1-WL-v3.0/'
-golddir = '/share/des/disc2/y1/gold_v101/'
+golddir = '/share/des/disc2/y1/gold_v102/'
 pzdir = '/share/des/disc2/y1/photo_z/'
 pztestdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
 cosmosiscosmodir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
@@ -18,6 +18,7 @@ coaddtiles = '/share/des/coadd_tiles.fits'
 tapebumps = '/home/troxel/destest/tape_bumps.fits'
 e2edir = '/home/troxel/des-shear-pipeline-code/end-to-end/end-to-end_code/'
 
+
 # Cosmosis source command
 cosmosissource = 'source my-source'
 
@@ -25,7 +26,7 @@ cosmosissource = 'source my-source'
 
 cfg = {
   
-  'lbins':50,
+  'lbins':20,
   'sbins':2,
   'slop':0.1,
   'tbins':8,
@@ -162,7 +163,6 @@ psf_col_lookup = {
   'desdm_e1':'desdm_e1',
   'desdm_e2':'desdm_e2',
   'desdm_size':'desdm_size'
-
 }
 
 i3_col_lookup = {
@@ -190,6 +190,7 @@ i3_col_lookup = {
   'damp':'disc_a',
   'bflux':'bulge_flux',
   'dflux':'disc_flux',
+  'bfrac':'is_bulge',
   'ratflux':'flux_ratio',
   'resmin':'min_residuals',
   'resmax':'max_residuals',
@@ -283,7 +284,6 @@ truth_col_lookup = {
   'wcs2':'mean_wcs_e2',
   'wcss':'wcs_scale',
   'wcst':'wcs_theta'
-
 }
 
 
@@ -359,7 +359,7 @@ log_val = {
   'resmax':False,
   'modmin':False,
   'modmax':False,
-  'like':True,
+  'like':False,
   'nlike':True,
   'evals':True,
   'iter':True,
@@ -402,10 +402,14 @@ lbl = {
   'dec':'Dec',
   'e1':r'$e_1$',
   'e2':r'$e_2$',
+  'e':r'$e$',
   'psf1':r'PSF $e_1$',
   'psf2':r'PSF $e_2$',
   'psfe':r'PSF $|e|$',
   'psffwhm':'PSF FWHM',
+  'hsmpsf1':r'HSM PSF $e_1$',
+  'hsmpsf2':r'HSM PSF $e_2$',
+  'hsmpsfe':r'HSM PSF $|e|$',
   'm':'m',
   'c1':r'$c_1$',
   'c2':r'$c_2$',
@@ -450,6 +454,9 @@ lbl = {
   'sig':r'$Edge \sigma$',
   'pos':'Pos. Angle',
   'psfpos':'PSF Pos. Angle',
+  'dpsf':r'PSF $e_1-$ PSF $e_2$',
+  'hsmpsfpos':'HSM PSF Pos. Angle',
+  'hsmdpsf':r'HSM PSF $e_1-$ PSF $e_2$',
   'invfluxfrac':'Inv. Flux Frac.',
   'airmass':'Air Mass',
   'exptime':'Exp. Time',
@@ -457,7 +464,6 @@ lbl = {
   'maglimit':'Mag. Limit',
   'skybrite':'Sky Brightness',
   'skysigma':r'Sky $\sigma$',
-  'dpsf':r'PSF $e_1-$ PSF $e_2$',
   'g':r'$g$ magauto',
   'r':r'$r$ magauto',
   'i':r'$i$ magauto',

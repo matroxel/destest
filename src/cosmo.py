@@ -365,6 +365,15 @@ class run(object):
       cd %s
       """ % (config.cosmosisrootdir,config.cosmosissource,config.pztestdir)
 
+    ellmin=200.
+    ellmax=2000.
+    nell=10
+
+    if testtype=='bao':
+      ellmin=10.
+      ellmax=1000.
+      nell=500
+
     params['sigma8_input']=(0.65, .8, .95)
     vary['sigma8_input']=False
     if cosmo:
@@ -373,16 +382,19 @@ class run(object):
       if testtype!='wl':
         for i in range(bins):
           vary['b'+str(i)]=True
-    else:
+    elif (testtype=='wl')|(testtype=='lss'):
       testtype='tcp'
 
     if testtype=='lss':
       nzdatablocks="""'position'"""
       datablocks="""'galaxy_cl'"""
+    if testtype=='bao':
+      nzdatablocks="""'position'"""
+      datablocks="""'galaxy_cl'"""
     if testtype=='wl':
       nzdatablocks="""'shear'"""
       datablocks="""'shear_cl'"""
-    if testtype=='tcp':
+    if (testtype=='tcp')|(testtype=='bao'):
       nzdatablocks="""'shear position'"""
       datablocks="""'shear_cl shear_galaxy_cl galaxy_cl'"""
     snz='nz_shear'
@@ -406,14 +418,14 @@ class run(object):
     ii='F'
     si='F'
     pi='F'
-    if testtype=='lss':
+    if (testtype=='lss'):
       pp='position-position'
     elif testtype=='wl':
       ss='shear-shear'
       if ia:
         ii='shear-shear'
         si='shear-shear'
-    elif testtype=='tcp':
+    elif (testtype=='tcp')|(testtype=='bao'):
       ss='shear-shear'
       sp='shear-position'
       pp='position-position'
@@ -428,10 +440,6 @@ class run(object):
       modules+=""" add_intrinsic"""
     if testtype!='wl':
       modules+=""" ggl_bias"""
-
-    ellmin=200.
-    ellmax=2000.
-    nell=10
 
     mnpoints=200
     mntolerance=0.5
@@ -452,6 +460,8 @@ class run(object):
     else:
       gausscov='T'
       sampler='test'
+      if testtype=='bao':
+        modules+=""" 2pt_matter"""
       modules+=""" save_c_ell_fits'"""
       like="""''"""
       short="""''"""
@@ -563,6 +573,8 @@ class run(object):
             nzinfile=config.pztestdir+test+'/nofz/'+nofz[:-8]+'.fits.gz'
             outfile=config.pztestdir+test+'/out/'+nofz[:-8]+'.txt'
             savedir=config.pztestdir+test+'/out/'+nofz[:-8]#"""''"""
+            if testtype=='bao':
+              savefile=config.pztestdir+test+'/out/'+nofz[:-8]+'_bao.fits.gz'
             savefile=config.pztestdir+test+'/out/'+nofz[:-8]+'.fits.gz'
             valuesfile=config.pztestdir+test+'/ini/'+nofz[:-8]+'_values.ini'
             if 'notomo' in nofz:

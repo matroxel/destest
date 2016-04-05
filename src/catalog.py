@@ -37,7 +37,9 @@ class CatalogStore(object):
   def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999):
 
     if setup:
+      # Populate catalog on object creation
 
+      # Select column name lookup dict
       if cattype=='i3':
         table=config.i3_col_lookup
       elif cattype=='ng':
@@ -53,6 +55,7 @@ class CatalogStore(object):
       else:
         raise CatValError('No catalog type cattype specified.')
 
+      # Choose default selections for cuts and columns to read
       if cutfunc is None:
         print 'Assuming no mask of catalog.'
         cutfunc=CatalogMethods.final_null_cuts()
@@ -62,7 +65,7 @@ class CatalogStore(object):
         cols=np.array(list(table.keys()))
 
       if goldfile!=None:
-        print 'not ready to use flat catalog format in this version'
+        print 'not ready to use matched catalog format in this version'
         if (i3file is None)|(ngfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
 
@@ -78,16 +81,21 @@ class CatalogStore(object):
         else:
           catdir=catdir+'*fit*'
 
+        # Read in columns from file(s)
         cols1=[table.get(x,None) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)):
+        catcols,filenames=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)
+        for i,x in enumerate(catcols):
           setattr(self,cols[i],x)
+        self.filename=filenames
 
       else:
         raise CatValError('Please specify the source of files: catfile, catdir, or goldfile/i3file/ngfile')
 
+      #Generate id column if no unique id specified
       if 'coadd' not in cols:
         self.coadd=np.arange(len(getattr(self,cols[0])))
 
+      #Generate derived quantities
       if cattype in ['i3','ng']:
         if ('e1' in cols)&('e2' in cols):
           self.pos=0.5*np.arctan2(self.e2,self.e1)+np.pi/2.
@@ -95,6 +103,11 @@ class CatalogStore(object):
         if ('psf1' in cols)&('psf2' in cols):
           self.psfpos=0.5*np.arctan2(self.psf2,self.psf1)+np.pi/2.
           self.dpsf=self.psf1-self.psf2
+          self.psfe=np.sqrt(self.psf1**2.+self.psf2**2.)
+        if ('hsmpsf1' in cols)&('hsmpsf2' in cols):
+          self.hsmpsfpos=0.5*np.arctan2(self.hsmpsf2,self.hsmpsf1)+np.pi/2.
+          self.hsmdpsf=self.hsmpsf1-self.hsmpsf2
+          self.hsmpsfe=np.sqrt(self.hsmpsf1**2.+self.hsmpsf2**2.)
         if ('psf1_exp' in cols)&('psf2_exp' in cols):
           self.psfpos=0.5*np.arctan2(self.psf2_exp,self.psf1_exp)+np.pi/2.
           self.dpsf=self.psf1_exp-self.psf2_exp
@@ -104,45 +117,18 @@ class CatalogStore(object):
           self.ccd-=1
         if 'like' in cols:
           self.nlike=-self.like
-      if (cattype=='i3')&('dflux' in cols)&('bflux' in cols):
-        self.bfrac=np.zeros(len(self.coadd))
-        self.bfrac[self.dflux==0]=1
+      if cattype=='i3':
+        if ('dflux' in cols)&('bflux' in cols)&(~('bfrac' in cols)):
+          self.bfrac=np.zeros(len(self.coadd))
+          self.bfrac[self.dflux==0]=1
 
-
+      #Make footprint contiguous across ra=0
       if ('ra' in cols):
         ra=self.ra
         ra[self.ra>180]=self.ra[self.ra>180]-360
         self.ra=ra
 
-
-      self.name=name
-      self.cat=cattype
-      self.release=release
-      #Number of bins in linear split functions (see e.g., sys_split module).
-      self.lbins=config.cfg.get('lbins',None)
-      #Number of bins to split signal in for systematics null tests.
-      self.sbins=config.cfg.get('sbins',None)
-      #Binslop for use in Treecorr.
-      self.slop=config.cfg.get('slop',None)
-      #Number of separation bins in Treecorr.
-      self.tbins=config.cfg.get('tbins',None)
-      #Number of cosebi bins (not migrated from SV yet)
-      self.cbins=config.cfg.get('cbins',None)
-      #Separation [min,max] for Treecorr.
-      self.sep=config.cfg.get('sep',None)
-      self.calc_err=False
-      #Number of simulation patches for covariances.
-      self.num_patch=config.cfg.get('num_patch',None)
-      #Whether to use weighting and bias/sensitivity corrections in calculations.
-      if cattype=='gal':
-        self.bs=False
-        self.wt=config.cfg.get('wt',None)
-      else:
-        self.bs=config.cfg.get('bs',None)
-        self.wt=config.cfg.get('wt',None)
-      #Whether to reweight n(z) when comparing subsets of data for null tests.
-      self.pzrw=config.cfg.get('pzrw',None) 
-
+      #Read random file for galaxy catalog
       if (cattype=='gal')&(ranfile is not None):
         tmp=fio.FITS(ranfile)[-1].read()
         try:
@@ -157,13 +143,13 @@ class CatalogStore(object):
         self.ran_ra=self.ran_ra[ra>60]
         self.ran_dec=self.ran_dec[ra>60]
 
-
+      #Build jackknife regions
       if jkbuild:
         X=np.vstack((self.ra,self.dec)).T
-        km0 = km.kmeans_sample(X, config.cfg.get('num_reg',None), maxiter=100, tol=1.0e-5)
+        km0 = km.kmeans_sample(X, config.cfg.get('num_reg',100), maxiter=100, tol=1.0e-5)
         self.regs=km0.labels
         #Number of jackknife regions
-        self.num_reg=config.cfg.get('num_reg',None)
+        self.num_reg=config.cfg.get('num_reg',100)
       else:
         self.num_reg=0
         self.regs=np.ones(len(self.coadd))
@@ -176,80 +162,36 @@ class CatalogStore(object):
       #   self.regs=np.ones(len(self.coadd))
 
 
-    else:
-
-      self.name=name
-      self.cat=cattype
-      self.lbins=10
-      self.sbins=2
-      self.slop=0.1
-      self.tbins=8
-      self.cbins=5
-      self.sep=np.array([1,400])
-      self.calc_err=False
-      self.num_patch=126
+    # Default information assigned to a catalog object
+    self.name=name
+    self.cat=cattype
+    self.release=release
+    #Number of bins in linear split functions (see e.g., sys_split module).
+    self.lbins=config.cfg.get('lbins',10)
+    #Number of bins to split signal in for systematics null tests.
+    self.sbins=config.cfg.get('sbins',2)
+    #Binslop for use in Treecorr.
+    self.slop=config.cfg.get('slop',1.)
+    #Number of separation bins in Treecorr.
+    self.tbins=config.cfg.get('tbins',10)
+    #Number of bandpower bins 
+    self.cbins=config.cfg.get('cbins',500)
+    #Separation [min,max] for Treecorr.
+    self.sep=config.cfg.get('sep',[1.,400.])
+    self.calc_err=False
+    #Number of simulation patches for covariances.
+    self.num_patch=config.cfg.get('num_patch',100)
+    #Whether to use weighting and bias/sensitivity corrections in calculations.
+    if cattype=='gal':
       self.bs=False
-      self.wt=False
-      self.pzrw=False 
-      self.release=release
+      self.wt=config.cfg.get('wt',False)
+    else:
+      self.bs=config.cfg.get('bs',False)
+      self.wt=config.cfg.get('wt',False)
+    #Whether to reweight n(z) when comparing subsets of data for null tests.
+    self.pzrw=config.cfg.get('pzrw',False) 
 
     return
-
-
-class MockCatStore(object):
-  """
-  A flexible class that reads and stores mock catalog information. Used for covarianace calculations. Mock catalog module not yet migrated from SV code.
-  """
-
-  coadd=[]
-  ra=[]
-  dec=[]
-  z=[]
-  A00=[]
-  A01=[]
-  A10=[]
-  A11=[]
-  w=[]
-  e1=[]
-  e2=[]
-  g1=[]
-  g2=[]
-  lbins=10
-  cbins=5
-  tbins=9
-  sep=np.array([1,400])
-  slop=0.15
-  use_jk=False
-
-  def __init__(self,setup=True,filenum=0,mocktype='sva1_gold'):
-
-    if setup:
-      for ifile,file in enumerate(glob.glob(config.mockdir+mocktype+'/*.fit')):
-        if ifile==filenum:
-          print 'simfile',ifile,file
-          try:
-            fits=fio.FITS(file)
-            #tmparray=apt.Table.read(file)
-          except IOError:
-            print 'error loading fits file: ',file
-            return
-          tmparray=fits[-1].read()
-          self.coadd=np.arange(len(tmparray['id']))
-          self.ra=tmparray['ra']
-          self.dec=tmparray['dec']
-          self.z=tmparray['z']
-          self.A00=tmparray['A00']
-          self.A01=tmparray['A01']
-          self.A10=tmparray['A10']
-          self.A11=tmparray['A11']
-          self.w=[]
-          self.e1=[]
-          self.e2=[]
-          self.prop=[]
-          self.g1=tmparray['g1']
-          self.g2=tmparray['g2']
-          break
-
 
 class PZStore(object):
   """
@@ -263,6 +205,8 @@ class PZStore(object):
   :filetype:  bool - Type of file to be read. dict - standard dict file for passing n(z) for spec validation, h5 - h5 file of pdfs, fits - fits file of pdfs. Non-dict file support not fully migrated from SV code yet - can use setup=False to store pdf information in class manually, though.
   :file:      str - File to be read in.
   """
+
+  # This is messy currently due to randomness in catalog formats for photo-z information...
 
   def __init__(self,name,setup=True,pztype='skynet',filetype=None,file=None):
 
@@ -406,6 +350,60 @@ class PZStore(object):
 
     return
 
+class MockCatStore(object):
+  """
+  A flexible class that reads and stores mock catalog information. Used for covarianace calculations. Mock catalog module not yet migrated from SV code.
+  """
+
+  coadd=[]
+  ra=[]
+  dec=[]
+  z=[]
+  A00=[]
+  A01=[]
+  A10=[]
+  A11=[]
+  w=[]
+  e1=[]
+  e2=[]
+  g1=[]
+  g2=[]
+  lbins=10
+  cbins=5
+  tbins=9
+  sep=np.array([1,400])
+  slop=0.15
+  use_jk=False
+
+  def __init__(self,setup=True,filenum=0,mocktype='sva1_gold'):
+
+    if setup:
+      for ifile,file in enumerate(glob.glob(config.mockdir+mocktype+'/*.fit')):
+        if ifile==filenum:
+          print 'simfile',ifile,file
+          try:
+            fits=fio.FITS(file)
+            #tmparray=apt.Table.read(file)
+          except IOError:
+            print 'error loading fits file: ',file
+            return
+          tmparray=fits[-1].read()
+          self.coadd=np.arange(len(tmparray['id']))
+          self.ra=tmparray['ra']
+          self.dec=tmparray['dec']
+          self.z=tmparray['z']
+          self.A00=tmparray['A00']
+          self.A01=tmparray['A01']
+          self.A10=tmparray['A10']
+          self.A11=tmparray['A11']
+          self.w=[]
+          self.e1=[]
+          self.e2=[]
+          self.prop=[]
+          self.g1=tmparray['g1']
+          self.g2=tmparray['g2']
+          break
+
 class ColError(Exception):
   def __init__(self, value):
     self.value = value
@@ -424,28 +422,32 @@ class CatalogMethods(object):
 
   @staticmethod
   def get_cat_cols(dir,cols,table,cuts,tiles=None,maxiter=999999,hdu=-1,maxrows=1):
+    """
+    Work function for CatalogStore to parse and read in catalog informaiton from one or more fits files.
+    """
 
     import fitsio as fio
     import re
 
-    noval=999999
-
     lenst=0
-    #array=[list() for i in xrange(len(cols))]
+    # Loop over file(s) [in directory]
     for ifile,file in enumerate(glob.glob(dir)):
       if ifile>maxiter:
         break
+      # Skip any tiles not in tile list - needs to be generalised to work for other keywords/patterns
       if hasattr(tiles, '__len__'):
         m=re.search('.*/(DES\d\d\d\d[+-]\d\d\d\d).*',file)
         if m:
           if m.group(1) not in tiles:
             continue
+
+      # File format may not be readable
       try:
         fits=fio.FITS(file)
       except IOError:
         print 'error loading fits file: ',file
-        return
 
+      # Verify that the columns requested exist in the file
       colex,colist=CatalogMethods.col_exists(cols,fits[hdu].get_colnames())
       if colex<1:
         for i,x in enumerate(cols):
@@ -457,133 +459,68 @@ class CatalogMethods(object):
       cutcols=[table.get(x,None) for x in cuts['col']]
       colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
       if colex<1:
-        # for i,x in enumerate(cuts['col']):
-        #   cuts['col'][i]=x.lower()
         cutcols=[table.get(x,None).lower() for x in cuts['col']]
         colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
         if colex<1:
           raise ColError('cut columns '+colist+' do not exist in file: '+file)
 
-      tmparray=fits[hdu].read(columns=cutcols)
+      # Dump the columns needed for masking into memory if everything is there
+      try:
+        tmparray=fits[hdu].read(columns=cutcols)
+      except IOError:
+        print 'error loading fits file: ',file
 
+      # Generate the selection mask based on the passed cut function
       mask=np.array([])
       for icut,cut in enumerate(cuts): 
         mask=CatalogMethods.cuts_on_col(mask,tmparray,cutcols[icut],cut['min'],cut['eq'],cut['max'])
 
-      tmparray=fits[hdu].read(columns=cols)
+      # Dump the requested columns into memory if everything is there
+      try:
+        tmparray=fits[hdu].read(columns=cols)
+      except IOError:
+        print 'error loading fits file: ',file
+
+      # If first file, generate storage array to speed up reading in of data
       if lenst==0:
         array=np.empty((maxrows), dtype=tmparray.dtype.descr)
+        filenames=np.empty((maxrows), dtype='S'+str(len(file.split('/')[-1].split('.')[0])))
 
+      # If exceeded max number of rows reqested, end iteration and return catalog
       if lenst+np.sum(mask)>maxrows:
         fits.close()
-        return [array[col][:lenst] for i,col in enumerate(cols)]
+        return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst]
         
       array[lenst:lenst+np.sum(mask)]=tmparray[mask]
+      filenames[lenst:lenst+np.sum(mask)]=np.repeat(file.split('/')[-1].split('.')[0],np.sum(mask))
 
       lenst+=np.sum(mask)
       print ifile,np.sum(mask),lenst,file
-        
-      # for i,col in enumerate(cols):
-      #   array[i].extend(tmparray[col][mask])
-
-      # if lenst==len(tmparray):
-      #   array=tmparray[mask]
-      # else:
-      #   array=np.append(array,tmparray[mask],axis=0)
 
       fits.close()
 
-    return [array[col][:lenst] for i,col in enumerate(cols)]
-
-
-
-  # @staticmethod
-  # def get_cat_cols_matched(dir,goldfile,catfile,cols,table,cuts,full=False,maxiter=999999,hdu=-1,ext='*.fits*'):
-
-  #   print 'file',goldfile
-  #   try:
-  #     fits=fio.FITS(dir+goldfile)
-  #   except IOError:
-  #     print 'error loading fits file: ',goldfile
-  #     return
-
-  #   gold=fits[hdu].read()
-
-  #   cols1=cols[[gold_col_lookup.get(x,False) for x in cols]]
-
-  #   colex,colist=CatalogMethods.col_exists(cols1,fits[hdu].get_colnames())
-  #   if colex<1:
-  #     raise ColError('columns '+colist+' do not exist in file: '+file)
-  #     print 'there are column name(s) not in file: ',file
-  #     return
-
-  #   print cuts
-
-  #   colex,colist=CatalogMethods.col_exists(cuts['col'],fits[hdu].get_colnames())
-  #   if colex<1:
-  #     print 'there are cut column name(s) not in file: ',file
-  #     raise ColError('cut columns '+colist+' do not exist in file: '+file)
-  #     return
-
-  #   mask=np.array([])
-  #   for icut,cut in enumerate(cuts): 
-  #     mask=CatalogMethods.cuts_on_col(mask,gold,cut['col'],cut['min'],cut['eq'],cut['max'])
-
-  #   gold=fits[hdu].read(columns=cols1)
-  #   gold=gold[mask]
-
-  #   print 'file',catfile
-  #   try:
-  #     fits=fio.FITS(dir+catfile)
-  #   except IOError:
-  #     print 'error loading fits file: ',catfile
-  #     return
-
-  #   cat=fits[hdu].read()
-
-  #   cols1=~cols1
-
-  #   colex,colist=CatalogMethods.col_exists(cols1,fits[hdu].get_colnames())
-  #   if colex<1:
-  #     raise ColError('columns '+colist+' do not exist in file: '+file)
-  #     print 'there are column name(s) not in file: ',file
-  #     return
-
-  #   colex,colist=CatalogMethods.col_exists(cuts['col'],fits[hdu].get_colnames())
-  #   if colex<1:
-  #     print 'there are cut column name(s) not in file: ',file
-  #     raise ColError('cut columns '+colist+' do not exist in file: '+file)
-  #     return
-
-  #   mask=np.array([])
-  #   for icut,cut in enumerate(cuts): 
-  #     mask=CatalogMethods.cuts_on_col(mask,cat,cut['col'],cut['min'],cut['eq'],cut['max'])
-
-  #   cat=fits[hdu].read(columns=cols1)
-  #   cat=cat[mask]
-
-  #   array=np.column_stack((gold,cat))
-
-  #   if full:
-  #     return np.copy(array)
-  #   else:
-  #     return [(array[col]) for col in cols]
+    return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst]
 
 
   @staticmethod
   def col_exists(cols,colnames):
+    """
+    Check whether columns exist and return list of missing columns for get_cat_cols().
+    """
 
     colist=''
     exists=np.in1d(cols,colnames)
     for i,val in enumerate(exists):
-      if val==0:
+      if not val:
         colist+=' '+cols[i]
 
     return np.sum(exists)/len(cols),colist
 
   @staticmethod
   def cuts_on_col(mask,array,col,valmin,valeq,valmax):
-    noval=999999
+    """
+    Build mask for cutting catalogs as columns are read in to get_cat_cols().
+    """    
 
     if mask.size==0:
       mask=np.ones((len(array[col])), dtype=bool)
@@ -612,6 +549,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def add_cut(cuts,col,min,eq,max):
+    """
+    Helper function to format catalog cuts.
+    """    
     
     if cuts.size==0:
       cuts=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
@@ -631,6 +571,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def load_spec_test_file(file):
+    """
+    Reads pickled photo-z dict.
+    """    
 
     f=open(file, 'r')
     d=pickle.load(f)
@@ -641,7 +584,7 @@ class CatalogMethods(object):
   @staticmethod
   def sort(a1,a2):
     """
-    Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
+    Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id). This function is too slow for DES Y1+ or beyond size catalogs. See sort2().
 
     len(a1[mask1])==len(a2[mask2])
     (a1[mask1])[sort1]==a2[mask2]
@@ -655,14 +598,6 @@ class CatalogMethods(object):
     sort1=np.argsort(a1[mask1])[np.argsort(np.argsort(a2[mask2]))]
     sort2=np.argsort(a2[mask2])[np.argsort(np.argsort(a1[mask1]))]
 
-    # def intersect_indices_unique(x, y):
-    #   u_idx_x = np.argsort(x)
-    #   u_idx_y = np.argsort(y)
-    #   i_xy = np.intersect1d(x, y, assume_unique=True)
-    #   i_idx_x = u_idx_x[x[u_idx_x].searchsorted(i_xy)]
-    #   i_idx_y = u_idx_y[y[u_idx_y].searchsorted(i_xy)]
-    #   return i_idx_x, i_idx_y    
-
     return mask1,sort1,mask2,sort2
 
 
@@ -670,7 +605,6 @@ class CatalogMethods(object):
   def sort2(x,y):
     """
     Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
-
     """
 
     u_idx_x = np.argsort(x)
@@ -747,42 +681,13 @@ class CatalogMethods(object):
     """
 
     cuts=CatalogMethods.add_cut(np.array([]),'info',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'psf1',-1.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'psf1',-99.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'psf2',-99.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'psffwhm',-99.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'rgp',1.13,noval,3.)
+    cuts=CatalogMethods.add_cut(cuts,'snr',12.,noval,200.)
 
     return cuts
-
-  @staticmethod
-  def i3_cuts2():
-    """
-    Masking functions for use in CatalogStore initialisation. 
-
-    Use:
-
-    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
-    """
-
-    cuts=CatalogMethods.add_cut(np.array([]),'info',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'psf1',-1.,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'nexp',2,noval,noval)
-
-    return cuts
-
-  @staticmethod
-  def i3_cuts3():
-    """
-    Masking functions for use in CatalogStore initialisation. 
-
-    Use:
-
-    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
-    """
-
-    cuts=CatalogMethods.add_cut(np.array([]),'info',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'psf1',-1.,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'nexp',3,noval,noval)
-
-    return cuts
-
 
   @staticmethod
   def redmagic():
@@ -799,76 +704,26 @@ class CatalogMethods(object):
     return cuts
 
   @staticmethod
-  def default_ngmix009_cuts():
+  def get_cat_colnames(cat):
     """
-    Masking functions for use in CatalogStore initialisation. 
-
-    Use:
-
-    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    Takes a CatalogStore object. Finds all array names of numeric arrays of length the array of unique object ids - cat.coadd. 
     """
+    cols=[]
+    for x in dir(cat):
+      if x=='coadd':
+        continue
+      obj = getattr(cat,x)
+      if isinstance(obj,np.ndarray):
+        if obj.dtype.type is not np.string_:
+          if len(obj)==len(cat.coadd):
+            cols.append(x)
 
-    cuts=CatalogMethods.add_cut(np.array([]),'exp_flags',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'flags_i',noval,noval,4)
-    cuts=CatalogMethods.add_cut(cuts,'exp_arate',0.4,noval,0.6)
-    cuts=CatalogMethods.add_cut(cuts,'exp_s2n_w',10,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'exp_t_s2n',3,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
-    cuts=CatalogMethods.add_cut(cuts,'dec',-61,noval,-42.)
-
-    return cuts
-
-  @staticmethod
-  def default_im3shapev8_cuts():
-    """
-    Masking functions for use in CatalogStore initialisation. 
-
-    Use:
-
-    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
-    """
-
-    cuts=CatalogMethods.add_cut(np.array([]),'error_flag',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'info_flag',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
-    cuts=CatalogMethods.add_cut(cuts,'dec',-61,noval,-42.)
-    # Add gold match cut...
-
-    return cuts
-
-  @staticmethod
-  def default_rm_cuts():
-    """
-    Masking functions for use in CatalogStore initialisation. 
-
-    Use:
-
-    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
-    """
-
-    cuts=CatalogMethods.add_cut(np.array([]),'lum',0,noval,noval)
-    # cuts=CatalogMethods.add_cut(cuts,'ra',60.,noval,95.)
-    # cuts=CatalogMethods.add_cut(cuts,'dec',-61,noval,-42.)
-    # Add gold match cut...
-
-    return cuts
-
-  @staticmethod
-  def ngmix_weight_calc(cat,sn=0.16):
-    """
-    Calculates ngmix weight columns from covariance. Takes a CatalogStore object to modify.
-    """
-
-    w=1./(2.*sn**2.+cat.cov11+cat.cov22+2.*cat.cov12)
-    print w[w<0]
-
-    return w
-
+    return cols
 
   @staticmethod
   def match_cat(cat,mask):
     """
-    Takes a CatalogStore object to modify. Masks all arrays of length the array of unique object ids - cat.coadd.
+    Takes a CatalogStore object to modify. Masks all arrays of length the array of unique object ids - cat.coadd. Useful for selecting parts of catalog to speed up other function calls over the arrays and for matching two catalogs sorted with sort2(). 
     """
 
     for x in dir(cat):
@@ -886,7 +741,7 @@ class CatalogMethods(object):
   @staticmethod
   def check_mask(array,mask):
     """
-    Convenience function to return true array for mask if None supplied in other functions.
+    Convenience function to return true array for mask if mask=None is supplied in other functions.
     """
 
     if mask is None:
@@ -896,6 +751,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def find_col_h5(col,h5a,h5b):
+    """
+    Necessary to parse multiple photo-z file formats.
+    """
 
     if col in h5a.columns:
       print 'using '+col+' from first h5'
@@ -916,12 +774,12 @@ class CatalogMethods(object):
   @staticmethod
   def info_flag(cat):
     """
-    Takes properly constructed im3shape CatalogStore object and adds info_flag values.
+    Takes properly constructed im3shape CatalogStore object and generates info_flag values. The definitions here are deprecated.
     """
 
     import healpy as hp
-    gdmask=hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_footprint_4096.fit')
-    badmask=hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_badmask_4096.fit')
+    gdmask=hp.read_map(config.golddir+'y1a1_gold_1.0.2_wide_footprint_4096.fit.gz')
+    badmask=hp.read_map(config.golddir+'y1a1_gold_1.0.2_wide_badmask_4096.fit.gz')
 
     pix=hp.ang2pix(4096, np.pi/2.-np.radians(i3.dec),np.radians(i3.ra), nest=False)
     i3.gold_mask=(gdmask[pix] >=1)
@@ -1033,55 +891,7 @@ class CatalogMethods(object):
     return
 
   @staticmethod
-  def write_output(i3,indir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/spte_sv_v1_partial/bord/main_cats/',outdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/'):
-    """
-    Matches extra columns to CatalogStore object (i3) and rewrites info to fits files it was built from.
-    """
-
-    import glob
-    for ifile,file in enumerate(glob.glob(indir+'*')):
-      print 'file',ifile,file
-      fits=fio.FITS(outdir+file[82:],'rw')
-      tmp=fits[-1].read()
-      m1,s1,m2,s2=CatalogMethods.sort(i3.coadd,tmp['coadd_objects_id'])
-
-      fits[-1].insert_column('mag_auto_g', (i3.g[m1])[s1])
-      fits[-1].insert_column('mag_auto_r', (i3.r[m1])[s1])
-      fits[-1].insert_column('mag_auto_i', (i3.i[m1])[s1])
-      fits[-1].insert_column('mag_auto_z', (i3.z[m1])[s1])
-      fits[-1].insert_column('desdm_pz', (i3.pz[m1])[s1])
-      fits[-1].insert_column('modest', (i3.modest[m1])[s1])
-      fits[-1].insert_column('gold_mask', (i3.gold_mask[m1])[s1].astype(int))
-      fits[-1].insert_column('gold_flag', (i3.gold_flag[m1])[s1].astype(int))
-      tmp=fits[-1].read()
-      tmp['info_flag']=(i3.info[m1])[s1]
-      fits.write(tmp)
-      fits.close()
-
-    return
-
-  @staticmethod
-  def write_output2(i3,indir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/spte_sv_v1_partial/bord/main_cats/',outdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/'):
-    """
-    Matches extra columns to CatalogStore object (i3) and rewrites info to fits files it was built from.
-    """
-
-    import glob
-    for ifile,file in enumerate(glob.glob(indir+'*')):
-      print 'file',ifile,file
-      fits=fio.FITS(outdir+file[82:],'rw')
-      tmp=fits[-1].read()
-      m1,s1,m2,s2=CatalogMethods.sort(i3.coadd,tmp['coadd_objects_id'])
-
-      fits[-1].insert_column('m', (i3.m[m1])[s1])
-      fits[-1].insert_column('c1', (i3.c2[m1])[s1])
-      fits[-1].insert_column('c2', (i3.c1[m1])[s1])
-      fits.close()
-      
-    return
-
-  @staticmethod
-  def download_cat_desdm(query,name='gold',table='NSEVILLA.Y1A1_GOLD_1_0_1',dir='/share/des/sv/ngmix/v010/',order=True,num=1000000,start=0):
+  def download_cat_desdm(query,name='gold',table='table',dir='/share/des/sv/',order=True,num=1000000,start=0):
 
     from astropy.table import Table
     from desdb import Connection
@@ -1242,6 +1052,9 @@ class CatalogMethods(object):
 
   @staticmethod
   def footprint_area(cat,ngal=1,mask=None,nside=4096,nest=True,label=''):
+    """
+    Calculates footprint area of catalog.
+    """    
     import healpy as hp
     import matplotlib
     matplotlib.use ('agg')
@@ -1276,17 +1089,21 @@ class CatalogMethods(object):
 
   @staticmethod
   def radec_to_hpix(ra,dec,nside=4096,nest=True):
+    """
+    Returns healpix pixel array for input ra,dec.
+    """  
     import healpy as hp
 
     return hp.ang2pix(nside, np.pi/2.-np.radians(dec),np.radians(ra), nest=nest)
 
   @staticmethod
   def remove_duplicates(cat):
-
+    """
+    Removes duplicate unique id entries in catalogstore object.
+    """  
     a=np.argsort(cat.coadd)
     mask=np.diff(cat.coadd[a])
-    mask=mask==0
-    mask=~mask
+    mask=np.where(mask!=0)[0]
     mask=a[mask]
     CatalogMethods.match_cat(cat,mask)
 

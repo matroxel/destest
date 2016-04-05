@@ -13,16 +13,18 @@ import corr
 class split(object):
 
   @staticmethod
-  def cat_splits_lin(vals,cat,mask=None):
+  def cat_splits_lin_e(cat,cols=None,mask=None):
     """
-    Loop over array names in vals of CatalogStore cat with optional masking. Calls split_methods.split_gals_lin_along().
+    Loop over array names in cols of CatalogStore cat with optional masking. Calls split_methods.split_gals_lin_along().
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
 
     txt.write_methods.heading('Linear Splits',cat,label='linear_splits',create=True)
 
-    for x in vals:
+    for x in cols:
 
       txt.write_methods.heading(x,cat,label='linear_splits',create=False)
 
@@ -39,28 +41,62 @@ class split(object):
     return
 
   @staticmethod
-  def cat_splits_2pt(vals,cat,cat2=None,mask=None):
+  def cat_splits_lin_full(cat,cols=None,mask=None):
     """
-    Loop over array names in vals of CatalogStore cat with optional masking. Calls split_methods.split_gals_2pt_along().
+    Loop over array names in cols of CatalogStore cat with optional masking. Calls split_methods.split_gals_lin_along().
+    """
+
+    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
+
+    txt.write_methods.heading('Linear Splits',cat,label='linear_splits',create=True)
+
+    for x in cols:
+      for y in cols:
+        if (x==y)|(x in ['e1','e2'])|(y in ['e1','e2']):
+          continue
+
+        txt.write_methods.heading(x+'  '+y,cat,label='linear_splits',create=False)
+
+        arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=split_methods.split_gals_lin_along(cat,x,mask=mask,log=config.log_val.get(x,None),log2=config.log_val.get(y,None),plot=True,e=False,val2=y)
+        
+        # txt.write_methods.write_append(x+'  '+str(arr1)+'  '+str(arr1err),cat,label='linear_splits',create=False)
+        # txt.write_methods.write_append('e  '+str(e1)+'  '+str(e2),cat,label='linear_splits',create=False)
+        # txt.write_methods.write_append('e err  '+str(e1err)+'  '+str(e2err),cat,label='linear_splits',create=False)
+        txt.write_methods.write_append('slope  '+str(m1)+'  '+str(m2),cat,label='linear_splits',create=False)
+        txt.write_methods.write_append('slope err  '+str(m1err)+'  '+str(m2err),cat,label='linear_splits',create=False)
+        txt.write_methods.write_append('intercept  '+str(b1)+'  '+str(b2),cat,label='linear_splits',create=False)
+        txt.write_methods.write_append('intercept err  '+str(b1err)+'  '+str(b2err),cat,label='linear_splits',create=False)
+
+    return
+
+  @staticmethod
+  def cat_splits_2pt(cat,cat2=None,cols=None,mask=None):
+    """
+    Loop over array names in cols of CatalogStore cat with optional masking. Calls split_methods.split_gals_2pt_along().
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     if cat2 is None:
       cat2=cat        
 
+    if cols is None:
+      cols=catalog.CatalogMethods.get_cat_colnames(cat)
+
     txt.write_methods.heading('2pt Splits',cat,label='2pt_splits',create=True)
 
-    for x in vals:
+    for x in cols:
 
       txt.write_methods.heading(x,cat,label='2pt_splits',create=False)
 
-      xi,gt,split=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,mean=True,jkon=False,mock=False,log=False,plot=True)
+      xi,gt,split=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,jkon=False,mock=False,log=False,plot=True)
 
       txt.write_methods.write_append(x+'  '+str(np.min(getattr(cat,x)[mask]))+'  '+str(split)+'  '+str(np.max(getattr(cat,x)[mask])),cat,label='2pt_splits',create=False)
 
       txt.write_methods.write_append('theta  '+str(xi[0]),cat,label='2pt_splits',create=False)
 
-      txt.write_methods.write_append('xip  '+str(xi[2][0]),cat,label='2pt_splits',create=False)
+      # txt.write_methods.write_append('xip  '+str(xi[2][0]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('lower delta xip  '+str((xi[1][0]-xi[2][0])/xi[2][0]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('upper delta xip  '+str((xi[3][0]-xi[2][0])/xi[2][0]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('delta xip  '+str((xi[3][0]-xi[1][0])/xi[2][0]),cat,label='2pt_splits',create=False)
@@ -69,7 +105,7 @@ class split(object):
       txt.write_methods.write_append('delta xip err  '+str(xi[8][0]/xi[2][0]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('amp xip  '+str(xi[10][0])+'  '+str(xi[11][0])+'  '+str(xi[12][0]),cat,label='2pt_splits',create=False)
 
-      txt.write_methods.write_append('xim  '+str(xi[2][1]),cat,label='2pt_splits',create=False)
+      # txt.write_methods.write_append('xim  '+str(xi[2][1]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('lower delta xim  '+str((xi[1][1]-xi[2][1])/xi[2][1]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('upper delta xim  '+str((xi[3][1]-xi[2][1])/xi[2][1]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('delta xim  '+str((xi[3][1]-xi[1][1])/xi[2][1]),cat,label='2pt_splits',create=False)
@@ -78,8 +114,7 @@ class split(object):
       txt.write_methods.write_append('delta xim err  '+str(xi[8][1]/xi[2][1]),cat,label='2pt_splits',create=False)
       txt.write_methods.write_append('amp xim  '+str(xi[10][1])+'  '+str(xi[11][1])+'  '+str(xi[12][1]),cat,label='2pt_splits',create=False)
 
-      txt.write_methods.write_append('theta  '+str(gt[0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('gt  '+str(gt[2][0]),cat,label='2pt_tan_splits',create=False)
+      # txt.write_methods.write_append('gt  '+str(gt[2][0]),cat,label='2pt_tan_splits',create=False)
       txt.write_methods.write_append('lower delta gt  '+str((gt[1][0]-gt[2][0])/gt[2][0]),cat,label='2pt_tan_splits',create=False)
       txt.write_methods.write_append('upper delta gt  '+str((gt[3][0]-gt[2][0])/gt[2][0]),cat,label='2pt_tan_splits',create=False)
       txt.write_methods.write_append('delta gt  '+str((gt[3][0]-gt[1][0])/gt[2][0]),cat,label='2pt_tan_splits',create=False)
@@ -138,7 +173,7 @@ class split_methods(object):
     return array
 
   @staticmethod
-  def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,label='',plot=False,fit=True,e=True,val2=None):
+  def split_gals_lin_along(cat,val,mask=None,jkon=True,mock=False,log=False,log2=False,label='',plot=False,fit=True,e=True,val2=None,trend=True):
     """
     Split catalog cat into cat.lbins equal (weighted) parts along val. Plots mean shear in bins and outputs slope and error information.
     """
@@ -148,23 +183,22 @@ class split_methods(object):
     array=getattr(cat,val)
     if val2 is not None:
       array2=getattr(cat,val2)
+      if log2:
+        array2=np.log10(array2)
+
     if log:
       array=np.log10(array)
 
     if e:
       arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,mask=mask,mock=mock,log=log)
     else:
-      print 'no e'
       arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,mask=mask,mock=mock,log=log,noe=True,y=array2)
-
-    print 'binning done'
 
     if fit:
       m1,b1,m1err,b1err=lin.fitting.lin_fit(arr1,e1,e1err)
       if e:
         m2,b2,m2err,b2err=lin.fitting.lin_fit(arr1,e2,e2err)
       else:
-        print 'no e'
         m2,b2,m2err,b2err=0.,0.,0.,0.
     else:
       m1,m2,b1,b2,m1err,m2err,b1err,b2err=0.,0.,0.,0.,0.,0.,0.,0.
@@ -176,14 +210,14 @@ class split_methods(object):
 
     if plot:
       if e:
-        fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label,e=True,val2=None)
+        fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label,e=True,val2=None,trend=trend)
       else:
-        fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label,e=False,val2=val2)
+        fig.plot_methods.plot_lin_split(arr1,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=log,label=label,e=False,val2=val2,trend=trend)
 
     return arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err
 
   @staticmethod
-  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False):
+  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False,blind=True):
     """
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
@@ -199,18 +233,17 @@ class split_methods(object):
     if config.log_val.get(val,None):
       s='log '+s
 
-    bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.pz,mask=mask,label=s,plot=plot)
-    return
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.zp,mask=mask,label=s,plot=plot)
 
     for j in xrange(2):
       if j==0:
-        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&m,wa=w1)
-        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(~m),wa=w2)
+        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(w!=0))
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==0)&(w!=0),wa=w)
+        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==1)&(w!=0),wa=w)
       else:
-        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask,ran=False)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&m,wb=w1,ran=False)
-        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(~m),wb=w2,ran=False) 
+        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(w!=0),ran=False)
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==0)&(w!=0),wb=w,ran=False)
+        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==1)&(w!=0),wb=w,ran=False) 
 
       # if (jkon)&(cat.use_jk==1):
       #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
@@ -237,7 +270,7 @@ class split_methods(object):
         gt=(theta,outa,out0,outb,erra,err0,errb,derra,derr0,derrb,a1,a0,a2)
 
     if plot:
-      fig.plot_methods.plot_2pt_split(xi,gt,cat,val,split,log)
+      fig.plot_methods.plot_2pt_split(xi,gt,cat,val,edge[1],log)
 
     return xi,gt,split
 
@@ -250,7 +283,10 @@ class split_methods(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     w=np.ones(len(cat.coadd))
-    edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
+    if cat.wt:
+      edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
+    else:
+      edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins)
     bins=np.digitize(array[mask],edge)-1
 
     if cat.pzrw:
@@ -264,7 +300,7 @@ class split_methods(object):
     return bins,w,edge
 
   @staticmethod
-  def pz_weight(nz,bins,binnum=200,pdf=False):
+  def pz_weight(nz,bins,binnum=100,pdf=False):
     """
     Reweight portions of galaxy population to match redshift distributions to that of the whole population.
     """
@@ -275,12 +311,17 @@ class split_methods(object):
       return
     else:
       h0,b0=np.histogram(nz,bins=binnum)
-      for j in xrange(np.max(bins)+1):
+      for j in xrange(np.max(bins)):
         binmask=(bins==j)
         h,b=np.histogram(nz[binmask],bins=b0)
-        w[binmask]=1.*h0/h
+        for k in xrange(binnum):
+          binmask2=(nz>b[k])&(nz<=b[k+1])
+          if h[k]<0.01*h0[k]:
+            w[binmask&binmask2]=0.
+          else:
+            w[binmask&binmask2]=0.5*h0[k]/h[k]
 
-      print np.sum(np.isnan(w)),np.sum(np.isinf(w))
+    print 'max/min weight', np.max(w),np.min(w)
 
     return w
 
