@@ -83,10 +83,11 @@ class CatalogStore(object):
 
         # Read in columns from file(s)
         cols1=[table.get(x,None) for x in cols]
-        catcols,filenames=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)
+        catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)
         for i,x in enumerate(catcols):
           setattr(self,cols[i],x)
         self.filename=filenames
+        self.filenum=filenums
 
       else:
         raise CatValError('Please specify the source of files: catfile, catdir, or goldfile/i3file/ngfile')
@@ -485,6 +486,7 @@ class CatalogMethods(object):
       if lenst==0:
         array=np.empty((maxrows), dtype=tmparray.dtype.descr)
         filenames=np.empty((maxrows), dtype='S'+str(len(file.split('/')[-1].split('.')[0])))
+        filenums = np.empty((maxrows), dtype=int)
 
       # If exceeded max number of rows reqested, end iteration and return catalog
       if lenst+np.sum(mask)>maxrows:
@@ -493,13 +495,14 @@ class CatalogMethods(object):
         
       array[lenst:lenst+np.sum(mask)]=tmparray[mask]
       filenames[lenst:lenst+np.sum(mask)]=np.repeat(file.split('/')[-1].split('.')[0],np.sum(mask))
+      filenums[lenst:lenst+np.sum(mask)]=np.ones(np.sum(mask))*ifile
 
       lenst+=np.sum(mask)
       print ifile,np.sum(mask),lenst,file
 
       fits.close()
 
-    return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst]
+    return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
 
 
   @staticmethod
@@ -667,6 +670,21 @@ class CatalogMethods(object):
     """
 
     cuts=CatalogMethods.add_cut(np.array([]),'ra',-99999,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def final_null_cuts_ra_flag():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
+    cuts=CatalogMethods.add_cut(np.array([]),'ra',-99999,noval,noval)
+    cuts=CatalogMethods.add_cut(np.array([]),'flag',noval,noval,1)
 
     return cuts
 
