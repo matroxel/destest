@@ -145,14 +145,24 @@ psf_col_lookup = {
   'e1':'e1',
   'e2':'e2',
   'ccd':'ccdnum',
-  'row':'y',
   'col':'x',
+  'row':'y',
   'psf_e1':'psfex_e1',
   'psf_e2':'psfex_e2',
   'psf_size':'psfex_size',
   'size':'size',
-  'flag':'flag'
-
+  'flag':'flag',
+  'ccdnum':'ccdnum',
+  'x_mike':'x',
+  'y_mike':'y',
+  'mag':'mag',
+  'psfex_size':'psfex_size',
+  'erin_e1':'erin_e1',
+  'erin_e2':'erin_e2',
+  'erin_size':'erin_size',
+  'desdm_e1':'desdm_e1',
+  'desdm_e2':'desdm_e2',
+  'desdm_size':'desdm_size'
 }
 
 i3_col_lookup = {
@@ -234,8 +244,19 @@ i3_col_lookup = {
   'g2':'true_g2',
   'cosid':'cosmos_ident',
   'czp':'cosmos_photoz',
-  'time':'time'
-
+  'time':'time',
+  'flag':'flag',
+  'ccdnum':'ccdnum',
+  'x':'x_mike',
+  'y':'y_mike',
+  'mag':'mag',
+  'psfex_size':'psfex_size',
+  'erin_e1':'erin_e1',
+  'erin_e2':'erin_e2',
+  'erin_size':'erin_size',
+  'desdm_e1':'desdm_e1',
+  'desdm_e2':'desdm_e2',
+  'desdm_size':'desdm_size'
 }
 
 truth_col_lookup = {
@@ -457,7 +478,21 @@ lbl = {
   'cov22':'cov22',
   'cov12':'cov12',
   'g1':r'$g_1$',
-  'g2':r'$g_2$'
+  'g2':r'$g_2$',
+  'psf_resid1':r'psfresid$_1$',
+  'psf_resid2':r'psfresid$_2$',
+  'flag':'flag',
+  'ccdnum':'ccdnum',
+  'x':r'x_mike',
+  'y':'y_mike',
+  'mag':'mag',
+  'psfex_size':r'psfex_size',
+  'erin_e1':r'erin_e1',
+  'erin_e2':r'erin_e2',
+  'erin_size':r'erin_size',
+  'desdm_e1':r'desdm_e1',
+  'desdm_e2':r'desdm_e2',
+  'desdm_size':r'desdm_size'
 }
 
 map_name_y1 = {
