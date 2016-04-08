@@ -9,6 +9,8 @@ except:
 
 import config
 import pickle
+import multiprocessing
+import ctypes
 
 noval=999999
 
@@ -34,7 +36,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,p=None):
 
     if setup:
       # Populate catalog on object creation
@@ -42,6 +44,8 @@ class CatalogStore(object):
       # Select column name lookup dict
       if cattype=='i3':
         table=config.i3_col_lookup
+      elif cattype=='i3epoch':
+        table=config.i3_epoch_col_lookup
       elif cattype=='ng':
         table=config.ng_col_lookup
       elif cattype=='gal':
@@ -85,7 +89,10 @@ class CatalogStore(object):
         cols1=[table.get(x,None) for x in cols]
         catcols,filenames=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)
         for i,x in enumerate(catcols):
-          setattr(self,cols[i],x)
+          if isinstance(x[0], basestring)|(p is None):
+            setattr(self,cols[i],x.copy())
+          else:
+            setattr(self,cols[i],self.add_shared_array(len(filenames),x,p))
         self.filename=filenames
 
       else:
@@ -93,34 +100,52 @@ class CatalogStore(object):
 
       #Generate id column if no unique id specified
       if 'coadd' not in cols:
-        self.coadd=np.arange(len(getattr(self,cols[0])))
+        self.coadd=self.add_shared_array(len(filenames),np.arange(len(filenames)),p)
 
       #Generate derived quantities
       if cattype in ['i3','ng']:
         if ('e1' in cols)&('e2' in cols):
-          self.pos=0.5*np.arctan2(self.e2,self.e1)+np.pi/2.
-          self.e=np.sqrt(self.e1**2.+self.e2**2.)
+          self.pos=self.add_shared_array(len(filenames),0.5*np.arctan2(self.e2,self.e1)+np.pi/2.,p)
+          self.e=self.add_shared_array(len(filenames),np.sqrt(self.e1**2.+self.e2**2.),p)
+        if ('m1' in cols):
+          self.m2=self.m1
+        else:
+          self.m1=None
+          self.m2=None
+        if ('c1' not in cols):
+          self.c1=None
+          self.c2=None
+        if ('w' not in cols):
+          self.w=None
         if ('psf1' in cols)&('psf2' in cols):
-          self.psfpos=0.5*np.arctan2(self.psf2,self.psf1)+np.pi/2.
-          self.dpsf=self.psf1-self.psf2
-          self.psfe=np.sqrt(self.psf1**2.+self.psf2**2.)
+          self.psfpos=self.add_shared_array(len(filenames),0.5*np.arctan2(self.psf2,self.psf1)+np.pi/2.,p)
+          self.dpsf=self.add_shared_array(len(filenames),self.psf1-self.psf2,p)
+          self.psfe=self.add_shared_array(len(filenames),np.sqrt(self.psf1**2.+self.psf2**2.),p)
         if ('hsmpsf1' in cols)&('hsmpsf2' in cols):
-          self.hsmpsfpos=0.5*np.arctan2(self.hsmpsf2,self.hsmpsf1)+np.pi/2.
-          self.hsmdpsf=self.hsmpsf1-self.hsmpsf2
-          self.hsmpsfe=np.sqrt(self.hsmpsf1**2.+self.hsmpsf2**2.)
+          self.hsmpsfpos=self.add_shared_array(len(filenames),0.5*np.arctan2(self.hsmpsf2,self.hsmpsf1)+np.pi/2.,p)
+          self.hsmdpsf=self.add_shared_array(len(filenames),self.hsmpsf1-self.hsmpsf2,p)
+          self.hsmpsfe=self.add_shared_array(len(filenames),np.sqrt(self.hsmpsf1**2.+self.hsmpsf2**2.),p)
         if ('psf1_exp' in cols)&('psf2_exp' in cols):
-          self.psfpos=0.5*np.arctan2(self.psf2_exp,self.psf1_exp)+np.pi/2.
-          self.dpsf=self.psf1_exp-self.psf2_exp
+          self.psfpos=self.add_shared_array(len(filenames),0.5*np.arctan2(self.psf2_exp,self.psf1_exp)+np.pi/2.,p)
+          self.dpsf=self.add_shared_array(len(filenames),self.psf1_exp-self.psf2_exp,p)
         if 'fluxfrac' in cols:
-          self.invfluxfrac=1.001-self.fluxfrac
-        if 'ccd' in cols:
-          self.ccd-=1
+          self.invfluxfrac=self.add_shared_array(len(filenames),1.001-self.fluxfrac,p)
         if 'like' in cols:
           self.nlike=-self.like
       if cattype=='i3':
         if ('dflux' in cols)&('bflux' in cols)&(~('bfrac' in cols)):
           self.bfrac=np.zeros(len(self.coadd))
           self.bfrac[self.dflux==0]=1
+          self.bfrac=self.add_shared_array(len(filenames),self.bfrac,p)
+      if cattype=='i3epoch':
+        if 'ccd' in cols:
+          self.ccd-=1        
+      if ('g' in cols)&('r' in cols):
+        self.gr=self.add_shared_array(len(filenames),self.g-self.r,p)
+      if ('r' in cols)&('i' in cols):
+        self.ri=self.add_shared_array(len(filenames),self.r-self.i,p)
+      if ('i' in cols)&('z' in cols):
+        self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
       #Make footprint contiguous across ra=0
       if ('ra' in cols):
@@ -192,6 +217,19 @@ class CatalogStore(object):
     self.pzrw=config.cfg.get('pzrw',False) 
 
     return
+
+  def add_shared_array(self,length,array0,p):
+
+    if p is not None:
+      if array0.dtype.kind=='i':
+        shared_array_base=multiprocessing.Array(ctypes.c_ulong, length)
+      else:
+        shared_array_base=multiprocessing.Array(ctypes.c_double, length)        
+      array=np.ctypeslib.as_array(shared_array_base.get_obj())
+      array[:]=array0
+    else:
+      array=array0
+    return array
 
 class PZStore(object):
   """
@@ -739,7 +777,7 @@ class CatalogMethods(object):
     return
 
   @staticmethod
-  def check_mask(array,mask):
+  def check_mask(array,mask,p=None):
     """
     Convenience function to return true array for mask if mask=None is supplied in other functions.
     """
@@ -748,6 +786,7 @@ class CatalogMethods(object):
       return np.ones(len(array)).astype(bool)
     else:
       return mask
+
 
   @staticmethod
   def find_col_h5(col,h5a,h5b):
