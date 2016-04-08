@@ -24,10 +24,15 @@ class plot_methods(object):
   """
 
   @staticmethod
-  def plot_hist(x1,bins=500,name='',label='',tile='',w=None):
+  def plot_hist(x1,bins=config.cfg.get('hbins',500),name='',label='',tile='',w=None):
+
+    print 'hist ',label,tile
+
+    if tile!='':
+      bins/=10
 
     plt.figure()
-    if w is None:
+    if (w is None)|(tile!=''):
       plt.hist(x1,bins=bins,histtype='stepfilled')
     else:
       plt.hist(x1,bins=bins,alpha=0.25,normed=True,label='unweighted',histtype='stepfilled')
@@ -47,15 +52,15 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_comp_hist(x1,x2,bins=50,name='',name2='',label='',w=None):
+  def plot_comp_hist(x1,x2,bins=config.cfg.get('hbins',500),name='',name2='',label='',w1=None,w2=None):
 
     plt.figure()
-    if w is None:
+    if w1 is None:
       plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled')
       plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled')
     else:
-      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled',weights=w)
-      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled',weights=w)
+      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled',weights=w1)
+      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled',weights=w2)
     plt.ylabel(r'$n$')
     s=config.lbl.get(label,label)
     if config.log_val.get(label,False):
@@ -69,7 +74,9 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_2D_hist(x1,y1,bins=500,xname='',yname='',xlabel='',ylabel='',xtile='',ytile=''):
+  def plot_2D_hist(x1,y1,bins=config.cfg.get('hbins',500),xname='',yname='',xlabel='',ylabel='',xtile='',ytile=''):
+
+    print 'hist 2D',xlabel,ylabel
 
     plt.figure()
     plt.hist2d(x1,y1,bins=bins)
@@ -88,7 +95,7 @@ class plot_methods(object):
     plt.close()
 
     plt.figure()
-    plt.hist2d(x1,y1,bins=bins,norm=LogNorm())
+    plt.hist2d(np.abs(x1),np.abs(y1),bins=bins,norm=LogNorm())
     s=config.lbl.get(xlabel,'')
     if config.log_val.get(xlabel,False):
       s='log '+s
@@ -98,38 +105,37 @@ class plot_methods(object):
       s='log '+s
     plt.ylabel(s+' '+ytile)   
     plt.minorticks_on()
-    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel+'_'+ylabel+'_log.png', bbox_inches='tight')
+    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel+'_'+ylabel+'_abslog.png', bbox_inches='tight')
     plt.close()
 
     return
 
   @staticmethod
-  def plot_hexbin(x1,cat,mask=None,bins=20,name='',label='',tile=''):
+  def plot_hexbin(x1,ra,dec,bins=config.cfg.get('hexbins',20),name='',label='',tile=''):
 
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-    s82=mask&(cat.dec>-10)
-    spta=mask&(~s82)&(cat.ra<0)
-    sptc=mask&(~s82)&(cat.ra>50)
-    sptb=mask&(~s82)&(~spta)&(~sptc)
+    s82=(dec>-10)
+    spta=(~s82)&(ra<0)
+    sptc=(~s82)&(ra>50)
+    sptb=(~s82)&(~spta)&(~sptc)
 
-    plot_methods.plot_hexbin_base(x1,cat,mask=mask&s82,label=label,bins=bins,part='s82',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,cat,mask=mask&spta,label=label,bins=bins,part='spta',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,cat,mask=mask&sptb,label=label,bins=bins,part='sptb',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,cat,mask=mask&sptc,label=label,bins=bins,part='sptc',name=name,tile=tile)
+    plot_methods.plot_hexbin_base(x1,ra[s82],dec[s82],label=label,bins=bins,part='s82',name=name,tile=tile)
+    plot_methods.plot_hexbin_base(x1,ra[spta],dec[spta],label=label,bins=bins,part='spta',name=name,tile=tile)
+    plot_methods.plot_hexbin_base(x1,ra[sptb],dec[sptb],label=label,bins=bins,part='sptb',name=name,tile=tile)
+    plot_methods.plot_hexbin_base(x1,ra[sptc],dec[sptc],label=label,bins=bins,part='sptc',name=name,tile=tile)
 
     return
 
   @staticmethod
-  def plot_hexbin_base(x1,cat,mask=None,bins=20,name='',label='',part='',tile=''):
+  def plot_hexbin_base(x1,ra,dec,bins=config.cfg.get('hexbins',20),name='',label='',part='',tile=''):
 
-    ra1=np.max(cat.ra[mask])
-    ra0=np.min(cat.ra[mask])
-    dec1=np.max(cat.dec[mask])
-    dec0=np.min(cat.dec[mask])
+    ra1=np.max(ra)
+    ra0=np.min(ra)
+    dec1=np.max(dec)
+    dec0=np.min(dec)
 
     plt.figure()
 
-    plt.hexbin(cat.ra[mask],cat.dec[mask],x1,gridsize=(int((ra1-ra0)*bins),int((dec1-dec0)*bins)), cmap=plt.cm.afmhot,linewidth=0)
+    plt.hexbin(ra,dec,x1,gridsize=(int((ra1-ra0)*bins),int((dec1-dec0)*bins)), cmap=plt.cm.afmhot,linewidth=0)
     cb = plt.colorbar(orientation='horizontal')
     plt.xlabel('RA')
     plt.ylabel('Dec')
@@ -164,44 +170,44 @@ class plot_methods(object):
 
 
   @staticmethod
-  def plot_field_footprint(cat,mask=None,label='',bins=100):
+  def plot_field_footprint(x,y,name,label='',bins=config.cfg.get('footbins',10)):
 
-    dra=np.max(cat.ra)-np.min(cat.ra)
-    ddec=np.max(cat.dec)-np.min(cat.dec)
+    dra=np.max(x)-np.min(x)
+    ddec=np.max(y)-np.min(y)
 
     plt.figure()
-    a=plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=((np.min(cat.ra[mask])-.1*dra,np.max(cat.ra[mask])+.1*dra),(np.min(cat.dec[mask])-.1*ddec,np.max(cat.dec[mask])+.1*ddec)),normed=True,cmax=1.2e-5,cmin=0.5e-5, cmap=plt.cm.afmhot,interpolation='nearest')
+    plt.hist2d(x,y,bins=(int(dra*bins),int(ddec*bins)),range=((np.min(x)-.1*dra,np.max(x)+.1*dra),(np.min(y)-.1*ddec,np.max(y)+.1*ddec)),normed=True, cmap=plt.cm.afmhot)#cmax=1.2e-5,cmin=0.5e-5,
     cb = plt.colorbar(orientation='horizontal')
     plt.gca().set_aspect('equal', 'box')
-    plt.savefig('plots/footprint/field_'+cat.name+'_'+label+'.png', dpi=500, bbox_inches='tight')
+    plt.savefig('plots/footprint/field_'+name+'_'+label+'.png', dpi=500, bbox_inches='tight')
     plt.close()
 
     plt.figure()
-    plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=((np.min(cat.ra[mask])-.1*dra,np.max(cat.ra[mask])+.1*dra),(np.min(cat.dec[mask])-.1*ddec,np.max(cat.dec[mask])+.1*ddec)),normed=True,norm=LogNorm(), cmap=plt.cm.afmhot)
+    plt.hist2d(x,y,bins=(int(dra*bins),int(ddec*bins)),range=((np.min(x)-.1*dra,np.max(x)+.1*dra),(np.min(y)-.1*ddec,np.max(y)+.1*ddec)),normed=True,norm=LogNorm(), cmap=plt.cm.afmhot)
     #cb = plt.colorbar()
     plt.gca().set_aspect('equal', 'box')
-    plt.savefig('plots/footprint/field_'+cat.name+'_'+label+'_log.png', dpi=500, bbox_inches='tight')
-    plt.close()    
+    plt.savefig('plots/footprint/field_'+name+'_'+label+'_log.png', dpi=500, bbox_inches='tight')
+    plt.close()
 
     return
 
   @staticmethod
-  def plot_footprint(cat,mask=None,label='',bins=100,cap=None):
+  def plot_footprint(ra,dec,name,label='',bins=config.cfg.get('footbins',100),cap=None):
 
-    s82=mask&(cat.dec>-10)
-    spta=mask&(~s82)&(cat.ra<0)
-    sptc=mask&(~s82)&(cat.ra>50)
-    sptb=mask&(~s82)&(~spta)&(~sptc)
+    s82=(dec>-10)
+    spta=(~s82)&(ra<0)
+    sptc=(~s82)&(ra>50)
+    sptb=(~s82)&(~spta)&(~sptc)
 
-    plot_methods.plot_footprint_base(cat,mask=mask&s82,label=label,bins=bins,part='s82',cap=cap)
-    plot_methods.plot_footprint_base(cat,mask=mask&spta,label=label,bins=bins,part='spta',cap=cap)
-    plot_methods.plot_footprint_base(cat,mask=mask&sptb,label=label,bins=bins,part='sptb',cap=cap)
-    plot_methods.plot_footprint_base(cat,mask=mask&sptc,label=label,bins=bins,part='sptc',cap=cap)
+    plot_methods.plot_footprint_base(ra[s82],dec[s82],name,label=label,bins=bins,part='s82')
+    plot_methods.plot_footprint_base(ra[spta],dec[spta],name,label=label,bins=bins,part='spta')
+    plot_methods.plot_footprint_base(ra[sptb],dec[sptb],name,label=label,bins=bins,part='sptb')
+    plot_methods.plot_footprint_base(ra[sptc],dec[sptc],name,label=label,bins=bins,part='sptc')
 
     return
 
   @staticmethod
-  def plot_footprint_base(cat,mask=None,label='',bins=100,part='',cap=None):
+  def plot_footprint_base(ra,dec,name,label='',bins=config.cfg.get('footbins',100),part='',cap=None):
 
     # if not hasattr(cat, 'gdmask'):
     #   cat.gdmask=hp.reorder(hp.read_map(config.golddir+'y1a1_gold_1.0.1_wide_footprint_4096.fit'),inp='ring',out='nested')
@@ -219,18 +225,25 @@ class plot_methods(object):
     # hp.cartview(hpmap,latra=config.dec_lim.get(part),lonra=config.ra_lim.get(part),nest=True,xsize=10000,title=label)
     # plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'_'+part+'.png', dpi=1000,bbox_inches='tight')
     # plt.close()
+    print 'inside plot func',os.getpid()
 
     dra=config.ra_lim.get(part)[1]-config.ra_lim.get(part)[0]
     ddec=config.dec_lim.get(part)[1]-config.dec_lim.get(part)[0]
 
+    print 'inside plot func - before fig',os.getpid()
+
     plt.figure()
     tmp=config.ra_lim.get(part),config.dec_lim.get(part)
-    a=plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=tmp,normed=True, cmap=plt.cm.afmhot,cmax=cap)
+    a=plt.hist2d(ra,dec,bins=(int(dra*bins),int(ddec*bins)),range=tmp,normed=True, cmap=plt.cm.afmhot,cmax=cap)
 
+    print 'inside plot func - mid fig',os.getpid()
     cb = plt.colorbar(orientation='horizontal')
     plt.gca().set_aspect('equal', 'box')
-    plt.savefig('plots/footprint/footprint_'+cat.name+'_'+label+'_'+part+'.png', dpi=500, bbox_inches='tight')
+    print 'inside plot func - before savefig',os.getpid()
+    plt.savefig('plots/footprint/footprint_'+name+'_'+label+'_'+part+'.png', dpi=500, bbox_inches='tight')
+    print 'inside plot func - after savefig',os.getpid()
     plt.close()
+    print 'end plot func',os.getpid()
 
     # plt.figure()
     # plt.hist2d(cat.ra[mask],cat.dec[mask],bins=(int(dra*bins),int(ddec*bins)),range=((np.min(cat.ra[mask])-.1*dra,np.max(cat.ra[mask])+.1*dra),(np.min(cat.dec[mask])-.1*ddec,np.max(cat.dec[mask])+.1*ddec)),normed=True,norm=LogNorm(), cmap=plt.cm.afmhot)
@@ -262,7 +275,7 @@ class plot_methods(object):
     return cat.name+'_bs-'+str(cat.bs)+'_wt-'+str(cat.wt)
 
   @staticmethod
-  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,cat,val,log=False,label='',e=True,val2=None,trend=True):
+  def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,name,val,log=False,label='',e=True,val2=None,trend=True):
 
     plt.figure()
     if e:
@@ -281,8 +294,8 @@ class plot_methods(object):
       plt.ylabel(r'$\langle e \rangle$')
     else:
       plt.ylabel(r'$\langle $'+config.lbl.get(val2,val2)+r'$ \rangle$')
-    plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
     if e:
+      plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
       plt.axhline(.004,color='k')
       plt.axhline(-.004,color='k')
     if config.log_val.get(val,False):
@@ -298,7 +311,7 @@ class plot_methods(object):
     plt.minorticks_on()
     if val2 is not None:
       val+='-'+val2
-    plt.savefig('plots/split/lin_split_'+plot_methods.get_filename_str(cat)+'_'+val+'_'+label+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/lin_split_'+name+'_'+val+'_'+label+'.png', bbox_inches='tight')
     plt.close()
 
     return
@@ -486,7 +499,7 @@ class plot_methods(object):
       if corr=='GG':
         if np.sum(out[1]<0):
           plt.errorbar(theta[out[1]<0],-out[1][out[1]<0],yerr=err[1][out[1]<0],marker='x',linestyle='',color='b',label='')
-    plt.ylabel(r'$\theta \xi$')
+    plt.ylabel(r'$\xi$')
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.yscale('log')
     plt.xscale('log')

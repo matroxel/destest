@@ -27,6 +27,9 @@ cosmosissource = 'source my-source'
 cfg = {
   
   'lbins':20,
+  'hbins':500,
+  'hexbins':20,
+  'footbins':100,
   'sbins':2,
   'slop':0.1,
   'tbins':8,
@@ -177,7 +180,8 @@ i3_col_lookup = {
   'hsmpsf1':'mean_hsm_psf_e1_sky',
   'hsmpsf2':'mean_hsm_psf_e2_sky',
   'psffwhm':'mean_psf_fwhm',
-  'm':'nbc_m',
+  'm1':'nbc_m',
+  'm2':'nbc_m2',
   'c1':'nbc_c1',
   'c2':'nbc_c2',
   'w':'w',
@@ -219,18 +223,6 @@ i3_col_lookup = {
   'modelsig':'mean_model_edge_sigma',
   'mu':'mean_edge_mu',
   'sig':'mean_edge_sigma',
-  'xoff':'x',
-  'yoff':'y',
-  'row':'orig_row',
-  'col':'orig_col',
-  'psf1_exp':'psf_e1_sky',
-  'psf2_exp':'psf_e2_sky',
-  'psf1b_exp':'psf_e1',
-  'psf2b_exp':'psf_e2',
-  'hsmpsf1_exp':'hsm_psf_e1_sky',
-  'hsmpsf2_exp':'hsm_psf_e2_sky',
-  'expnum':'expnum',
-  'ccd':'ccd',
   'g':'mag_auto_g',
   'r':'mag_auto_r',
   'i':'mag_auto_i',
@@ -249,14 +241,32 @@ i3_col_lookup = {
   'ccdnum':'ccdnum',
   'x':'x_mike',
   'y':'y_mike',
-  'mag':'mag',
-  'psfex_size':'psfex_size',
-  'erin_e1':'erin_e1',
-  'erin_e2':'erin_e2',
-  'erin_size':'erin_size',
-  'desdm_e1':'desdm_e1',
-  'desdm_e2':'desdm_e2',
-  'desdm_size':'desdm_size'
+  'mag':'mag'
+}
+
+i3_epoch_col_lookup = {
+  
+  'coadd':'coadd_objects_id',
+  'xoff':'x',
+  'yoff':'y',
+  'row':'orig_row',
+  'col':'orig_col',
+  'e1':'e1',
+  'e2':'e2',
+  'psf1_sky':'psf_e1_sky',
+  'psf2_sky':'psf_e2_sky',
+  'psf1':'psf_e1',
+  'psf2':'psf_e2',
+  'psffwhm':'psf_fwhm',
+  'hsmpsf1':'hsm_psf_e1',
+  'hsmpsf2':'hsm_psf_e2',
+  'hsmpsf1_sky':'hsm_psf_e1_sky',
+  'hsmpsf2_sky':'hsm_psf_e2_sky',
+  'hsm_psffwhm':'hsm_psf_rho4',
+  'expnum':'expnum',
+  'ccd':'ccd',
+  'res':'residual_stdev',
+  'back':'background'
 }
 
 truth_col_lookup = {
@@ -283,7 +293,8 @@ truth_col_lookup = {
   'wcs1':'mean_wcs_e1',
   'wcs2':'mean_wcs_e2',
   'wcss':'wcs_scale',
-  'wcst':'wcs_theta'
+  'wcst':'wcs_theta',
+  'pixoff':'sextractor_pixel_offset'
 }
 
 
