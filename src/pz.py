@@ -160,7 +160,7 @@ class pz_methods(object):
     return nofz,specnofz
 
   @staticmethod
-  def pdf_mvsk(x,pdf0,dm,dv,ds,dk,p6=False):
+  def pdf_mvsk(x,pdf0,dm=0.,dv=.99,ds=0.,dk=0.,p6=False):
     from numpy.polynomial.hermite import hermval
     from scipy.stats import norm
     from astropy.convolution import convolve

@@ -36,7 +36,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,p=None):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*'):
 
     if setup:
       # Populate catalog on object creation
@@ -56,6 +56,8 @@ class CatalogStore(object):
         table=config.buzzard_col_lookup
       elif cattype=='psf':
         table=config.psf_col_lookup
+      elif cattype=='gold':
+        table=config.gold_col_lookup
       else:
         raise CatValError('No catalog type cattype specified.')
 
@@ -83,11 +85,11 @@ class CatalogStore(object):
         if catdir is None:
           catdir=catfile
         else:
-          catdir=catdir+'*fit*'
+          catdir=catdir+ext
 
         # Read in columns from file(s)
         cols1=[table.get(x,None) for x in cols]
-        catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter)
+        catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter)
         for i,x in enumerate(catcols):
           if isinstance(x[0], basestring)|(p is None):
             setattr(self,cols[i],x.copy())
@@ -166,8 +168,8 @@ class CatalogStore(object):
         ra=self.ran_ra
         ra[self.ran_ra>180]=self.ran_ra[self.ran_ra>180]-360
         self.ran_ra=ra
-        self.ran_ra=self.ran_ra[ra>60]
-        self.ran_dec=self.ran_dec[ra>60]
+        # self.ran_ra=self.ran_ra[ra>60]
+        # self.ran_dec=self.ran_dec[ra>60]
 
       #Build jackknife regions
       if jkbuild:
@@ -223,10 +225,11 @@ class CatalogStore(object):
 
     if p is not None:
       if array0.dtype.kind=='i':
-        shared_array_base=multiprocessing.Array(ctypes.c_ulong, length)
+        shared_array_base=multiprocessing.RawArray(ctypes.c_ulong, length)
+        array=np.frombuffer(shared_array_base,dtype=int)
       else:
-        shared_array_base=multiprocessing.Array(ctypes.c_double, length)        
-      array=np.ctypeslib.as_array(shared_array_base.get_obj())
+        shared_array_base=multiprocessing.RawArray(ctypes.c_double, length)
+        array=np.frombuffer(shared_array_base)
       array[:]=array0
     else:
       array=array0
@@ -460,7 +463,7 @@ class CatValError(Exception):
 class CatalogMethods(object):
 
   @staticmethod
-  def get_cat_cols(dir,cols,table,cuts,tiles=None,maxiter=999999,hdu=-1,maxrows=1):
+  def get_cat_cols(dir,cols,table,cuts,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=1):
     """
     Work function for CatalogStore to parse and read in catalog informaiton from one or more fits files.
     """
@@ -472,6 +475,8 @@ class CatalogMethods(object):
     # Loop over file(s) [in directory]
     for ifile,file in enumerate(glob.glob(dir)):
       if ifile>maxiter:
+        break
+      if (exiter>=0)&(exiter!=ifile):
         break
       # Skip any tiles not in tile list - needs to be generalised to work for other keywords/patterns
       if hasattr(tiles, '__len__'):
@@ -633,8 +638,8 @@ class CatalogMethods(object):
 
     """
 
-    mask1=np.in1d(a1,a2,assume_unique=True)
-    mask2=np.in1d(a2,a1,assume_unique=True)
+    mask1=np.in1d(a1,a2,assume_unique=False)
+    mask2=np.in1d(a2,a1,assume_unique=False)
     print len(mask1),len(a1),len(mask2),len(a2)
     sort1=np.argsort(a1[mask1])[np.argsort(np.argsort(a2[mask2]))]
     sort2=np.argsort(a2[mask2])[np.argsort(np.argsort(a1[mask1]))]

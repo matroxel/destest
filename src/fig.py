@@ -135,7 +135,7 @@ class plot_methods(object):
 
     plt.figure()
 
-    plt.hexbin(ra,dec,x1,gridsize=(int((ra1-ra0)*bins),int((dec1-dec0)*bins)), cmap=plt.cm.afmhot,linewidth=0)
+    plt.hexbin(ra,dec,x1,gridsize=(int((ra1-ra0)*bins),int((dec1-dec0)*bins)), cmap=plt.cm.afmhot,linewidths=(0,))
     cb = plt.colorbar(orientation='horizontal')
     plt.xlabel('RA')
     plt.ylabel('Dec')
@@ -321,31 +321,37 @@ class plot_methods(object):
 
     if blind:
       bf=1.+(np.random.rand(1)[0]-.5)*.4
+    else:
+      bf=1.
 
     plt.figure(0)
     ax=plt.subplot(3,3,n)
-    ax.fill_between([1,500],-1,1,facecolor='gray',alpha=0.25)
-    ax.fill_between([1,500],-2,2,facecolor='gray',alpha=0.2)
+    #ax.fill_between([1,100],-1,1,facecolor='gray',alpha=0.25)
+    #ax.fill_between([1,100],-2,2,facecolor='gray',alpha=0.2)
     plt.errorbar(xi[0],np.zeros((len(xi[0]))),marker='',linestyle='-',color='k',alpha=.8)
-    plt.errorbar(xi[0],xi[10][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='b')
-    plt.errorbar(xi[0],(xi[1][i]-xi[2][i])/xi[2][i],yerr=xi[5][i]/xi[2][i],marker='v',linestyle='',color='b')#yerr=xi[7][i]/xi[2][i]
-    plt.errorbar(xi[0],xi[12][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='g')
-    plt.errorbar(xi[0]*1.2,(xi[3][i]-xi[2][i])/xi[2][i],yerr=xi[5][i]/xi[2][i],marker='^',linestyle='',color='g')#,yerr=xi[9][i]/xi[2][i]
-    plt.errorbar(xi[0],xi[11][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='r')
-    plt.errorbar(xi[0]*1.1,(xi[3][i]-xi[1][i])/xi[2][i],yerr=xi[5][i]/xi[2][i],marker='o',linestyle='',color='r')#,yerr=xi[8][i]/xi[2][i]
+    # plt.errorbar(xi[0],xi[10][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='g')
+    plt.errorbar(xi[0],(xi[1][i]-xi[2][i])/xi[2][i],marker='v',linestyle='',color='g')#yerr=xi[7][i]/xi[2][i]
+    # plt.errorbar(xi[0],xi[11][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='r')
+    # plt.errorbar(xi[0]*1.1,(xi[3][i]-xi[1][i])/xi[2][i],marker='o',linestyle='',color='r')#,yerr=xi[8][i]/xi[2][i]
+    # plt.errorbar(xi[0],xi[12][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='b')
+    plt.errorbar(xi[0]*1.2,(xi[3][i]-xi[2][i])/xi[2][i],marker='^',linestyle='',color='b')#,yerr=xi[9][i]/xi[2][i]
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
-    plt.ylim(-5,5)
-    plt.xlim(1,500)
+    plt.ylim(-2.5,2.5)
+    if i==1:
+      plt.xlim(10,100)
+    else:
+      plt.xlim(1,100)
     ax.set_xticklabels([])
-    plt.ylabel(r'$\Delta '+yl+r'/\sigma_{\Delta '+yl+r'}$')
+    plt.ylabel(r'$\Delta '+yl+r'/'+yl+r'$')
+    # ax.axes.get_yaxis().set_ticks([])
 
     ax=plt.subplot(3,3,3+n)
-    plt.errorbar(xi[0],xi[0]*xi[2][i]*bf,yerr=xi[0]*xi[5][i],marker='o',linestyle='',color='r',label='All (upper-lower in top)')
     s=config.lbl.get(val,None)
     if log:
       s='log '+s
     plt.errorbar(xi[0]*1.1,xi[0]*xi[1][i]*bf,yerr=xi[0]*xi[4][i],marker='v',linestyle='',color='g',label=s+r'$<$'+str(np.around(split,2)))
+    plt.errorbar(xi[0],xi[0]*xi[2][i]*bf,yerr=xi[0]*xi[5][i],marker='o',linestyle='',color='r',label='All')# (upper-lower in top)
     plt.errorbar(xi[0]*1.2,xi[0]*xi[3][i]*bf,yerr=xi[0]*xi[6][i],marker='^',linestyle='',color='b',label=s+r'$>$'+str(np.around(split,2)))
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
@@ -353,17 +359,35 @@ class plot_methods(object):
       leg=plt.legend(loc='upper left',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
     ax.set_xticklabels([])
     plt.ylabel(r'$\theta\times'+yl+r'$')
-    plt.xlim(1,500)
+    if i==1:
+      plt.xlim(10,100)
+    else:
+      plt.xlim(1,100)
+    if n<3:
+      plt.ylim(0,4e-4)
+    else:
+      plt.ylim(0,4e-3)
+    ax.axes.get_yaxis().set_ticks([])
 
     ax=plt.subplot(3,3,6+n)
-    plt.errorbar(xi[0],xi[2][i]*bf,yerr=xi[5][i],marker='o',linestyle='',color='r')
     plt.errorbar(xi[0]*1.1,xi[1][i]*bf,yerr=xi[4][i],marker='v',linestyle='',color='g')
+    plt.errorbar(xi[0],xi[2][i]*bf,yerr=xi[5][i],marker='o',linestyle='',color='r')
     plt.errorbar(xi[0]*1.2,xi[3][i]*bf,yerr=xi[6][i],marker='^',linestyle='',color='b')
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.ylabel(r'$'+yl+r'$')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlim(1,500)
+    if i==1:
+      plt.xlim(10,100)
+    else:
+      plt.xlim(1,100)
+    if n<3:
+      plt.ylim(5e-7,1e-4)
+    else:
+      plt.ylim(2e-5,2e-3)
+    ax.axes.get_yaxis().set_ticks([])
+    ax.tick_params('y', length=0, width=0, which='both')
+    # ax.YAxis().set_ticks_position('none')
 
     return
 
@@ -381,7 +405,7 @@ class plot_methods(object):
       elif i==2:
         plot_methods.plot_2pt_split_sub(cat,val,split,i+1,r'\gamma_{t}',gt,0,log) 
 
-    plt.minorticks_on()
+    #plt.minorticks_on()
     plt.subplots_adjust(hspace=0,wspace=.4)
     plt.savefig('plots/split/2pt_split_'+plot_methods.get_filename_str(cat)+'_'+val+'.png', bbox_inches='tight')
     plt.close(0)
@@ -694,26 +718,26 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_nofz(pz0,test,spec=True):
+  def plot_nofz(pz0,test,spec=True,name='source'):
 
     col=['k','r','g','b','r','g','b']
     ax=plt.subplot(2,1,1)
-    for i in xrange(len(pz0.pz)-1):
-      plt.plot(pz0.bin,pz0.pz[i+1,:],color=col[i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label='')
-      plt.axvline(x=np.average(pz0.bin,weights=pz0.pz[i+1,:]), ymin=0., ymax = 1, linewidth=2, color=col[i+1])
-      print i+1,np.average(pz0.bin,weights=pz0.pz[i+1,:])-np.average(pz0.bin,weights=pz0.spec[i+1,:])
+    for i in xrange(len(getattr(pz0,'pz'+name))-1):
+      plt.plot(getattr(pz0,'bin'+name),getattr(pz0,'pz'+name)[i+1,:],color=col[i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label='')
+      plt.axvline(x=np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'pz'+name)[i+1,:]), ymin=0., ymax = 1, linewidth=2, color=col[i+1])
+      print i+1,np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'pz'+name)[i+1,:])-np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'spec'+name)[i+1,:])
       if spec:
-        plt.plot(pz0.bin,pz0.spec[i+1,:],color=col[i+1],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
-        plt.axvline(x=np.average(pz0.bin,weights=pz0.spec[i+1,:]), ymin=0., ymax = 1, linewidth=1, color=col[i+1])
+        plt.plot(getattr(pz0,'bin'+name),getattr(pz0,'spec'+name)[i+1,:],color=col[i+1],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
+        plt.axvline(x=np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'spec'+name)[i+1,:]), ymin=0., ymax = 1, linewidth=1, color=col[i+1])
     ax.set_xticklabels([])
     plt.ylabel(r'$n(z)$')
     ax=plt.subplot(2,1,2)
-    plt.plot(pz0.bin,pz0.pz[0,:],color=col[0],linestyle='-',linewidth=1.,drawstyle='steps-mid',label='')
-    plt.axvline(x=np.average(pz0.bin,weights=pz0.pz[0,:]), ymin=0., ymax = 1, linewidth=2, color=col[0])
-    print 0,np.average(pz0.bin,weights=pz0.pz[0,:])-np.average(pz0.bin,weights=pz0.spec[0,:])
+    plt.plot(getattr(pz0,'bin'+name),getattr(pz0,'pz'+name)[0,:],color=col[0],linestyle='-',linewidth=1.,drawstyle='steps-mid',label='')
+    plt.axvline(x=np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'pz'+name)[0,:]), ymin=0., ymax = 1, linewidth=2, color=col[0])
+    print 0,np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'pz'+name)[0,:])-np.average(getattr(pz0,'bin'+name),weights=getattr(pz0,'spec'+name)[0,:])
     if spec:
-      plt.plot(pz0.bin,pz0.spec[0,:],color=col[0],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
-      plt.axvline(x=np.average(pz0.bin,weights=pz0.spec[0,:]), ymin=0., ymax = 1, linewidth=1, color=col[0])
+      plt.plot(getattr(pz0,'binspec'),getattr(pz0,'spec'+name)[0,:],color=col[0],linestyle=':',linewidth=3.,drawstyle='steps-mid',label='')
+      plt.axvline(x=np.average(getattr(pz0,'binspec'),weights=getattr(pz0,'spec'+name)[0,:]), ymin=0., ymax = 1, linewidth=1, color=col[0])
     plt.xlabel(r'$z$')
     plt.ylabel(r'$n(z)$')
     # plt.xscale('log')
@@ -737,9 +761,9 @@ class plot_methods(object):
         ax=plt.subplot(len(getattr(pzlist[0],'pz'+pztype)),len(pztypes),i*len(pztypes)+j+1)
         for pz0i,pz0 in enumerate(pzlist):
           pzz=getattr(pz0,'pz'+pztype)
-          if pz0i==0:
-            specz=getattr(pz0,'spec'+pztype)
           if spec:
+            if pz0i==0:
+              specz=getattr(pz0,'spec'+pztype)
             plt.plot(pz0.bin,pzz[i,:],color=col[pz0i+1],linestyle='-',linewidth=1.,drawstyle='steps-mid',label=pz0.name)
             plt.axvline(x=np.average(pz0.bin,weights=pzz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i+1])
             if pz0i==0:
@@ -747,8 +771,9 @@ class plot_methods(object):
               plt.axvline(x=np.average(pz0.bin,weights=specz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[0])
           else:
             plt.plot(pz0.bin,pzz[i,:],color=col[pz0i],linestyle='-',linewidth=1.,drawstyle='steps-mid',label=pz0.name)
-            plt.axvline(x=np.average(pz0.bin,weights=pz0.pz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i])          
-          print i,np.average(pz0.bin,weights=pzz[i,:])-np.average(pzlist[0].bin,weights=specz[0,:])
+            plt.axvline(x=np.average(pz0.bin,weights=pzz[i,:]), ymin=0., ymax = 1, linewidth=2, color=col[pz0i])          
+          if spec:
+            print i,np.average(pz0.bin,weights=pzz[i,:])-np.average(pzlist[0].bin,weights=specz[0,:])
         props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
         if i==0:
           ax.text(0.73, 0.95, 'Non-tomographic', transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)

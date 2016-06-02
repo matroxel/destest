@@ -18,10 +18,10 @@ class write_methods(object):
       print line,
 
     if create:
-      with open('text/'+label+'_'+cat.name+'.txt','w') as f:
+      with open(write_methods.get_file(cat,label=label),'w') as f:
         f.write(line+n)
     else:
-      with open('text/'+label+'_'+cat.name+'.txt','a') as f:
+      with open(write_methods.get_file(cat,label=label),'a') as f:
         f.write(line+n)
 
     return

@@ -28,7 +28,7 @@ cfg = {
   
   'lbins':20,
   'hbins':500,
-  'hexbins':20,
+  'hexbins':5,
   'footbins':100,
   'sbins':2,
   'slop':0.1,
@@ -39,7 +39,9 @@ cfg = {
   'num_reg':150,
   'bs':False,
   'wt':False,
-  'pzrw':False
+  'pzrw':False,
+  'proc':16,
+  'tasks':1
 
 }
 
@@ -300,20 +302,11 @@ truth_col_lookup = {
 
 gold_col_lookup = {  
 
-  'coadd':True,
-  'ra':True,
-  'dec':True,
-  'sva1_gold_flags':True,
-  'sva1_gold_flags':True,
-  'sva1_spte_flags':True,
-  'sva1_gold_mag_flags':True,
-  'photoz_bin':True,
-  'ngmix_flags':True,
-  'im3shape_flags':True,
-  'mag_auto_r':True,
-  'mag_auto_g':True,
-  'mag_auto_i':True,
-  'mag_auto_z':True,
+  'coadd':'coadd_objects_id',
+  'ra':'ra',
+  'dec':'dec',
+  'sm':'spread_model_i',
+  'i':'mag_auto_i'
 
 }
 
@@ -479,8 +472,11 @@ lbl = {
   'r':r'$r$ magauto',
   'i':r'$i$ magauto',
   'z':r'$z$ magauto',
-  'pz':r'$z$',
-  'zp':r'$z$',
+  'gr':r'$g-r$ magauto',
+  'ri':r'$r-i$ magauto',
+  'iz':r'$i-z$ magauto',
+  'pz':r'redshift',
+  'zp':r'redshift',
   'zmean':r'$zmean$',
   'zpeak':r'$zpeak$',
   'bfrac':r'Bulge Frac',

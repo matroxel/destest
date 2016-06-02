@@ -403,11 +403,12 @@ class run(object):
     modules="""'consistency camb sigma8_rescale halofit growth extrapolate fits_nz"""
     priorsfile="""''"""
 
-    area=1000.
-    ngshear=4.0/bins
+    area=5000.
+    ngshear=8/bins
     ngshear=repr(" ".join(str(s) for s in ngshear*np.ones(bins)))
-    nglss=3.5/bins
+    nglss=-.12/bins
     nglss=repr(" ".join(str(s) for s in nglss*np.ones(bins)))
+    nglss="""'.02 .04 .06'"""
     sige=0.25
     sige=repr(" ".join(str(s) for s in sige*np.ones(bins)))
 

@@ -22,7 +22,7 @@ class split(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
     if cols is None:
@@ -74,7 +74,7 @@ class split(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     if cols is None:
@@ -141,7 +141,7 @@ class split(object):
 
       txt.write_methods.heading(x,cat,label='2pt_splits',create=False)
 
-      xi,gt,split=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,jkon=False,mock=False,log=False,plot=True)
+      xi,gt,split,edge=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,jkon=False,mock=False,log=False,plot=True)
 
       txt.write_methods.write_append(x+'  '+str(np.min(getattr(cat,x)[mask]))+'  '+str(split)+'  '+str(np.max(getattr(cat,x)[mask])),cat,label='2pt_splits',create=False)
 
@@ -212,7 +212,7 @@ class split_methods(object):
     if config.log_val.get(val,None):
       s='log '+s
 
-    bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.zp,mask=mask,label=s,plot=plot)
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.zp,mask=mask,label=val,plot=plot)
 
     for j in xrange(2):
       if j==0:
@@ -222,7 +222,7 @@ class split_methods(object):
       else:
         theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(w!=0),ran=False)
         theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==0)&(w!=0),wb=w,ran=False)
-        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==1)&(w!=0),wb=w,ran=False) 
+        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==1)&(w!=0),wb=w,ran=False)
 
       # if (jkon)&(cat.use_jk==1):
       #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
@@ -251,7 +251,7 @@ class split_methods(object):
     if plot:
       fig.plot_methods.plot_2pt_split(xi,gt,cat,val,edge[1],log)
 
-    return xi,gt,split
+    return xi,gt,split,edge
 
   @staticmethod
   def load_maps(cat,maps=None):

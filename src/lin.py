@@ -66,9 +66,12 @@ class linear_methods(object):
     For a general CatalogStore object cat, return properly corrected ellipticity and weight, m/s values. Used in many functions.
     """
 
-    if isinstance(cat,catalog.CatalogStore):
+    if isinstance(cat,catalog.CatalogStore)|hasattr(cat,'cat'):
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-      cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w
+      if cat.cat=='gal':
+        cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,None,None,None,None,None,None,None
+      else:
+        cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w        
     else:
       cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat
 
@@ -336,7 +339,7 @@ class hist(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
 
@@ -355,29 +358,30 @@ class hist(object):
       if cat2 is not None:
         x2=getattr(cat2,val)
 
-        if p is not None:
-          if cat2 is None:
-            if cat.w:
-              job=p.apply_async(hist_tests_base,[val,x1,mask,x1name],{'w1':cat.w})
-            else:
-              job=p.apply_async(hist_tests_base,[val,x1,mask,x1name],{})
+      if p is not None:
+        if cat2 is None:
+          if cat.wt:
+            job=p.apply_async(hist_tests_base,[val,x1,mask,x1name],{'w1':cat.w})
           else:
-            if cat.w:
-              job=p.apply_async(hist_tests_base,[val,x1,mask,x1name], {'w1':cat.w,'x2':x2,'mask2':mask2,'x2name':cat2.name,'w2':cat2.w})
-            else:
-              job=p.apply_async(hist_tests_base,[val,x1,mask,x1name], {'x2':x2,'mask2':mask2,'x2name':cat2.name})
-          jobs.append(job)
+            job=p.apply_async(hist_tests_base,[val,x1,mask,x1name],{})
         else:
-          if cat2 is None:
-            if cat.w:
-              hist_tests_base(val,x1,mask,x1name,w1=cat.w)
-            else:
-              hist_tests_base(val,x1,mask,x1name)
+          if cat.wt:
+            job=p.apply_async(hist_tests_base,[val,x1,mask,x1name], {'w1':cat.w,'x2':x2,'mask2':mask2,'x2name':cat2.name,'w2':cat2.w})
           else:
-            if cat.w:
-              hist_tests_base(val,x1,mask,x1name,w1=cat.w,x2=x2,mask2=mask2,x2name=cat2.name,w2=cat2.w)
-            else:
-              hist_tests_base(val,x1,mask,x1name,x2=x2,mask2=mask2,x2name=cat2.name)
+            job=p.apply_async(hist_tests_base,[val,x1,mask,x1name], {'x2':x2,'mask2':mask2,'x2name':cat2.name})
+        jobs.append(job)
+      else:
+        if cat2 is None:
+          if cat.wt:
+            print 'test?'
+            hist_tests_base(val,x1,mask,x1name,w1=cat.w)
+          else:
+            hist_tests_base(val,x1,mask,x1name)
+        else:
+          if cat.wt:
+            hist_tests_base(val,x1,mask,x1name,w1=cat.w,x2=x2,mask2=mask2,x2name=cat2.name,w2=cat2.w)
+          else:
+            hist_tests_base(val,x1,mask,x1name,x2=x2,mask2=mask2,x2name=cat2.name)
 
     if p is not None:
       for job in jobs:
@@ -398,7 +402,7 @@ class hist(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     jobs=[]
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
@@ -560,7 +564,7 @@ class footprint(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
 
@@ -593,7 +597,7 @@ class footprint(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
 
@@ -626,10 +630,6 @@ class footprint(object):
     If vals==[], produces a galaxy density plot over the survey fottprint for the catalog with mask. If vals contains a list of flag columns, it maps the density of objects that fail each flag value.
     """
 
-    if p is not None:
-      jobs=[]
-      p=multiprocessing.Pool()
-
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
 
     if vals==[]:
@@ -639,6 +639,10 @@ class footprint(object):
     else:
       print 'entered error fooprint'
       for val in vals:
+        if p is not None:
+          jobs=[]
+          p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
+
         print 'error fooprint',val,os.getpid()
         flag=getattr(cat,val)
         maxbit=summary_stats.n_bits_array(cat,val)
@@ -652,18 +656,18 @@ class footprint(object):
           else:
             footprint_tests_base(flag,val,i,cat.ra,cat.dec,cat.name,mask)
 
-    print 'error fooprint before job end loop',os.getpid()
-    if p is not None:
-      for job in jobs:
-        print 'error fooprint before job get',job,os.getpid()
-        print job.get()
-        print 'error fooprint after job get',job,os.getpid()
+        print 'error fooprint before job end loop',os.getpid()
+        if p is not None:
+          for job in jobs:
+            print 'error fooprint before job get',job,os.getpid()
+            print job.get()
+            print 'error fooprint after job get',job,os.getpid()
 
-      print 'before job close',os.getpid()
-      p.close()
-      print 'after job close',os.getpid()
-      p.join()
-      print 'after job join',os.getpid()
+          print 'before job close',os.getpid()
+          p.close()
+          print 'after job close',os.getpid()
+          p.join()
+          print 'after job join',os.getpid()
 
     return
 
@@ -678,6 +682,7 @@ class summary_stats(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     arr1=getattr(cat,arr)
+    print arr1,mask
 
     return len(bin(np.max(arr1[mask])))-2
 
@@ -748,7 +753,7 @@ class summary_stats(object):
 
     if p is not None:
       jobs=[]
-      p=multiprocessing.Pool()
+      p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask,p=p)
 
@@ -792,6 +797,33 @@ class summary_stats(object):
       txt.write_methods.write_append(line,cat,label='tile_stats',create=False)
 
     return
+
+  def load_tile_stats(cat,cols=None):
+
+    tmp=np.genfromtxt('tile_stats_y1_i3_sv_v1.txt',names=True)
+    tmp=np.genfromtxt(write_methods.get_file(cat,label=label),names=True)
+    for i,x in enumerate(tmp.dtype.names):
+      if i<2:
+        continue
+      for j,y in enumerate(tmp.dtype.names):
+        if j<2:
+          continue
+        a=x.split('_')
+        b=y.split('_')
+        if len(a)>1:
+          # fig.plot_methods.plot_hist(tmp[x],name=i3.name,label=a[0],bins=200,tile=a[1])
+          if len(b)<1:
+            fig.plot_methods.plot_2D_hist(tmp[x],tmp[y],bins=200,xname=i3.name,yname=i3.name,xlabel=a[0],ylabel=b[0],xtile=a[1],ytile=b[1])
+          else:
+            fig.plot_methods.plot_2D_hist(tmp[x],tmp[y],bins=200,xname=i3.name,yname=i3.name,xlabel=a[0],ylabel=b[0],xtile=a[1],ytile='mean')
+        else:
+          # fig.plot_methods.plot_hist(tmp[x],name=i3.name,label=a[0],bins=200,tile='mean')
+          if len(b)>1:
+            fig.plot_methods.plot_2D_hist(tmp[x],tmp[y],bins=200,xname=i3.name,yname=i3.name,xlabel=a[0],ylabel=b[0],xtile='mean',ytile=b[1])
+          else:
+            fig.plot_methods.plot_2D_hist(tmp[x],tmp[y],bins=200,xname=i3.name,yname=i3.name,xlabel=a[0],ylabel=b[0],xtile='mean',ytile='mean')
+
+
 
 def tile_stats_base(cat,valstore,tiles,tile,i,cols,mask):
 
@@ -912,5 +944,3 @@ def footprint_tests_base(flag,val,i,ra,dec,name,mask):
   print 'end of base func',os.getpid()
 
   return
-
-
