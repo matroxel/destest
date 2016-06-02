@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import curve_fit
-import dill
+#import dill
 import multiprocessing
 import ctypes
 import os
