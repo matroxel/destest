@@ -36,7 +36,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*'):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
 
     if setup:
       # Populate catalog on object creation
@@ -69,8 +69,11 @@ class CatalogStore(object):
       if cols is None:
         print 'Assuming all columns in dictionary.'
         cols=np.array(list(table.keys()))
+      elif cols==-1:
+        print 'Using all columns from file'
+        cols1=None
 
-      if goldfile!=None:
+      if goldfile is not None:
         print 'not ready to use matched catalog format in this version'
         if (i3file is None)|(ngfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
@@ -88,13 +91,24 @@ class CatalogStore(object):
           catdir=catdir+ext
 
         # Read in columns from file(s)
-        cols1=[table.get(x,None) for x in cols]
-        catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter)
+        if 'cols1' not in locals():
+          cols1=[table.get(x,None) for x in cols]
+        cols,catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
         for i,x in enumerate(catcols):
           if isinstance(x[0], basestring)|(p is None):
-            setattr(self,cols[i],x.copy())
+            if len(np.shape(x))>2:
+              continue
+            elif len(np.shape(x))==2:
+              for j in range(np.shape(x)[1]):
+                setattr(self,cols[i]+'_'+str(j+1),x[:,j].copy())
+            else:
+              setattr(self,cols[i],x.copy())
           else:
-            setattr(self,cols[i],self.add_shared_array(len(filenames),x,p))
+            if len(np.shape(x))>1:
+              for j in range(len(np.shape(x))):
+                setattr(self,cols[i]+'_'+str(j),self.add_shared_array(len(filenames),x[:,j],p))
+            else:
+              setattr(self,cols[i],self.add_shared_array(len(filenames),x,p))
         self.filename=filenames
         self.filenum=filenums
 
@@ -140,6 +154,9 @@ class CatalogStore(object):
           self.bfrac=np.zeros(len(self.coadd))
           self.bfrac[self.dflux==0]=1
           self.bfrac=self.add_shared_array(len(filenames),self.bfrac,p)
+      if cattype=='ng':
+        self.e1=self.mcal_g_1
+        self.e2=self.mcal_g_2
       if cattype=='i3epoch':
         if 'ccd' in cols:
           self.ccd-=1        
@@ -491,6 +508,15 @@ class CatalogMethods(object):
       except IOError:
         print 'error loading fits file: ',file
 
+      # Not reading in full file
+      if cols is None:
+        cols=fits[hdu].get_colnames()
+        if ifile==0:
+          cutcols=cuts['col']
+      else:
+        if ifile==0:
+          cutcols=[table.get(x,None) for x in cuts['col']]
+
       # Verify that the columns requested exist in the file
       colex,colist=CatalogMethods.col_exists(cols,fits[hdu].get_colnames())
       if colex<1:
@@ -500,7 +526,6 @@ class CatalogMethods(object):
         if colex<1:
           raise ColError('columns '+colist+' do not exist in file: '+file)
 
-      cutcols=[table.get(x,None) for x in cuts['col']]
       colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
       if colex<1:
         cutcols=[table.get(x,None).lower() for x in cuts['col']]
@@ -545,7 +570,7 @@ class CatalogMethods(object):
 
       fits.close()
 
-    return [array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
+    return cols,[array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
 
 
   @staticmethod
@@ -699,6 +724,20 @@ class CatalogMethods(object):
     """
 
     cuts=CatalogMethods.add_cut(np.array([]),'coadd',0,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def final_null_cuts_id():
+    """
+    Masking functions for use in CatalogStore initialisation. 
+
+    Use:
+
+    Each entry of CatalogMethods.add_cut(array,col,a,b,c) adds to array a structured definition of the mask to apply for a given column in the catalog, col. a,b,c are limiting values. If be is set, value in column must be equal to b. Otherwise it must be greater than a and/or less than c.
+    """
+
+    cuts=CatalogMethods.add_cut(np.array([]),'id',0,noval,noval)
 
     return cuts
 

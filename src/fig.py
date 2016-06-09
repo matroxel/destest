@@ -38,7 +38,7 @@ class plot_methods(object):
       plt.hist(x1,bins=bins,alpha=0.25,normed=True,label='unweighted',histtype='stepfilled')
       plt.hist(x1,bins=bins,alpha=0.25,normed=True,weights=w,label='weighted',histtype='stepfilled')
     plt.ylabel(r'$n$')
-    s=config.lbl.get(label,label)
+    s=config.lbl.get(label,label.replace('_','-'))
     if config.log_val.get(label,False):
       s='log '+s
     plt.xlabel(s+' '+tile)
@@ -46,7 +46,7 @@ class plot_methods(object):
     if tile!='':
       name='tile_'+tile+'_'+name
     plt.legend(loc='upper right',ncol=2, frameon=True,prop={'size':12})
-    plt.savefig('plots/hist/hist_'+name+'_'+label+'.png', bbox_inches='tight')
+    plt.savefig('plots/hist/hist_'+name+'_'+label.replace('_','-')+'.png', bbox_inches='tight')
     plt.close()
 
     return
@@ -62,13 +62,13 @@ class plot_methods(object):
       plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled',weights=w1)
       plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled',weights=w2)
     plt.ylabel(r'$n$')
-    s=config.lbl.get(label,label)
+    s=config.lbl.get(label,label.replace('_','-'))
     if config.log_val.get(label,False):
       s='log '+s
     plt.xlabel(s)
     plt.minorticks_on()
     plt.legend(loc='upper right',ncol=2, frameon=False,prop={'size':12},framealpha=0.2)
-    plt.savefig('plots/hist/hist_'+name+'_'+name2+'_'+label+'.png', bbox_inches='tight')
+    plt.savefig('plots/hist/hist_'+name+'_'+name2+'_'+label.replace('_','-')+'.png', bbox_inches='tight')
     plt.close()
 
     return
@@ -91,7 +91,7 @@ class plot_methods(object):
     plt.minorticks_on()
     if xtile!='':
       xname='tile_'+xtile+'_'+xname
-    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel+'_'+ylabel+'.png', bbox_inches='tight')
+    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel.replace('_','-')+'_'+ylabel.replace('_','-')+'.png', bbox_inches='tight')
     plt.close()
 
     plt.figure()
@@ -105,7 +105,7 @@ class plot_methods(object):
       s='log '+s
     plt.ylabel(s+' '+ytile)   
     plt.minorticks_on()
-    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel+'_'+ylabel+'_abslog.png', bbox_inches='tight')
+    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel.replace('_','-')+'_'+ylabel.replace('_','-')+'_abslog.png', bbox_inches='tight')
     plt.close()
 
     return
@@ -299,9 +299,9 @@ class plot_methods(object):
       plt.axhline(.004,color='k')
       plt.axhline(-.004,color='k')
     if config.log_val.get(val,False):
-      plt.xlabel('log '+config.lbl.get(val,val))
+      plt.xlabel('log '+config.lbl.get(val,val.replace('_','-')))
     else:
-      plt.xlabel(config.lbl.get(val,val))
+      plt.xlabel(config.lbl.get(val,val.replace('_','-')))
     y1=np.min(np.minimum(e1,e2))
     if e:   
       y2=np.max(np.maximum(e1,e2))
@@ -311,7 +311,7 @@ class plot_methods(object):
     plt.minorticks_on()
     if val2 is not None:
       val+='-'+val2
-    plt.savefig('plots/split/lin_split_'+name+'_'+val+'_'+label+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/lin_split_'+name+'_'+val+'_'+label.replace('_','-')+'.png', bbox_inches='tight')
     plt.close()
 
     return

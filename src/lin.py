@@ -68,7 +68,7 @@ class linear_methods(object):
 
     if isinstance(cat,catalog.CatalogStore)|hasattr(cat,'cat'):
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-      if cat.cat=='gal':
+      if (cat.cat=='gal'):
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,None,None,None,None,None,None,None
       else:
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w        
@@ -145,6 +145,7 @@ class linear_methods(object):
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     e1,e2,w,ms=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)
+
     wms=np.sum(w*ms)
     ww=np.sum(w**2)
     mean1=np.sum(w*e1)/wms
@@ -297,6 +298,8 @@ class linear_methods(object):
     xbin=np.digitize(x,edge)-1
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
+    if np.sum(np.isnan(x_mean))>0:
+      return None,None,None,None,None,None
     if noe:
       if y is None:
         return x_mean,x_err
@@ -373,7 +376,6 @@ class hist(object):
       else:
         if cat2 is None:
           if cat.wt:
-            print 'test?'
             hist_tests_base(val,x1,mask,x1name,w1=cat.w)
           else:
             hist_tests_base(val,x1,mask,x1name)
@@ -695,15 +697,16 @@ class summary_stats(object):
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     for flag in flags:
-
-      txt.write_methods.heading(flag+' flags',cat,label='flags_dist'+label,create=True)
+      if flag==flags[0]:
+        txt.write_methods.heading(flag+' flags',cat,label='flags_dist'+label,create=True)
+      else:
+        txt.write_methods.heading(flag+' flags',cat,label='flags_dist'+label,create=False)
       for i in xrange(summary_stats.n_bits_array(cat,flag)):
         total=np.sum((getattr(cat,flag) & 2**i) != 0)
         unique=np.sum(getattr(cat,flag) == 2**i)
         txt.write_methods.write_append(str(i)+'  '+str(total)+'  '+str(unique)+'  '+str(np.around(1.*total/len(cat.coadd),5)),cat,label='flags_dist'+label,create=False)
 
     txt.write_methods.heading('checking for bad values',cat,label='flags_dist'+label,create=False)
-
     for x in dir(cat):
       obj = getattr(cat,x)
       if isinstance(obj,np.ndarray):
@@ -855,15 +858,22 @@ def tile_stats_base(cat,valstore,tiles,tile,i,cols,mask):
 
 def hist_tests_base(val,x1,mask,x1name,w1=None,x2=None,mask2=None,x2name=None,w2=None):
 
+  if (np.sum(np.isinf(x1))>0)|(np.sum(np.isnan(x1))>0):
+    print 'bad values'
+    return
+
   if config.log_val.get(val,False):
     x1=np.log10(x1[mask])
 
   if x2 is None:
     if w1 is None:
-      fig.plot_methods.plot_hist(x1,name=x1name,label=val,w=w1[mask])
-    else:
       fig.plot_methods.plot_hist(x1,name=x1name,label=val)
+    else:
+      fig.plot_methods.plot_hist(x1,name=x1name,label=val,w=w1[mask])
   else:
+    if (np.sum(np.isinf(x2))>0)|(np.sum(np.isnan(x2))>0):
+      print 'bad values'
+      return
     if config.log_val.get(val,False):
       x2=np.log10(x2[mask2])
 
