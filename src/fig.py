@@ -347,12 +347,12 @@ class plot_methods(object):
     # ax.axes.get_yaxis().set_ticks([])
 
     ax=plt.subplot(3,3,3+n)
-    s=config.lbl.get(val,None)
+    s=config.lbl.get(val,val)
     if log:
       s='log '+s
-    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][i]*bf,yerr=xi[0]*xi[4][i],marker='v',linestyle='',color='g',label=s+r'$<$'+str(np.around(split,2)))
+    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][i]*bf,yerr=xi[0]*xi[4][i],marker='v',linestyle='',color='g',label=s.replace('_','-')+r'$<$'+str(np.around(split,2)))
     plt.errorbar(xi[0],xi[0]*xi[2][i]*bf,yerr=xi[0]*xi[5][i],marker='o',linestyle='',color='r',label='All')# (upper-lower in top)
-    plt.errorbar(xi[0]*1.2,xi[0]*xi[3][i]*bf,yerr=xi[0]*xi[6][i],marker='^',linestyle='',color='b',label=s+r'$>$'+str(np.around(split,2)))
+    plt.errorbar(xi[0]*1.2,xi[0]*xi[3][i]*bf,yerr=xi[0]*xi[6][i],marker='^',linestyle='',color='b',label=s.replace('_','-')+r'$>$'+str(np.around(split,2)))
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
     if n==1:
@@ -407,7 +407,7 @@ class plot_methods(object):
 
     #plt.minorticks_on()
     plt.subplots_adjust(hspace=0,wspace=.4)
-    plt.savefig('plots/split/2pt_split_'+plot_methods.get_filename_str(cat)+'_'+val+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/2pt_split_'+plot_methods.get_filename_str(cat)+'_'+val.replace('_','-')+'.png', bbox_inches='tight')
     plt.close(0)
 
     return
@@ -943,7 +943,7 @@ class plot_methods(object):
     col=['r','b','g']
     plt.hist(pz,bins=100,color='k',linestyle=('solid'),linewidth=1.,label='Full sample',histtype='step',normed=True)
     for i in range(cat.sbins):
-      plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i],normed=True)
+      plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i],normed=True)
       plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
     plt.legend(loc='upper right')
     #plt.ylim((0,2.5))
@@ -954,12 +954,12 @@ class plot_methods(object):
 
     plt.axvline(x=1)
     for i in range(cat.sbins):
-      plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
+      plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
     plt.legend(loc='upper right')
     #plt.xlim((-1,4))
     plt.xlabel('w')
     plt.ylabel('n(w)')
-    plt.savefig('plots/split/pzrw_'+cat.name+'_'+label+'.png', bbox_inches='tight')
+    plt.savefig('plots/split/pzrw_'+cat.name+'_'+label.replace('_','-')+'.png', bbox_inches='tight')
     plt.close()
 
     return
