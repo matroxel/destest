@@ -78,7 +78,7 @@ class CatalogStore(object):
         if (i3file is None)|(ngfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
 
-        cols1=[table.get(x,None) for x in cols]
+        cols1=[table.get(x,x) for x in cols]
         for i,x in enumerate(CatalogMethods.get_cat_cols_matched(catdir,goldfile,catfile,cols1,table,cuts,full=full,ext=ext)):
           setattr(self,cols[i],x)
 
@@ -92,7 +92,8 @@ class CatalogStore(object):
 
         # Read in columns from file(s)
         if 'cols1' not in locals():
-          cols1=[table.get(x,None) for x in cols]
+          cols1=[table.get(x,x) for x in cols]
+
         cols,catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
         for i,x in enumerate(catcols):
           if isinstance(x[0], basestring)|(p is None):
@@ -118,6 +119,18 @@ class CatalogStore(object):
       #Generate id column if no unique id specified
       if 'coadd' not in cols:
         self.coadd=self.add_shared_array(len(filenames),np.arange(len(filenames)),p)
+
+      if cattype=='ng':
+        self.e1=self.mcal_g_1
+        self.mcal_g_1=None
+        self.e2=self.mcal_g_2
+        self.mcal_g_2=None
+        self.psf1=self.psfrec_g_1
+        self.psfrec_g_1=None
+        self.psf2=self.psfrec_g_2
+        self.psfrec_g_2=None
+        self.coadd=self.id
+        self.id=None
 
       #Generate derived quantities
       if cattype in ['i3','ng']:
@@ -154,9 +167,6 @@ class CatalogStore(object):
           self.bfrac=np.zeros(len(self.coadd))
           self.bfrac[self.dflux==0]=1
           self.bfrac=self.add_shared_array(len(filenames),self.bfrac,p)
-      if cattype=='ng':
-        self.e1=self.mcal_g_1
-        self.e2=self.mcal_g_2
       if cattype=='i3epoch':
         if 'ccd' in cols:
           self.ccd-=1        
@@ -515,7 +525,7 @@ class CatalogMethods(object):
           cutcols=cuts['col']
       else:
         if ifile==0:
-          cutcols=[table.get(x,None) for x in cuts['col']]
+          cutcols=[table.get(x,x) for x in cuts['col']]
 
       # Verify that the columns requested exist in the file
       colex,colist=CatalogMethods.col_exists(cols,fits[hdu].get_colnames())

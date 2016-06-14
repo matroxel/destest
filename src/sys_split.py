@@ -210,8 +210,8 @@ class split_methods(object):
     if log:
       array=np.log10(array)
 
-    s=config.lbl.get(val,None)
-    if config.log_val.get(val,None):
+    s=config.lbl.get(val,val)
+    if config.log_val.get(val,False):
       s='log '+s
 
     bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.zp,mask=mask,label=val,plot=plot)

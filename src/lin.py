@@ -732,7 +732,8 @@ class summary_stats(object):
 
     txt.write_methods.heading('Summary',cat,label='summary'+label,create=True)
     txt.write_methods.heading('num gals  '+str(np.sum(mask)),cat,label='summary'+label,create=False)
-    txt.write_methods.heading('mean, std, rms, min, max',cat,label='summary'+label,create=False)
+    line=['quantity', 'mean', 'std', 'rms', 'min', 'max']
+    txt.write_methods.heading("".join(word.ljust(22) for word in line),cat,label='summary'+label,create=False)
 
     if cols is None:
       cols=catalog.CatalogMethods.get_cat_colnames(cat)
@@ -744,7 +745,8 @@ class summary_stats(object):
         e1,mean,e1_std,std,e1_rms,rms=linear_methods.calc_mean_stdev_rms_e(cat,mask)
       else:
         mean,std,rms=linear_methods.calc_mean_stdev_rms(cat,getattr(cat,val),mask)
-      txt.write_methods.write_append(val+'  '+str(mean)+'  '+str(std)+'  '+str(rms)+'  '+str(np.min(getattr(cat,val)))+'  '+str(np.max(getattr(cat,val))),cat,label='summary'+label,create=False)
+      line=[val,str(mean),str(std),str(rms),str(np.min(getattr(cat,val))),str(np.max(getattr(cat,val)))]
+      txt.write_methods.write_append("".join(word.ljust(22) for word in line),cat,label='summary'+label,create=False)
 
     return
 
@@ -858,12 +860,15 @@ def tile_stats_base(cat,valstore,tiles,tile,i,cols,mask):
 
 def hist_tests_base(val,x1,mask,x1name,w1=None,x2=None,mask2=None,x2name=None,w2=None):
 
+  if isinstance(x1[0], basestring):
+    print 'string values'
+    return  
   if (np.sum(np.isinf(x1))>0)|(np.sum(np.isnan(x1))>0):
     print 'bad values'
     return
 
   if config.log_val.get(val,False):
-    x1=np.log10(x1[mask])
+    x1=np.log10(x1[mask&(x1>0)])
 
   if x2 is None:
     if w1 is None:
