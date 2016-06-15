@@ -13,14 +13,20 @@ spointsfile = 'y1a1_special_field_points.fits'
 y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
 svsysmapdir = '/share/des/sv/systematics_maps/'
 redmagicdir = '/share/des/disc2/y1/redmagicv6.4.11/'
+redmagicdirnersc = '/global/cscratch1/sd/troxel/redmagicv6.4.11/'
 y1blacklist = '/share/des/disc2/y1/blacklist-y1.txt'
 coaddtiles = '/share/des/coadd_tiles.fits'
 tapebumps = '/home/troxel/destest/tape_bumps.fits'
 e2edir = '/home/troxel/des-shear-pipeline-code/end-to-end/end-to-end_code/'
+i3_main_nersc_dir = '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v1/nbc/main/'
 
 
 # Cosmosis source command
 cosmosissource = 'source my-source'
+
+# Tests to compute
+
+tests = ['all']
 
 # Dictionaries
 
@@ -330,6 +336,10 @@ gal_col_lookup = {
   'error':'REDMAGICFLAG',
   'e1':'e1',
   'e2':'e2',
+  'c1':'c1',
+  'c2':'c2',
+  'm':'m',
+  'w':'weight',
   'info':'info_flag',
   'lum':'ZLUM'
 

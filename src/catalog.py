@@ -93,8 +93,11 @@ class CatalogStore(object):
         # Read in columns from file(s)
         if 'cols1' not in locals():
           cols1=[table.get(x,x) for x in cols]
+          print cols1,cols
 
-        cols,catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
+        cols2,catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
+        if cols1 is None:
+          cols=cols2
         for i,x in enumerate(catcols):
           if isinstance(x[0], basestring)|(p is None):
             if len(np.shape(x))>2:
@@ -189,9 +192,11 @@ class CatalogStore(object):
         try:
           self.ran_ra=tmp['ra']
           self.ran_dec=tmp['dec']
+          self.ran_zp=tmp['z']
         except ValueError:
           self.ran_ra=tmp['RA']
           self.ran_dec=tmp['DEC']
+          self.ran_zp=tmp['Z']
         ra=self.ran_ra
         ra[self.ran_ra>180]=self.ran_ra[self.ran_ra>180]-360
         self.ran_ra=ra
