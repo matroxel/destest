@@ -1,5 +1,6 @@
 import numpy as np
 import glob
+import os
 import fitsio as fio
 try:
   import pandas as pd
@@ -88,12 +89,14 @@ class CatalogStore(object):
         if catdir is None:
           catdir=catfile
         else:
+          if not os.path.exists(catdir):
+            print catdir+'does not exist!'
+            return
           catdir=catdir+ext
 
         # Read in columns from file(s)
         if 'cols1' not in locals():
           cols1=[table.get(x,x) for x in cols]
-          print cols1,cols
 
         cols2,catcols,filenames,filenums=CatalogMethods.get_cat_cols(catdir,cols1,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
         if cols1 is None:
@@ -526,10 +529,10 @@ class CatalogMethods(object):
       # Not reading in full file
       if cols is None:
         cols=fits[hdu].get_colnames()
-        if ifile==0:
+        if lenst==0:
           cutcols=cuts['col']
       else:
-        if ifile==0:
+        if lenst==0:
           cutcols=[table.get(x,x) for x in cuts['col']]
 
       # Verify that the columns requested exist in the file
@@ -1028,13 +1031,14 @@ class CatalogMethods(object):
       else:
         q = 'select '+query+' from ( select /*+ FIRST_ROWS(n) */ A.*, ROWNUM rnum from ( select * from '+table+' '+sorder+') A where ROWNUM < '+str((tile+1.)*num)+' ) where rnum  >= '+str(tile*num)
       print q
-      data=conn.quick(q, array=False)
+      data=conn.quick(q, array=True)
       params = data[0].keys()
       tables = {}
       for p in params:
         arr = [(d[p] if (d[p] is not None) else np.nan) for d in data ]
         arr = np.array(arr)
         tables[p] = arr
+
       t = Table(tables)
       t.write(dir+name+'_'+str(tile)+'.fits.gz')
       if num==0:
@@ -1120,7 +1124,6 @@ class CatalogMethods(object):
     """
     This function removes duplicate randoms from the results of create_random_cat() and writes a fits file with the random catalog.
     """
-    import os
 
     def unique(a):
       order = np.lexsort(a.T)
