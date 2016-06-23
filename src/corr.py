@@ -366,6 +366,100 @@ class xi_2pt(object):
 
 
   @staticmethod
+  def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=False,lum=0.,comm=None,rank=None,size=None,output=False,label=''):
+
+    import numpy.random as rand
+    from mpi4py import MPI
+
+    def chi(z,omegam=0.27,H=100):
+      from astropy import cosmology
+      from astropy.cosmology import FlatLambdaCDM
+      cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
+      return cosmo.comoving_distance(z).value
+
+    def rote(cat,cat2,i,j):
+      # rotate cat2 (j) to cat (i)
+      Pxi=(-cat._y[i],cat._x[i]-cat._z[i],0)
+      jxi=(cat2._y[j]*cat._z[i]-cat2._z[j]*cat._y[i],cat2._z[j]*cat._x[i]-cat2._x[j]*cat._z[i],cat2._x[j]*cat._y[i]-cat2._y[j]*cat._x[i])
+      y=Pxi[0]*cat2._x[j]+Pxi[1]*cat2._y[j]
+      x=Pxi[0]*jxi[0]+Pxi[1]*jxi[1]
+      tdphi=np.pi-2.*np.arctan2(y,x)
+      # x=np.sin(cat.ra[i]-cat2.ra[j])*np.cos(cat.dec[i])
+      # y=np.cos(cat.dec[i])*np.sin(cat2.dec[j])-np.sin(cat.dec[i])*np.cos(cat2.dec[j])*np.cos(cat.ra[i]-cat2.ra[j])
+      # tdphi=2.*np.arctan2(y,x)
+      if cat.bs:
+        e1=(cat2.e1[j]-cat2.c1[j])*np.cos(tdphi)+(cat2.e2[j]-cat2.c2[j])*np.sin(tdphi)
+        e2=(cat2.e1[j]-cat2.c1[j])*np.sin(tdphi)-(cat2.e2[j]-cat2.c2[j])*np.cos(tdphi)
+      else:
+        e1=cat2.e1[j]*np.cos(tdphi)+cat2.e2[j]*np.sin(tdphi)
+        e2=cat2.e1[j]*np.sin(tdphi)-cat2.e2[j]*np.cos(tdphi)
+      return e1,e2
+
+    def pairs(cat,cat2,i,dlos,r):
+      # finds all pairs around cat[i]
+      j=np.where(np.abs(cat2.r-cat.r[i])<=dlos)[0]
+      sep=physsep(cat,cat2,i,j)
+      sepmask=(sep<r[-1])&(sep>r[0])
+      if np.sum(sepmask)>0:
+        tmp=np.digitize(sep[sepmask],r)
+        bins=tmp[(tmp>0)&(tmp<len(r))]-1
+        j=j[sepmask][(tmp>0)&(tmp<len(r))]
+        sep=sep[sepmask][(tmp>0)&(tmp<len(r))]
+      else:
+        j=np.array([])
+        bins=np.array([])
+        npairs=np.zeros(len(r)-1)
+        sep=np.array([])
+      return j,bins,sep
+
+    def angsep(cat,cat2,i,j):
+      dist=np.sqrt((cat._x[i]-cat2._x[j])**2+(cat._y[i]-cat2._y[j])**2+(cat._z[i]-cat2._z[j])**2)/2.
+      return 2.*np.arcsin(dist)
+
+    def physsep(cat,cat2,i,j): 
+      return np.abs(cat.r[i]-cat2.r[j])*angsep(cat,cat2,i,j)
+
+    def ang2xyz(cat):
+      if hasattr(cat,'_x'):
+        return
+      cat._cosdec = np.cos(cat.dec)
+      cat._sindec = np.sin(cat.dec)
+      cat._cosra = np.cos(cat.ra)
+      cat._sinra = np.sin(cat.ra)
+      cat._x = cat._cosdec * cat._cosra
+      cat._y = cat._cosdec * cat._sinra
+      cat._z = cat._sindec
+      return
+
+    ang2xyz(cat)
+    ang2xyz(cat2)
+
+    r=np.logspace(np.log(rmin),np.log(rmax),rbins,base=np.exp(1))
+
+    npairs=np.zeros(rbins)
+    r0=np.zeros(rbins)
+    dep=np.zeros(rbins)
+    dex=np.zeros(rbins)
+    for i in range(len(cat.ra)):
+      print i
+      j,bins,sep=pairs(cat,cat2,i,dlos,r)
+      if len(j)==0:
+        continue
+      et,ex=rote(cat,cat2,i,j)
+      for ri in range(rbins):
+        mask=bins==ri
+        npairs[ri]+=np.sum(mask)
+        r0[ri]=+np.sum(sep[mask])
+        dep[ri]+=np.sum(et[mask])
+        dex[ri]+=np.sum(ex[mask])
+
+    r0/=npairs
+    dep/=npairs
+    dex/=npairs
+
+    return r0,dep,dex,npairs
+
+  @staticmethod
   def ia_estimatorb(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=False,lum=0.,comm=None,rank=None,size=None,output=False,label=''):
 
     import numpy.random as rand
