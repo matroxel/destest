@@ -366,27 +366,21 @@ class xi_2pt(object):
 
 
   @staticmethod
-  def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=False,lum=0.,comm=None,rank=None,size=None,output=False,label=''):
+  def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=True,comm=None,rank=None,size=None):
 
     import numpy.random as rand
     from mpi4py import MPI
 
-    def chi(z,omegam=0.27,H=100):
-      from astropy import cosmology
-      from astropy.cosmology import FlatLambdaCDM
-      cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
-      return cosmo.comoving_distance(z).value
-
     def rote(cat,cat2,i,j):
       # rotate cat2 (j) to cat (i)
-      Pxi=(-cat._y[i],cat._x[i]-cat._z[i],0)
-      jxi=(cat2._y[j]*cat._z[i]-cat2._z[j]*cat._y[i],cat2._z[j]*cat._x[i]-cat2._x[j]*cat._z[i],cat2._x[j]*cat._y[i]-cat2._y[j]*cat._x[i])
-      y=Pxi[0]*cat2._x[j]+Pxi[1]*cat2._y[j]
-      x=Pxi[0]*jxi[0]+Pxi[1]*jxi[1]
-      tdphi=np.pi-2.*np.arctan2(y,x)
-      # x=np.sin(cat.ra[i]-cat2.ra[j])*np.cos(cat.dec[i])
-      # y=np.cos(cat.dec[i])*np.sin(cat2.dec[j])-np.sin(cat.dec[i])*np.cos(cat2.dec[j])*np.cos(cat.ra[i]-cat2.ra[j])
+      # Pxi=(-cat._y[i],cat._x[i]-cat._z[i],0)
+      # jxi=(cat2._y[j]*cat._z[i]-cat2._z[j]*cat._y[i],cat2._z[j]*cat._x[i]-cat2._x[j]*cat._z[i],cat2._x[j]*cat._y[i]-cat2._y[j]*cat._x[i])
+      # y=Pxi[0]*cat2._x[j]+Pxi[1]*cat2._y[j]
+      # x=Pxi[0]*jxi[0]+Pxi[1]*jxi[1]
       # tdphi=2.*np.arctan2(y,x)
+      x=np.sin(cat.ra[i]-cat2.ra[j])*np.cos(cat.dec[i])
+      y=np.cos(cat.dec[i])*np.sin(cat2.dec[j])-np.sin(cat.dec[i])*np.cos(cat2.dec[j])*np.cos(cat.ra[i]-cat2.ra[j])
+      tdphi=2.*np.arctan2(y,x)
       if cat.bs:
         e1=(cat2.e1[j]-cat2.c1[j])*np.cos(tdphi)+(cat2.e2[j]-cat2.c2[j])*np.sin(tdphi)
         e2=(cat2.e1[j]-cat2.c1[j])*np.sin(tdphi)-(cat2.e2[j]-cat2.c2[j])*np.cos(tdphi)
@@ -417,7 +411,7 @@ class xi_2pt(object):
       return 2.*np.arcsin(dist)
 
     def physsep(cat,cat2,i,j): 
-      return np.abs(cat.r[i]-cat2.r[j])*angsep(cat,cat2,i,j)
+      return np.sqrt(cat.r[i]*cat2.r[j])*angsep(cat,cat2,i,j)
 
     def ang2xyz(cat):
       if hasattr(cat,'_x'):
@@ -434,14 +428,18 @@ class xi_2pt(object):
     ang2xyz(cat)
     ang2xyz(cat2)
 
-    r=np.logspace(np.log(rmin),np.log(rmax),rbins,base=np.exp(1))
+    if logr:
+      r=np.logspace(np.log(rmin),np.log(rmax),rbins+1,base=np.exp(1))
+    else:
+      r=np.linspace(rmin,rmax,rbins+1)
 
     npairs=np.zeros(rbins)
     r0=np.zeros(rbins)
     dep=np.zeros(rbins)
     dex=np.zeros(rbins)
     for i in range(len(cat.ra)):
-      print i
+      if i%10000==0:
+        print i
       j,bins,sep=pairs(cat,cat2,i,dlos,r)
       if len(j)==0:
         continue

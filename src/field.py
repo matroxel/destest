@@ -778,11 +778,14 @@ class field_methods(object):
     return tmp[0].rstrip()
 
   @staticmethod
-  def get_radec_coadd_tiles(tiles):
+  def get_radec_coadd_tiles(tiles=None,tiles0=None,file=config.coaddtiles):
 
     if tiles is None:
-      tiles=fio.FITS(config.coaddtiles)[-1].read()
+      tiles=fio.FITS(file)[-1].read()
 
-    mask=np.in1d(tiles['TILENAME'],tiles,assume_unique=False)
+    if tiles0 is None:
+      mask=np.ones(len(tiles)).astype(bool)
+    else:
+      mask=np.in1d(np.core.defchararray.strip(tiles['TILENAME']),tiles0,assume_unique=False)
 
-    return np.vstack((tmp['URAUR']+tmp['URALL'])/2.,).T
+    return tiles,np.vstack(((tiles['URAUR'][mask]+tiles['URALL'][mask])/2.,(tiles['UDECUR'][mask]+tiles['UDECLL'][mask])/2.)).T

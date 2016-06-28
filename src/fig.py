@@ -4,6 +4,12 @@ import matplotlib
 matplotlib.use ('agg')
 import matplotlib.pyplot as plt
 import os
+import inspect
+
+# if "NERSC_HOST" in os.environ:
+#   os.environ['PATH']+=':/usr/common/software/latex/2015/2015/bin/x86_64-linux'
+#   os.environ['LATEX_DIR']='/usr/common/software/latex/2015/2015'
+
 dirname=os.path.split(__file__)[0]
 style_file=os.path.join(dirname, "SVA1StyleSheet.mplstyle")
 plt.style.use(style_file)
@@ -52,15 +58,15 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_comp_hist(x1,x2,bins=config.cfg.get('hbins',500),name='',name2='',label='',w1=None,w2=None):
+  def plot_comp_hist(x1,x2,bins=config.cfg.get('hbins',500),name='',name2='',label='',w1=None,w2=None,range=None,normed=True):
 
     plt.figure()
     if w1 is None:
-      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled')
-      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled')
+      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=normed,histtype='stepfilled',range=range)
+      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=normed,histtype='stepfilled',range=range)
     else:
-      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=True,histtype='stepfilled',weights=w1)
-      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=True,histtype='stepfilled',weights=w2)
+      plt.hist(x1,bins=bins,alpha=.25,label=name,normed=normed,histtype='stepfilled',weights=w1,range=range)
+      plt.hist(x2,bins=bins,alpha=.25,label=name2,normed=normed,histtype='stepfilled',weights=w2,range=range)
     plt.ylabel(r'$n$')
     s=config.lbl.get(label,label.replace('_','-'))
     if config.log_val.get(label,False):
