@@ -366,7 +366,7 @@ class xi_2pt(object):
 
 
   @staticmethod
-  def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=True,comm=None,rank=None,size=None):
+  def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=True,usempi=False,comm=None):
 
     import numpy.random as rand
     from mpi4py import MPI
@@ -393,17 +393,18 @@ class xi_2pt(object):
       # finds all pairs around cat[i]
       j=np.where(np.abs(cat2.r-cat.r[i])<=dlos)[0]
       sep=physsep(cat,cat2,i,j)
+      # print sep
       sepmask=(sep<r[-1])&(sep>r[0])
       if np.sum(sepmask)>0:
-        tmp=np.digitize(sep[sepmask],r)
-        bins=tmp[(tmp>0)&(tmp<len(r))]-1
-        j=j[sepmask][(tmp>0)&(tmp<len(r))]
-        sep=sep[sepmask][(tmp>0)&(tmp<len(r))]
+        sep=sep[sepmask]
+        # print sep
+        j=j[sepmask]
+        bins=np.digitize(sep,r)-1
       else:
-        j=np.array([])
-        bins=np.array([])
         npairs=np.zeros(len(r)-1)
         sep=np.array([])
+        j=np.array([])
+        bins=np.array([])
       return j,bins,sep
 
     def angsep(cat,cat2,i,j):
@@ -440,474 +441,28 @@ class xi_2pt(object):
     for i in range(len(cat.ra)):
       if i%10000==0:
         print i
+      # if i>0:
+      #   break
       j,bins,sep=pairs(cat,cat2,i,dlos,r)
+      # print sep
       if len(j)==0:
         continue
       et,ex=rote(cat,cat2,i,j)
       for ri in range(rbins):
         mask=bins==ri
+        if np.sum(mask)==0:
+          continue
         npairs[ri]+=np.sum(mask)
-        r0[ri]=+np.sum(sep[mask])
+        r0[ri]+=np.sum(sep[mask])
+        # print sep[mask],r0[ri]
         dep[ri]+=np.sum(et[mask])
         dex[ri]+=np.sum(ex[mask])
 
     r0/=npairs
-    dep/=npairs
-    dex/=npairs
+    dep=dep/npairs*2.*dlos
+    dex=dex/npairs*2.*dlos
 
     return r0,dep,dex,npairs
-
-  @staticmethod
-  def ia_estimatorb(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=False,lum=0.,comm=None,rank=None,size=None,output=False,label=''):
-
-    import numpy.random as rand
-    from mpi4py import MPI
-
-    def chi(z,omegam=0.27,H=100):
-      
-      import cosmology
-      
-      c0=cosmology.Cosmo(H0=H,omega_m=omegam)
-      
-      return c0.Dc(0.,z)
-
-    def rote(cat,cat2,i,j):
-
-      # rotate cat2 (j) to cat (i)
-
-      Pxi=(-cat._y[i],cat._x[i]-cat._z[i],0)
-      jxi=(cat2._y[j]*cat._z[i]-cat2._z[j]*cat._y[i],cat2._z[j]*cat._x[i]-cat2._x[j]*cat._z[i],cat2._x[j]*cat._y[i]-cat2._y[j]*cat._x[i])
-
-      y=Pxi[0]*cat2._x[j]+Pxi[1]*cat2._y[j]
-      x=Pxi[0]*jxi[0]+Pxi[1]*jxi[1]
-
-      tdphi=np.pi-2.*np.arctan2(y,x)
-
-      # x=np.sin(cat.ra[i]-cat2.ra[j])*np.cos(cat.dec[i])
-      # y=np.cos(cat.dec[i])*np.sin(cat2.dec[j])-np.sin(cat.dec[i])*np.cos(cat2.dec[j])*np.cos(cat.ra[i]-cat2.ra[j])
-
-      # tdphi=2.*np.arctan2(y,x)
-
-      if cat.bs:
-        e1=(cat2.e1[j]-cat2.c1[j])*np.cos(tdphi)+(cat2.e2[j]-cat2.c2[j])*np.sin(tdphi)
-        e2=(cat2.e1[j]-cat2.c1[j])*np.sin(tdphi)-(cat2.e2[j]-cat2.c2[j])*np.cos(tdphi)
-      else:
-        e1=cat2.e1[j]*np.cos(tdphi)+cat2.e2[j]*np.sin(tdphi)
-        e2=cat2.e1[j]*np.sin(tdphi)-cat2.e2[j]*np.cos(tdphi)
-
-      return e1,e2
-
-    def pairs(cat,cat2,dlos,r,mpibins,rank,lum=0.,output=False):
-      # finds all pairs around cat
-
-      import time
-      import healpy as hp
-      t1=time.time()
-      pairs=[]
-      bins=[]
-      for i in np.arange(mpibins[rank],mpibins[rank+1]).astype(int):
-        mask=np.where(np.abs(cat2.r-cat.r[i])<dlos)[0]
-        sep=physsep(cat,cat2,i,mask)
-        sepmask=(sep<r[-1])&(sep>r[0])
-        pairs.append(mask[sepmask])
-        if np.sum(sepmask)>0:
-          bins.append(np.digitize(sep[sepmask],r)-1)
-        else:
-          bins.append([])
-        # nside=np.max(np.where(hp.nside2resol(2**np.arange(20))>r[-1]/(cat.r[i]-dlos)))
-        # tmp0=hp.nside2npix(524288)//hp.nside2npix(nside)
-        # pix=hp.get_all_neighbours(nside,cat.pix[i],nest=True)
-        # mask=mask[np.in1d(cat2.pix[mask]//tmp0,pix,assume_unique=False)]
-        if output:
-          if i%1000==0:
-            print 'pairs',i,time.time()-t1
-        
-      return pairs,bins
-
-    def angsep(cat,cat2,i,j):
-
-      dist=np.sqrt((cat._x[i]-cat2._x[j])**2+(cat._y[i]-cat2._y[j])**2+(cat._z[i]-cat2._z[j])**2)/2.
-
-      return 2.*np.arcsin(dist)
-
-    def physsep(cat,cat2,i,j): 
-      
-      return cat.r[i]*angsep(cat,cat2,i,j)
-
-    def ang2xyz(cat):
-      
-      cat._x=np.cos(cat.dec)*np.cos(cat.ra)
-      cat._y=np.cos(cat.dec)*np.sin(cat.ra)
-      cat._z=np.sin(cat.dec)
-      
-      return
-
-    if logr:
-      r=np.logspace(np.log(rmin),np.log(rmax),rbins+1,base=np.exp(1))
-    else:
-      r=np.linspace(rmin,rmax,rbins+1)
-
-    cat.r=chi(cat.zp)
-    ang2xyz(cat)
-    catr=catalog.CatalogStore('y1_rm10_ran',setup=False,cattype='gal')
-    catr.coadd=np.arange(len(cat.ran_ra))
-    catr.ra=cat.ran_ra
-    catr.dec=cat.ran_dec
-    if hasattr(cat,'ran_zp'):
-      catr.r=chi(cat.ran_zp)
-    else:
-      catr.r=np.random.choice(cat.r,size=len(catr.ra))
-    ang2xyz(catr)
-    catr.regs=cat.ran_regs
-    catr.lum=100.*np.ones(len(cat.ran_dec))
-
-    d0=len(cat.coadd)
-    d1=np.sum(cat.e1!=0.)
-    r0=len(catr.coadd)
-
-    gp=np.zeros((cat.num_regs+1,rbins))
-    gx=np.zeros((cat.num_regs+1,rbins))
-    gee=np.zeros((cat.num_regs+1,rbins))
-    gxx=np.zeros((cat.num_regs+1,rbins))
-
-    maxlos=np.max([np.max(cat.r),np.max(catr.r)])#4200.
-    minlos=np.min([np.min(cat.r),np.min(catr.r)])#200.
-    gg = treecorr.GGCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-    kk = treecorr.KKCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-    ng = treecorr.NGCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-    nk = treecorr.NKCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-    rg = treecorr.NGCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-    rk = treecorr.NKCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-    for i in range(1000):
-      if output:
-        if i%1==0:
-          print i
-      rc=(maxlos-minlos)/1000*i+minlos
-      mask=(np.abs(cat.r-rc)<dlos)&(cat.e1!=0)
-      mask2=(np.abs(cat.r-rc)<(maxlos-minlos)/1000/2.)
-      if (np.sum(mask)!=0)&(np.sum(mask2)!=0):
-        # print 'skipping ',i
-        catxa=treecorr.Catalog(g1=cat.e1[mask]-cat.c1[mask], g2=cat.e2[mask]-cat.c2[mask], w=cat.w[mask], r=cat.r[mask],ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
-        catma=treecorr.Catalog(k=(1.+cat.m[mask]), w=cat.w[mask], r=cat.r[mask],ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
-        catxb=treecorr.Catalog(r=cat.r[mask2],ra=cat.ra[mask2], dec=cat.dec[mask2], ra_units='deg', dec_units='deg')
-        ng.process_cross(catxb,catxa,metric='Rperp')
-        nk.process_cross(catxb,catma,metric='Rperp')
-        gg.process_cross(catxa,catxa,metric='Rperp')
-        kk.process_cross(catma,catma,metric='Rperp')
-
-      maskr2=(np.abs(catr.r-rc)<(maxlos-minlos)/1000/2.)
-      if np.sum(maskr2)!=0:
-        catxb=treecorr.Catalog(r=catr.r[maskr2],ra=catr.ra[maskr2], dec=catr.dec[maskr2], ra_units='deg', dec_units='deg')
-        rg.process_cross(catxb,catxa,metric='Rperp')
-        rk.process_cross(catxb,catma,metric='Rperp')
-
-    r=ng.meanr/ng.weight
-    ng.finalize(.2)
-    nk.finalize(.2)
-    rg.finalize(.2)
-    rk.finalize(.2)
-    gg.finalize(.2,.2)
-    kk.finalize(.2,.2)
-    gp[0,:]=(ng.xi-rg.xi)#/(nk.xi-rk.xi)
-    gx[0,:]=(ng.xi_im-rg.xi_im)#/(nk.xi-rk.xi)
-    gee[0,:]=(gg.xip)/(kk.xi)
-    gxx[0,:]=(gg.xim)/(kk.xi)
-
-    return r,gp[0,:],gx[0,:],gee[0,:],gxx[0,:],np.zeros(len(r)),np.zeros(len(r)),np.zeros(len(r)),np.zeros(len(r))
-
-    for j in range(50):
-      gg = treecorr.GGCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-      kk = treecorr.KKCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-      ng = treecorr.NGCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-      nk = treecorr.NKCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-      rg = treecorr.NGCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-      rk = treecorr.NKCorrelation(nbins=10, min_sep=.3, max_sep=60,bin_slop=.1,verbose=0)
-      for i in range(1000):
-        if output:
-          if i%100==0:
-            print j,i
-        rc=(maxlos-minlos)/1000*i+minlos
-        mask=(np.abs(cat.r-rc)<dlos)&(cat.e1!=0)&(cat.regs!=j)
-        mask2=(np.abs(cat.r-rc)<(maxlos-minlos)/1000/2.)&(cat.regs!=j)
-        if (np.sum(mask)!=0)&(np.sum(mask2)!=0):
-          catxa=treecorr.Catalog(g1=cat.e1[mask]-cat.c1[mask], g2=cat.e2[mask]-cat.c2[mask], w=cat.w[mask], r=cat.r[mask],ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
-          catma=treecorr.Catalog(k=(1.+cat.m[mask]), w=cat.w[mask], r=cat.r[mask],ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
-          catxb=treecorr.Catalog(r=cat.r[mask2],ra=cat.ra[mask2], dec=cat.dec[mask2], ra_units='deg', dec_units='deg')
-          ng.process_cross(catxb,catxa,metric='Rperp')
-          nk.process_cross(catxb,catma,metric='Rperp')
-          gg.process_cross(catxa,catxa,metric='Rperp')
-          kk.process_cross(catma,catma,metric='Rperp')
-
-        maskr2=(np.abs(catr.r-rc)<(maxlos-minlos)/1000/2.)&(catr.regs!=j)
-        if (np.sum(mask)!=0)&(np.sum(maskr2)!=0):
-          catxa=treecorr.Catalog(g1=cat.e1[mask]-cat.c1[mask], g2=cat.e2[mask]-cat.c2[mask], w=cat.w[mask], r=cat.r[mask],ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
-          catma=treecorr.Catalog(k=(1.+cat.m[mask]), w=cat.w[mask], r=cat.r[mask],ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
-          catxb=treecorr.Catalog(r=catr.r[maskr2],ra=catr.ra[maskr2], dec=catr.dec[maskr2], ra_units='deg', dec_units='deg')
-          rg.process_cross(catxb,catxa,metric='Rperp')
-          rk.process_cross(catxb,catma,metric='Rperp')
-
-      gp[j+1,:]=(ng.xi/d0-rg.xi/r0)/(nk.xi/d0-rk.xi/r0)
-      gx[j+1,:]=(ng.xi_im/d0-rg.xi_im/r0)/(nk.xi/d0-rk.xi/r0)
-      gee[j+1,:]=(gg.xip)/(kk.xi)
-      gxx[j+1,:]=(gg.xim)/(kk.xi)
-
-    covgp=np.zeros((rbins,rbins))
-    covgx=np.zeros((rbins,rbins))
-    covee=np.zeros((rbins,rbins))
-    covxx=np.zeros((rbins,rbins))
-
-    for i in xrange(rbins):
-      for j in xrange(rbins):
-        covgp[i,j]=np.sum((gp[1:,i]-np.mean(gp[1:,i]))*(gp[1:,j]-np.mean(gp[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-        covgx[i,j]=np.sum((gx[1:,i]-np.mean(gx[1:,i]))*(gx[1:,j]-np.mean(gx[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-        covee[i,j]=np.sum((gee[1:,i]-np.mean(gee[1:,i]))*(gee[1:,j]-np.mean(gee[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-        covxx[i,j]=np.sum((gxx[1:,i]-np.mean(gxx[1:,i]))*(gxx[1:,j]-np.mean(gxx[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-
-    return r,gp[0,:],gx[0,:],gee[0,:],gxx[0,:],np.sqrt(np.diag(covgp)),np.sqrt(np.diag(covgx)),np.sqrt(np.diag(covee)),np.sqrt(np.diag(covxx))
-
-    # print d0,d1,r0
-
-    # mm=np.zeros((cat.num_regs+1,rbins))
-    # dm=np.zeros((cat.num_regs+1,rbins))
-    # rm=np.zeros((cat.num_regs+1,rbins))
-    # dd=np.zeros((cat.num_regs+1,rbins))
-    # dr=np.zeros((cat.num_regs+1,rbins))
-    # dr0=np.zeros((cat.num_regs+1,rbins))
-    # rr=np.zeros((cat.num_regs+1,rbins))
-    # ee=np.zeros((cat.num_regs+1,rbins))
-    # xx=np.zeros((cat.num_regs+1,rbins))
-    # de=np.zeros((cat.num_regs+1,rbins))
-    # dx=np.zeros((cat.num_regs+1,rbins))
-    # re=np.zeros((cat.num_regs+1,rbins))
-    # rx=np.zeros((cat.num_regs+1,rbins))
-
-    # if size is not None:
-    #   mpibins=np.floor(np.linspace(0,len(cat.coadd),size+1))
-    # else:
-    #   mpibins=np.array([0,len(cat.coadd)])
-    #   rank=0
-
-    # j,bin=pairs(cat,cat,dlos,r,mpibins,rank,lum=lum,output=output)
-    # for i in xrange(int(mpibins[rank+1]-mpibins[rank])):
-    #   if cat.wt:
-    #     w=cat.w[i]
-    #   else:
-    #     w=1.
-
-    #   if output:
-    #     if i%10000==0:
-    #       print 'pairs dd',i
-
-    #   if len(j[i])>0:
-    #     e1,e2=rote(cat,cat,i,j[i])
-    #     e1a,e2a=rote(cat,cat,j[i],i)
-    #     for x,ind in enumerate(j[i]):
-    #       if cat.wt:
-    #         w2=cat.w[ind]
-    #       else:
-    #         w2=1.
-
-    #       if cat.e1[ind]!=0:
-    #         dd[0,bin[i][x]]+=1
-    #         dd[cat.regs[i]+1,bin[i][x]]+=1
-
-    #         de[0,bin[i][x]]+=e1[x]*w
-    #         dx[0,bin[i][x]]+=e2[x]*w
-    #         de[cat.regs[i]+1,bin[i][x]]+=e1[x]*w
-    #         dx[cat.regs[i]+1,bin[i][x]]+=e2[x]*w
-    #         if cat.bs:
-    #           dm[0,bin[i][x]]+=(1.+cat.m[ind])*w
-    #           dm[cat.regs[i]+1,bin[i][x]]+=(1.+cat.m[ind])*w
-
-    #         if cat.e1[i]!=0:
-    #           ee[0,bin[i][x]]+=e1[x]*e1a[x]*w*w2
-    #           xx[0,bin[i][x]]+=e2[x]*e2a[x]*w*w2
-    #           ee[cat.regs[i]+1,bin[i][x]]+=e1[x]*e1a[x]*w*w2
-    #           xx[cat.regs[i]+1,bin[i][x]]+=e2[x]*e2a[x]*w*w2
-    #           if cat.bs:
-    #             mm[0,bin[i][x]]+=(1.+cat.m[i])*(1.+cat.m[ind])*w*w2
-    #             mm[cat.regs[i]+1,bin[i][x]]+=(1.+cat.m[i])*(1.+cat.m[ind])*w*w2
-
-    # if size is not None:
-    #   mpibins=np.floor(np.linspace(0,len(catr.coadd),size+1))
-    # else:
-    #   mpibins=np.array([0,len(catr.coadd)])
-    #   rank=0
-
-    # j,bin=pairs(catr,cat,dlos,r,mpibins,rank,lum=lum,output=output)
-    # for i in xrange(int(mpibins[rank+1]-mpibins[rank])):
-    #   if output:
-    #     if i%10000==0:
-    #       print 'pairs dr',i
-
-    #   if len(j[i])>0:
-    #     e1,e2=rote(catr,cat,i,j[i])
-    #     for x,ind in enumerate(j[i]):
-    #       if cat.wt:
-    #         w=cat.w[ind]
-    #       else:
-    #         w=1.
-
-    #       dr0[0,bin[i][x]]+=1
-    #       dr0[catr.regs[i]+1,bin[i][x]]+=1
-
-    #       if cat.e1[ind]!=0:
-    #         dr[0,bin[i][x]]+=1
-    #         dr[catr.regs[i]+1,bin[i][x]]+=1
-    #         re[0,bin[i][x]]+=e1[x]*w
-    #         rx[0,bin[i][x]]+=e2[x]*w
-    #         re[catr.regs[i]+1,bin[i][x]]+=e1[x]*w
-    #         rx[catr.regs[i]+1,bin[i][x]]+=e2[x]*w
-    #         if cat.bs:
-    #           rm[0,bin[i][x]]+=(1.+cat.m[ind])*w
-    #           rm[catr.regs[i]+1,bin[i][x]]+=(1.+cat.m[ind])*w
-
-    # # j,bin=pairs(catr,catr,dlos,r,mpibins,rank,lum=lum,output=output)   
-    # # for i in xrange(int(mpibins[rank+1]-mpibins[rank])):
-    # #   if output:
-    # #     if i%10000==0:
-    # #       print 'pairs rr',i
-    # #   if len(j[i])>0:
-    # #     for x,ind in enumerate(j[i]):
-    # #       rr[0,bin[i][x]]+=1
-    # #       rr[catr.regs[i]+1,bin[i][x]]+=1
-
-    # if size is not None:
-    #   comm.Barrier()
-
-    #   if rank==0:
-    #     mma = np.zeros_like(mm)
-    #     dma = np.zeros_like(dm)
-    #     rma = np.zeros_like(rm)
-    #     dda = np.zeros_like(dd)
-    #     dra = np.zeros_like(dr)
-    #     dr0a = np.zeros_like(dr0)
-    #     rra = np.zeros_like(rr)
-    #     eea = np.zeros_like(ee)
-    #     xxa = np.zeros_like(xx)
-    #     dea = np.zeros_like(de)
-    #     rea = np.zeros_like(re)
-    #     dxa = np.zeros_like(dx)
-    #     rxa = np.zeros_like(rx)
-    #   else:
-    #     mma = None
-    #     dma = None
-    #     rma = None
-    #     dda = None
-    #     dra = None
-    #     dr0a = None
-    #     rra = None
-    #     eea = None
-    #     xxa = None
-    #     dea = None
-    #     dxa = None
-    #     rea = None
-    #     rxa = None
-
-    #   comm.Reduce([mm, MPI.DOUBLE],[mma, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([dm, MPI.DOUBLE],[dma, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([rm, MPI.DOUBLE],[rma, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([dd, MPI.DOUBLE],[dda, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([dr, MPI.DOUBLE],[dra, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([dr0, MPI.DOUBLE],[dr0a, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([rr, MPI.DOUBLE],[rra, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([ee, MPI.DOUBLE],[eea, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([xx, MPI.DOUBLE],[xxa, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([de, MPI.DOUBLE],[dea, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([dx, MPI.DOUBLE],[dxa, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([re, MPI.DOUBLE],[rea, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   comm.Reduce([rx, MPI.DOUBLE],[rxa, MPI.DOUBLE],op=MPI.SUM,root=0)
-
-    #   if rank==0:
-    #     mm = mma
-    #     dm = dma
-    #     rm = rma
-    #     dd = dda
-    #     dr = dra
-    #     dr0 = dr0a
-    #     rr = rra
-    #     ee = eea
-    #     xx = xxa
-    #     de = dea
-    #     dx = dxa
-    #     re = rea
-    #     rx = rxa        
-
-    # if rank==0:
-
-    #   gp=np.zeros_like(de)
-    #   gx=np.zeros_like(dx)
-    #   gee=np.zeros_like(ee)
-    #   gxx=np.zeros_like(xx)
-    #   gpm=np.zeros_like(dm)
-    #   gmm=np.zeros_like(mm)
-
-    #   gp[0]=(de[0]/d1/d0-re[0]/d1/r0)#/rr[0]*r0*r0
-    #   gx[0]=(dx[0]/d1/d0-rx[0]/d1/r0)#/rr[0]*r0*r0
-    #   gee[0]=ee[0]/d1/d1/rr[0]*r0*r0
-    #   gxx[0]=xx[0]/d1/d1/rr[0]*r0*r0
-    #   if cat.bs:
-    #     gpm[0]=(dm[0]/d1/d0-rm[0]/d1/r0)#/rr[0]*r0*r0
-    #     gmm[0]=mm[0]/d1/d1/rr[0]*r0*r0
-    #   for i in xrange(cat.num_regs):
-    #     gp[i+1]=((de[0]-de[i+1])/d1/d0-(re[0]-re[i+1])/d1/r0)#/(rr[0]-rr[i+1])*r0*r0
-    #     gx[i+1]=((dx[0]-dx[i+1])/d1/d0-(rx[0]-rx[i+1])/d1/r0)#/(rr[0]-rr[i+1])*r0*r0
-    #     gee[i+1]=(ee[0]-ee[i+1])/d1/d1/(rr[0]-rr[i+1])*r0*r0
-    #     gxx[i+1]=(xx[0]-xx[i+1])/d1/d1/(rr[0]-rr[i+1])*r0*r0
-    #     if cat.bs:
-    #       gpm[i+1]=((dm[0]-dm[i+1])/d1/d0-(rm[0]-rm[i+1])/d1/r0)#/(rr[0]-rr[i+1])*r0*r0
-    #       gmm[i+1]=(mm[0]-mm[i+1])/d1/d1/(rr[0]-rr[i+1])*r0*r0
-
-    #   if cat.bs:
-    #     gp/=gpm
-    #     gx/=gpm
-    #     gee/=gmm
-    #     gxx/=gmm
-
-    #   covgp=np.zeros((rbins,rbins))
-    #   covgx=np.zeros((rbins,rbins))
-    #   covee=np.zeros((rbins,rbins))
-    #   covxx=np.zeros((rbins,rbins))
-
-    #   for i in xrange(rbins):
-    #     for j in xrange(rbins):
-    #       covgp[i,j]=np.sum((gp[1:,i]-np.mean(gp[1:,i]))*(gp[1:,j]-np.mean(gp[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-    #       covgx[i,j]=np.sum((gx[1:,i]-np.mean(gx[1:,i]))*(gx[1:,j]-np.mean(gx[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-    #       covee[i,j]=np.sum((gee[1:,i]-np.mean(gee[1:,i]))*(gee[1:,j]-np.mean(gee[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-    #       covxx[i,j]=np.sum((gxx[1:,i]-np.mean(gxx[1:,i]))*(gxx[1:,j]-np.mean(gxx[1:,j])))*(cat.num_regs-1.)/cat.num_regs
-
-    # dd/=d0**2
-    # ee/=d1**2
-    # xx/=d1**2
-    # de/=d1*d0
-    # dx/=d1*d0
-    
-    # dr/=d1*r0
-    # dr/=d0*r0
-    # re/=d1*r0
-    # rx/=d1*r0
-
-    # rr/=r0*r0
-
-    # cat.ra=cat.ra*180./np.pi
-    # cat.dec=cat.dec*180./np.pi
-    # catr.ra=catr.ra*180./np.pi
-    # catr.dec=catr.dec*180./np.pi
-
-    # if rank==0:
-    #   np.save('r_'+label+'.npy',r)
-    #   np.save('gp_'+label+'.npy',gp)
-    #   np.save('gx_'+label+'.npy',gx)
-    #   np.save('ee_'+label+'.npy',ee)
-    #   np.save('xx_'+label+'.npy',xx)
-    #   np.save('covgp_'+label+'.npy',covgp)
-    #   np.save('covgx_'+label+'.npy',covgx)
-    #   np.save('covee_'+label+'.npy',covee)
-    #   np.save('covxx_'+label+'.npy',covxx)
-    #   return r,gp[0],gx[0],gee[0],gxx[0],np.sqrt(np.diag(covgp)),np.sqrt(np.diag(covgx)),np.sqrt(np.diag(covee)),np.sqrt(np.diag(covxx)),[d0,d1,r0,dd,dr,dr0,rr,ee,xx,de,dx,re,rx],rr
-    # else:
-    #   return None,None,None,None,None,None,None,None,None,None,None
-
 
 class _cosmosis(object):
 
