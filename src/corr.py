@@ -1007,7 +1007,7 @@ class runs(object):
   @staticmethod
   def redmagic_IA(
     rmdfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
-    rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
+    rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',
     name='y1_rm',
     corrtype='dense',
     zlims=None,
