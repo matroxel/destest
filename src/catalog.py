@@ -1228,4 +1228,65 @@ class CatalogMethods(object):
 
     return
 
+  @staticmethod
+  def merge_red_shape(cat):
+    """
+    Merges redma*, spec, and shape catalogs.
+    """  
 
+    def read_cat(file0,spec):
+      tmp=fio.FITS(file0)[-1].read()
+      store=np.ones(tmp.shape, dtype=tmp.dtype.descr + [('e1','f8')]+[('e2','f8')]+[('m','f8')]+[('c1','f8')]+[('c2','f8')]+[('weight','f8')])
+      for name in tmp.dtype.names:
+        store[name]=tmp[name]
+
+      store['e1']=-9999*store['e1']
+      store['e2']=-9999*store['e2']
+      store['c1']=-9999*store['c1']
+      store['c2']=-9999*store['c2']
+      store['m']=-9999*store['m']
+      store['weight']=-9999*store['weight']
+
+      x,y=catalog.CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
+      store['ZSPEC'][x]=spec['z_spec'][y]
+
+      return store
+
+    def store_shape(store,coadd):
+
+      x,y=catalog.CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
+
+      store['e1'][x]=tmp2['e1'][y]
+      store['e2'][x]=tmp2['e2'][y]
+      store['c1'][x]=tmp2['c1'][y]
+      store['c2'][x]=tmp2['c2'][y]
+      store['m'][x]=tmp2['m'][y]
+      store['weight'][x]=tmp2['weight'][y]
+
+    return
+
+    spec=fio.FITS('/home/troxel/spec_cat_0.fits.gz')[-1].read()
+
+    store_rmd=read_cat(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10.fit',spec)
+    store_rml=read_cat(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04.fit',spec)
+    store_rpc=read_cat(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',spec)
+    store_rpm=read_cat(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members.fit',spec)
+
+    for ifile,file in enumerate(glob.glob('')):
+      print ifile,file
+      tmp2=fio.FITS(file)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+      mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
+      tmp2=tmp2[mask]
+
+      store_shape(store_rmd,tmp2['coadd_objects_id'])
+      store_shape(store_rml,tmp2['coadd_objects_id'])
+      store_shape(store_rpc,tmp2['coadd_objects_id'])
+      store_shape(store_rpm,tmp2['coadd_objects_id'])
+
+    fio.write(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',store_rmd,clobber=True)
+    fio.write(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',store_rml,clobber=True)
+    fio.write(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_e.fit',store_rpc,clobber=True)
+    fio.write(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members_e.fit',store_rpm,clobber=True)
+
+    return
+    
