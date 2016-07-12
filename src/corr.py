@@ -1021,19 +1021,19 @@ class runs(object):
       rmd=catalog.CatalogStore(name+'_dense',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmdfile,release='y1',ranfile=rmdfile[:-5]+'randoms.fit')
       rmd.r=cosmo.chi(rmd.zp)
       try:
-        rmd.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+        rmd.ran_r=np.load(config.redmagicdirnersc+'dense_ran_r.npy')
       except:
-        np.save(config.redmagicdirnersc+label+'_dense_ran_r.npy',cosmo.chi(rmd.zp))
-        rmd.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+        np.save(config.redmagicdirnersc+'dense_ran_r.npy',cosmo.chi(rmd.zp))
+        rmd.ran_r=np.load(config.redmagicdirnersc+'dense_ran_r.npy')
 
     if corrtype!='dense':
       rml=catalog.CatalogStore(name+'_lum',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
       rml.r=cosmo.chi(rml.zp)
       try:
-        rml.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+        rml.ran_r=np.load(config.redmagicdirnersc+'lum_ran_r.npy')
       except:
-        np.save(config.redmagicdirnersc+label+'_lum_ran_r.npy',cosmo.chi(rml.zp))
-        rml.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+        np.save(config.redmagicdirnersc+'lum_ran_r.npy',cosmo.chi(rml.zp))
+        rml.ran_r=np.load(config.redmagicdirnersc+'lum_ran_r.npy')
 
     if corrtype=='dense':
       pos=rmd
