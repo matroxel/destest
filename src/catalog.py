@@ -696,13 +696,28 @@ class CatalogMethods(object):
     Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
     """
 
-    u_idx_x = np.argsort(x)
-    u_idx_y = np.argsort(y)
-    i_xy = np.intersect1d(x, y, assume_unique=True)
-    i_idx_x = u_idx_x[x[u_idx_x].searchsorted(i_xy)]
-    i_idx_y = u_idx_y[y[u_idx_y].searchsorted(i_xy)]
+    xsort = np.argsort(x)
+    ysort = np.argsort(y)
+    i_xy  = np.intersect1d(x, y, assume_unique=True)
+    i_x   = xsort[x[xsort].searchsorted(i_xy)]
+    i_y   = ysort[y[ysort].searchsorted(i_xy)]
 
-    return i_idx_x, i_idx_y
+    return i_x, i_y
+
+  @staticmethod
+  def sort2n(x,y):
+    """
+    Sorts and matches two arrays of object ids where x is unique and y is not (in DES this is coadd_objects_id).
+    Slower than sort2().
+    """
+    
+    xsort = np.argsort(x)
+    ysort = np.argsort(y)
+    i_yx  = np.sort(y[np.in1d(y,x,assume_unique=False)])
+    i_x   = xsort[x[xsort].searchsorted(i_yx)]    
+    i_y   = ysort[y[ysort].searchsorted(i_yx)]
+    
+    return i_x, i_y
 
   @staticmethod
   def get_new_nbcw(cat,file,w=True,prune=False):
@@ -1257,31 +1272,24 @@ class CatalogMethods(object):
 
       try:
         x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
-        store['ZSPEC'][x]=spec['z_spec'][y]
       except:
-        m1,s1,m2,s2=CatalogMethods.sort(store['ID'],spec['coadd_objects_id']) 
-        store['ZSPEC'][m1][s1]=spec['z_spec'][m2][s2]
+        x,y=CatalogMethods.sort2n(store['ID'],spec['coadd_objects_id']) 
+      store['ZSPEC'][x]=spec['z_spec'][y]
 
       return store
 
     def store_shape(store,tmp2):
 
       try:
-        x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
-        store['e1'][x]=tmp2['e1'][y]
-        store['e2'][x]=tmp2['e2'][y]
-        store['c1'][x]=tmp2['c1'][y]
-        store['c2'][x]=tmp2['c2'][y]
-        store['m'][x]=tmp2['m'][y]
-        store['weight'][x]=tmp2['weight'][y]
+        x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],tmp2['coadd_objects_id'])
       except:
-        m1,s1,m2,s2=CatalogMethods.sort(store['ID'],spec['coadd_objects_id']) 
-        store['e1'][m1][s1]=tmp2['e1'][m2][s2]
-        store['e2'][m1][s1]=tmp2['e2'][m2][s2]
-        store['c1'][m1][s1]=tmp2['c1'][m2][s2]
-        store['c2'][m1][s1]=tmp2['c2'][m2][s2]
-        store['m'][m1][s1]=tmp2['m'][m2][s2]
-        store['weight'][m1][s1]=tmp2['weight'][m2][s2]
+        x,y=CatalogMethods.sort2n(store['ID'],tmp2['coadd_objects_id']) 
+      store['e1'][x]=tmp2['e1'][y]
+      store['e2'][x]=tmp2['e2'][y]
+      store['c1'][x]=tmp2['c1'][y]
+      store['c2'][x]=tmp2['c2'][y]
+      store['m'][x]=tmp2['m'][y]
+      store['weight'][x]=tmp2['weight'][y]
 
       return
 
