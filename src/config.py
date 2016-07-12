@@ -194,7 +194,7 @@ i3_col_lookup = {
   'm2':'m2',
   'c1':'c1',
   'c2':'c2',
-  'w':'w',
+  'w':'weight',
   'rgp':'mean_rgpp_rp',
   'snr':'snr',
   'ra_off':'ra_as',
