@@ -1023,7 +1023,7 @@ class runs(object):
       try:
         rmd.ran_r=np.load(config.redmagicdirnersc+'dense_ran_r.npy')
       except:
-        np.save(config.redmagicdirnersc+'dense_ran_r.npy',cosmo.chi(rmd.zp))
+        np.save(config.redmagicdirnersc+'dense_ran_r.npy',cosmo.chi(rmd.ran_zp))
         rmd.ran_r=np.load(config.redmagicdirnersc+'dense_ran_r.npy')
 
     if corrtype!='dense':
@@ -1032,7 +1032,7 @@ class runs(object):
       try:
         rml.ran_r=np.load(config.redmagicdirnersc+'lum_ran_r.npy')
       except:
-        np.save(config.redmagicdirnersc+'lum_ran_r.npy',cosmo.chi(rml.zp))
+        np.save(config.redmagicdirnersc+'lum_ran_r.npy',cosmo.chi(rml.ran_zp))
         rml.ran_r=np.load(config.redmagicdirnersc+'lum_ran_r.npy')
 
     if corrtype=='dense':
