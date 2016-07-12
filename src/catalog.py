@@ -1269,7 +1269,7 @@ class CatalogMethods(object):
       store['m'][x]=tmp2['m'][y]
       store['weight'][x]=tmp2['weight'][y]
 
-    return
+      return
 
     spec=fio.FITS(spec0)[-1].read()
 
