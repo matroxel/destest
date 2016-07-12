@@ -16,6 +16,7 @@ import math
 
 import catalog
 import cosmo
+import config
 import fig
 import txt
 import lin
