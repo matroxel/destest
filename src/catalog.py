@@ -1232,7 +1232,6 @@ class CatalogMethods(object):
   def merge_red_shape(
     rmd=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10.fit',
     rml=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04.fit',
-    rpc=config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',
     rpm=config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members.fit',
     spec0='/global/cscratch1/sd/troxel/spec_cat_0.fits.gz',
     shape='/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v1/nbc/main/'):
@@ -1241,6 +1240,9 @@ class CatalogMethods(object):
     """  
 
     def read_cat(file0,spec):
+
+      print 'loading '+file0
+
       tmp=fio.FITS(file0)[-1].read()
       store=np.ones(tmp.shape, dtype=tmp.dtype.descr + [('e1','f8')]+[('e2','f8')]+[('m','f8')]+[('c1','f8')]+[('c2','f8')]+[('weight','f8')])
       for name in tmp.dtype.names:
@@ -1253,14 +1255,20 @@ class CatalogMethods(object):
       store['m']=-9999*store['m']
       store['weight']=-9999*store['weight']
 
-      x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
+      try:
+        x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
+      else:
+        x,y=CatalogMethods.sort2(store['ID'],spec['coadd_objects_id'])        
       store['ZSPEC'][x]=spec['z_spec'][y]
 
       return store
 
     def store_shape(store,coadd):
 
-      x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
+      try:
+        x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
+      else:
+        x,y=CatalogMethods.sort2(store['ID'],coadd)
 
       store['e1'][x]=tmp2['e1'][y]
       store['e2'][x]=tmp2['e2'][y]
@@ -1275,7 +1283,6 @@ class CatalogMethods(object):
 
     store_rmd=read_cat(rmd,spec)
     store_rml=read_cat(rml,spec)
-    store_rpc=read_cat(rpc,spec)
     store_rpm=read_cat(rpm,spec)
 
     for ifile,file in enumerate(glob.glob(shape+'*')):
@@ -1286,12 +1293,10 @@ class CatalogMethods(object):
 
       store_shape(store_rmd,tmp2['coadd_objects_id'])
       store_shape(store_rml,tmp2['coadd_objects_id'])
-      store_shape(store_rpc,tmp2['coadd_objects_id'])
       store_shape(store_rpm,tmp2['coadd_objects_id'])
 
     fio.write(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',store_rmd,clobber=True)
     fio.write(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',store_rml,clobber=True)
-    fio.write(config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_e.fit',store_rpc,clobber=True)
     fio.write(config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members_e.fit',store_rpm,clobber=True)
 
     return
