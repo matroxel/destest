@@ -343,7 +343,8 @@ gal_col_lookup = {
   'm':'m',
   'w':'weight',
   'info':'info_flag',
-  'lum':'ZLUM'
+  'lum':'ZLUM',
+  'mabs':'MABS'
 
 }
 
