@@ -1265,14 +1265,14 @@ class CatalogMethods(object):
 
     return
 
-    spec=fio.FITS('/home/troxel/spec_cat_0.fits.gz')[-1].read()
+    spec=fio.FITS('/global/cscratch1/sd/troxel/spec_cat_0.fits.gz')[-1].read()
 
-    store_rmd=read_cat(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10.fit',spec)
-    store_rml=read_cat(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04.fit',spec)
-    store_rpc=read_cat(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',spec)
-    store_rpm=read_cat(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members.fit',spec)
+    store_rmd=read_cat(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10.fit',spec)
+    store_rml=read_cat(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04.fit',spec)
+    store_rpc=read_cat(config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',spec)
+    store_rpm=read_cat(config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members.fit',spec)
 
-    for ifile,file in enumerate(glob.glob('')):
+    for ifile,file in enumerate(glob.glob('/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v1/nbc/main/*')):
       print ifile,file
       tmp2=fio.FITS(file)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
       mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
@@ -1283,10 +1283,9 @@ class CatalogMethods(object):
       store_shape(store_rpc,tmp2['coadd_objects_id'])
       store_shape(store_rpm,tmp2['coadd_objects_id'])
 
-    fio.write(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',store_rmd,clobber=True)
-    fio.write(config.redmagicdir+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',store_rml,clobber=True)
-    fio.write(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_e.fit',store_rpc,clobber=True)
-    fio.write(config.redmapperdir+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members_e.fit',store_rpm,clobber=True)
+    fio.write(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',store_rmd,clobber=True)
+    fio.write(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',store_rml,clobber=True)
+    fio.write(config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_e.fit',store_rpc,clobber=True)
+    fio.write(config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog_members_e.fit',store_rpm,clobber=True)
 
     return
-    
