@@ -1257,7 +1257,7 @@ class CatalogMethods(object):
 
       try:
         x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
-      else:
+      except:
         x,y=CatalogMethods.sort2(store['ID'],spec['coadd_objects_id'])        
       store['ZSPEC'][x]=spec['z_spec'][y]
 
@@ -1267,7 +1267,7 @@ class CatalogMethods(object):
 
       try:
         x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
-      else:
+      except:
         x,y=CatalogMethods.sort2(store['ID'],coadd)
 
       store['e1'][x]=tmp2['e1'][y]
