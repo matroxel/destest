@@ -1258,24 +1258,29 @@ class CatalogMethods(object):
       try:
         x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
       except:
-        x,y=CatalogMethods.sort2(store['ID'],spec['coadd_objects_id'])        
+        x,y=CatalogMethods.sort2(store['ID'],spec['coadd_objects_id'])
       store['ZSPEC'][x]=spec['z_spec'][y]
 
       return store
 
-    def store_shape(store,coadd):
+    def store_shape(store,tmp2):
 
       try:
         x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
+        store['e1'][x]=tmp2['e1'][y]
+        store['e2'][x]=tmp2['e2'][y]
+        store['c1'][x]=tmp2['c1'][y]
+        store['c2'][x]=tmp2['c2'][y]
+        store['m'][x]=tmp2['m'][y]
+        store['weight'][x]=tmp2['weight'][y]
       except:
-        x,y=CatalogMethods.sort2(store['ID'],coadd)
-
-      store['e1'][x]=tmp2['e1'][y]
-      store['e2'][x]=tmp2['e2'][y]
-      store['c1'][x]=tmp2['c1'][y]
-      store['c2'][x]=tmp2['c2'][y]
-      store['m'][x]=tmp2['m'][y]
-      store['weight'][x]=tmp2['weight'][y]
+        m1,s1,m2,s2=CatalogMethods.sort(store['ID'],spec['coadd_objects_id']) 
+        store['e1'][m1][s1]=tmp2['e1'][m2][s2]
+        store['e2'][m1][s1]=tmp2['e2'][m2][s2]
+        store['c1'][m1][s1]=tmp2['c1'][m2][s2]
+        store['c2'][m1][s1]=tmp2['c2'][m2][s2]
+        store['m'][m1][s1]=tmp2['m'][m2][s2]
+        store['weight'][m1][s1]=tmp2['weight'][m2][s2]
 
       return
 
@@ -1291,9 +1296,9 @@ class CatalogMethods(object):
       mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
       tmp2=tmp2[mask]
 
-      store_shape(store_rmd,tmp2['coadd_objects_id'])
-      store_shape(store_rml,tmp2['coadd_objects_id'])
-      store_shape(store_rpm,tmp2['coadd_objects_id'])
+      store_shape(store_rmd,tmp2)
+      store_shape(store_rml,tmp2)
+      store_shape(store_rpm,tmp2)
 
     fio.write(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',store_rmd,clobber=True)
     fio.write(config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',store_rml,clobber=True)
