@@ -1253,14 +1253,14 @@ class CatalogMethods(object):
       store['m']=-9999*store['m']
       store['weight']=-9999*store['weight']
 
-      x,y=catalog.CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
+      x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],spec['coadd_objects_id'])
       store['ZSPEC'][x]=spec['z_spec'][y]
 
       return store
 
     def store_shape(store,coadd):
 
-      x,y=catalog.CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
+      x,y=CatalogMethods.sort2(store['COADD_OBJECTS_ID'],coadd)
 
       store['e1'][x]=tmp2['e1'][y]
       store['e2'][x]=tmp2['e2'][y]
