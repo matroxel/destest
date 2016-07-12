@@ -159,6 +159,12 @@ dc1_priors = {
 
 }
 
+def chi(z,omegam=0.27,H=100):
+  from astropy import cosmology
+  from astropy.cosmology import FlatLambdaCDM
+  cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
+  return cosmo.comoving_distance(z).value    
+
 class run(object):
 
   @staticmethod

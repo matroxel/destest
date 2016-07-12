@@ -1071,12 +1071,12 @@ class runs(object):
     rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
 
     de.process(catd,cate,metric='Rperp')
-    re.process(catr,cate,metric='Rperp')
     dm.process(catd,catm,metric='Rperp')
-    rm.process(catr,catm,metric='Rperp')
+    # re.process(catr,cate,metric='Rperp')
+    # rm.process(catr,catm,metric='Rperp')
 
-    wgp=de.xi/dm.xi-re.xi/rm.xi
-    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
+    wgp=de.xi/dm.xi#-re.xi/rm.xi
+    wgx=de.xi_im/dm.xi#-re.xi_im/rm.xi
     varxi=np.sqrt(de.varxi)
 
     if zlims is None:
@@ -1166,12 +1166,12 @@ class runs(object):
     rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
 
     de.process(catd,cate,metric='Rperp')
-    re.process(catr,cate,metric='Rperp')
     dm.process(catd,catm,metric='Rperp')
-    rm.process(catr,catm,metric='Rperp')
+    # re.process(catr,cate,metric='Rperp')
+    # rm.process(catr,catm,metric='Rperp')
 
-    wgp=de.xi/dm.xi-re.xi/rm.xi
-    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
+    wgp=de.xi/dm.xi#-re.xi/rm.xi
+    wgx=de.xi_im/dm.xi#-re.xi_im/rm.xi
     varxi=np.sqrt(de.varxi)
 
     if zlims is None:
