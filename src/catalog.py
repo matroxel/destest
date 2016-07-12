@@ -1299,9 +1299,9 @@ class CatalogMethods(object):
     store_rml=read_cat(rml,spec)
     store_rpm=read_cat(rpm,spec)
 
-    for ifile,file in enumerate(glob.glob(shape+'*')):
-      print ifile,file
-      tmp2=fio.FITS(file)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+    for ifile,file0 in enumerate(glob.glob(shape+'*')):
+      print ifile,file0
+      tmp2=fio.FITS(file0)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
       mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
       tmp2=tmp2[mask]
 
