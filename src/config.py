@@ -329,6 +329,7 @@ buzzard_col_lookup = {
   'zp':'ANNZ'
 
 }
+
 gal_col_lookup = {
 
   'coadd':'COADD_OBJECTS_ID',
@@ -345,6 +346,19 @@ gal_col_lookup = {
   'info':'info_flag',
   'lum':'ZLUM',
   'mabs':'MABS'
+
+}
+
+redmapper_col_lookup = {
+
+  'coadd':'MEM_MATCH_ID',
+  'ra':'RA',
+  'dec':'DEC',
+  'zp':'Z_LAMBDA',
+  'zperr':'Z_LAMBDA_E',
+  'rich':'LAMBDA_CHISQ',
+  'lum':'ZLUM',
+  'bcglum':'BCG_ZLUM'
 
 }
 

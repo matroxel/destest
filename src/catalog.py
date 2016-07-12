@@ -51,6 +51,8 @@ class CatalogStore(object):
         table=config.ng_col_lookup
       elif cattype=='gal':
         table=config.gal_col_lookup
+      elif cattype=='redmapper':
+        table=config.redmapper_col_lookup
       elif cattype=='truth':
         table=config.truth_col_lookup
       elif cattype=='buzzard':

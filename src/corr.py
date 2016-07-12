@@ -15,6 +15,7 @@ import scipy
 import math
 
 import catalog
+import cosmo
 import fig
 import txt
 import lin
@@ -999,3 +1000,189 @@ class bandpowers(object):
 #   plt.legend(loc='lower left',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
 #   plt.savefig('tmp'+str(i)+'.png')
 #   plt.close()
+
+class runs(object):
+
+  @staticmethod
+  def redmagic_IA(
+    rmdfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
+    rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
+    name='y1_rm',
+    corrtype='dense',
+    zlims=None,
+    mlims=None,
+    dpi=60.,
+    slop=0.01,
+    bins=10,
+    sep=[.5,100.]):
+
+    if corrtype!='lum':
+      rmd=catalog.CatalogStore(name+'_dense',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmdfile,release='y1',ranfile=rmdfile[:-5]+'randoms.fit')
+      rmd.r=cosmo.chi(rmd.zp)
+      try:
+        rmd.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+      except:
+        np.save(config.redmagicdirnersc+label+'_dense_ran_r.npy',cosmo.chi(rmd.zp))
+        rmd.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+
+    if corrtype!='dense':
+      rml=catalog.CatalogStore(name+'_lum',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
+      rml.r=cosmo.chi(rml.zp)
+      try:
+        rml.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+      except:
+        np.save(config.redmagicdirnersc+label+'_lum_ran_r.npy',cosmo.chi(rml.zp))
+        rml.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+
+    if corrtype=='dense':
+      pos=rmd
+      shape=rmd
+    elif corrtype=='lum':
+      pos=rml
+      shape=rml
+    elif corrtype=='cross1':
+      pos=rmd
+      shape=rml
+    elif corrtype=='cross2':
+      pos=rml
+      shape=rmd
+    else:
+      print 'need dense, lum, cross1, or cross2 corrtype'
+
+    maske=shape.e1!=-9999
+    maskd=np.ones(len(pos.ra)).astype(bool)
+    if zlims is not None:
+      maske=maske&(shape.zp>zlims[0])&(shape.zp<=zlims[1])
+      maskd=maskd&(pos.zp>zlims[0])&(pos.zp<=zlims[1])
+    if mlims is not None:
+      maske=maske&(shape.mabs_3>mlims[0])&(shape.mabs_3<=mlims[1])
+      maskd=maskd&(pos.mabs_3>mlims[0])&(pos.mabs_3<=mlims[1])
+
+    cate=treecorr.Catalog(g1=shape.e1[maske]-shape.c1[maske], g2=shape.e2[maske]-shape.c2[maske], w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
+    catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
+
+    catd=treecorr.Catalog(ra=pos.ra, dec=pos.dec, r=pos.r, ra_units='deg', dec_units='deg')
+    catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
+
+    de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+
+    de.process(catd,cate,metric='Rperp')
+    re.process(catr,cate,metric='Rperp')
+    dm.process(catd,catm,metric='Rperp')
+    rm.process(catr,catm,metric='Rperp')
+
+    wgp=de.xi/dm.xi-re.xi/rm.xi
+    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
+    varxi=np.sqrt(de.varxi)
+
+    if zlims is None:
+      zlabel='_zlims_None'
+    else:
+      zlabel='_zlims_'+'_'+zlims[0]+'-'+zlims[1]
+
+    if mlims is None:
+      mlabel='_mlims_None'
+    else:
+      mlabel='_mlims_'+'_'+mlims[0]+'-'+mlims[1]
+
+    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+dpi+'_bins_'+bins+'_sep_'+sep[0]+'-'+sep[1])
+
+    return
+
+  @staticmethod
+  def redmapper_IA(
+    rmdfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
+    rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
+    rmpfile=config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',
+    name='y1_rm',
+    corrtype='dense',
+    zlims=None,
+    mlims=None,
+    richlims=None,
+    dpi=60.,
+    slop=0.01,
+    bins=10,
+    sep=[.5,100.]):
+
+    if corrtype!='lum':
+      rmd=catalog.CatalogStore(name+'_dense',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmdfile,release='y1',ranfile=rmdfile[:-5]+'randoms.fit')
+      rmd.r=cosmo.chi(rmd.zp)
+      try:
+        rmd.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+      except:
+        np.save(config.redmagicdirnersc+label+'_dense_ran_r.npy',cosmo.chi(rmd.zp))
+        rmd.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+
+    if corrtype!='dense':
+      rml=catalog.CatalogStore(name+'_lum',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
+      rml.r=cosmo.chi(rml.zp)
+      try:
+        rml.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+      except:
+        np.save(config.redmagicdirnersc+label+'_lum_ran_r.npy',cosmo.chi(rml.zp))
+        rml.ran_r=np.load(config.redmagicdirnersc+label+'_ran_r.npy')
+
+      rmp=catalog.CatalogStore(name+'_cluster',cattype='redmapper',cols=None,catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
+      rmp.r=cosmo.chi(rmp.zp)
+      try:
+        rmp.ran_r=np.load(config.redmapperdirnersc+label+'_ran_r.npy')
+      except:
+        np.save(config.redmapperdirnersc+label+'_lum_ran_r.npy',cosmo.chi(rmp.zp))
+        rmp.ran_r=np.load(config.redmapperdirnersc+label+'_ran_r.npy')
+
+    if corrtype=='dense':
+      pos=rmp
+      shape=rmd
+    elif corrtype=='lum':
+      pos=rmp
+      shape=rml
+    else:
+      print 'need dense or lum corrtype'
+
+    maske=shape.e1!=-9999
+    maskd=np.ones(len(pos.ra)).astype(bool)
+    if zlims is not None:
+      maske=maske&(shape.zp>zlims[0])&(shape.zp<=zlims[1])
+      maskd=maskd&(pos.zp>zlims[0])&(pos.zp<=zlims[1])
+    if mlims is not None:
+      maske=maske&(shape.mabs_3>mlims[0])&(shape.mabs_3<=mlims[1])
+      maskd=maskd&(pos.mabs_3>mlims[0])&(pos.mabs_3<=mlims[1])
+    if richlims is not None:
+      maskd=maskd&(pos.rich>richlims[0])&(pos.rich<=richlims[1])
+
+    cate=treecorr.Catalog(g1=shape.e1[maske]-shape.c1[maske], g2=shape.e2[maske]-shape.c2[maske], w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
+    catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
+
+    catd=treecorr.Catalog(ra=pos.ra, dec=pos.dec, r=pos.r, ra_units='deg', dec_units='deg')
+    catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
+
+    de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+
+    de.process(catd,cate,metric='Rperp')
+    re.process(catr,cate,metric='Rperp')
+    dm.process(catd,catm,metric='Rperp')
+    rm.process(catr,catm,metric='Rperp')
+
+    wgp=de.xi/dm.xi-re.xi/rm.xi
+    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
+    varxi=np.sqrt(de.varxi)
+
+    if zlims is None:
+      zlabel='_zlims_None'
+    else:
+      zlabel='_zlims_'+'_'+zlims[0]+'-'+zlims[1]
+
+    if mlims is None:
+      mlabel='_mlims_None'
+    else:
+      mlabel='_mlims_'+'_'+mlims[0]+'-'+mlims[1]
+
+    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+dpi+'_bins_'+bins+'_sep_'+sep[0]+'-'+sep[1])
+
+    return
