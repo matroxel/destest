@@ -1005,14 +1005,23 @@ class bandpowers(object):
 class corr_methods(object):
 
   @staticmethod
-  def get_jk_cov(xi):
+  def get_jk_cov(xi,func):
 
-    cov=np.zeros((len(xi),len(xi)))
-    for i in xrange(len(xi)):
-      for j in xrange(len(xi)):
-        cov[i,j]=np.sum((xi[i,:]-np.mean(xi[i,:]))*(xi[j,:]-np.mean(xi[j,:])))*(len(xi)-1.)/len(xi)
+    xi1=np.zeros_like(xi[0,:,:])
+    for i in xrange(len(xi[0,:,0])):
+      xi1[:,i,:]=func(np.sum(xi,axis=1)-xi[:,i,:])
+
+    cov=np.zeros((len(xi1),len(xi1)))
+    for i in xrange(len(xi1)):
+      for j in xrange(len(xi1)):
+        cov[i,j]=np.sum((xi1[i,:]-np.mean(xi1[i,:],axis=0))*(xi1[j,:]-np.mean(xi1[j,:],axis=0)))*(len(xi1)-1.)/len(xi1)
 
     return cov
+
+  @staticmethod
+  def proj_corr(xi):
+
+    return xi[0]/xi[1]-xi[2]/xi[3]
 
 class runs(object):
 
@@ -1100,7 +1109,6 @@ class runs(object):
     catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
 
     nreg=int(np.max(pos.reg)+1)
-    nreg=5
     r=np.zeros((4,nreg,bins))
     xi=np.zeros((4,nreg,bins))
     xi_im=np.zeros((4,nreg,bins))
@@ -1132,11 +1140,11 @@ class runs(object):
       xi[:,i,:]=[de.xi,dm.xi,re.xi,rm.xi]
       xi_im[:,i,:]=[de.xi_im,dm.xi,re.xi_im,rm.xi]
 
-    r0=np.sum(r[0,:])/np.sum(weight[0,:])
-    wgp=(np.sum(xi[0,:,:],axis=0)/np.sum(xi[1,:,:],axis=0)-np.sum(xi[2,:,:],axis=0)/np.sum(xi[3,:,:],axis=0))*2.*dpi
-    wgx=(np.sum(xi_im[0,:,:],axis=0)/np.sum(xi_im[1,:,:],axis=0)-np.sum(xi_im[2,:,:],axis=0)/np.sum(xi_im[3,:,:],axis=0))*2.*dpi
-    varwgp=np.sqrt(np.diagonal(corr_methods.get_jk_cov((xi[0,:,:]/xi[1,:,:]-xi[2,:,:]/xi[3,:,:]))*2.*dpi))
-    varwgx=np.sqrt(np.diagonal(corr_methods.get_jk_cov((xi_im[0,:,:]/xi_im[1,:,:]-xi_im[2,:,:]/xi_im[3,:,:]))*2.*dpi))
+    r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:])
+    wgp=corr_methods.proj_corr(xi)*2.*dpi
+    wgx=corr_methods.proj_corr(xi_im)*2.*dpi
+    varwgp=np.sqrt(np.diagonal(corr_methods.get_jk_cov(xi,corr_methods.proj_corr)))*2.*dpi
+    varwgx=np.sqrt(np.diagonal(corr_methods.get_jk_cov(xi_im,corr_methods.proj_corr)))*2.*dpi
     print r0,wgp,varwgp
     print r0,wgx,varwgx
 
@@ -1150,7 +1158,7 @@ class runs(object):
     else:
       mlabel='_mlims_'+'_'+str(mlims[0])+'-'+str(mlims[1])
 
-    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1])+'_nran_'+str(nran)+'_jk_'+str(nreg))
+    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varwgp,varwgx],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1])+'_nran_'+str(nran)+'_jk_'+str(nreg))
 
     return
 
