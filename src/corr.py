@@ -1087,6 +1087,7 @@ class runs(object):
     wgp=de.xi/dm.xi-re.xi/rm.xi
     wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
     varxi=np.sqrt(de.varxi)
+    print np.exp(de.meanlogr),wgp,wgx,varxi
 
     if zlims is None:
       zlabel='_zlims_None'
