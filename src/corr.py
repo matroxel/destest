@@ -1027,7 +1027,7 @@ class runs(object):
         rmd.ran_r=cosmo.chi(rmd.ran_zp)
         np.save(config.redmagicdirnersc+'dense_ran_r.npy',rmd.ran_r)
       rmd.ran_r=rmd.ran_r[:nran]
-      rmd.ran_zp=rmd.ran_zpr[:nran]
+      rmd.ran_zp=rmd.ran_zp[:nran]
 
     if corrtype!='dense':
       rml=catalog.CatalogStore(name+'_lum',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
@@ -1038,7 +1038,7 @@ class runs(object):
         rml.ran_r=cosmo.chi(rml.ran_zp)
         np.save(config.redmagicdirnersc+'lum_ran_r.npy',rml.ran_r)
       rml.ran_r=rml.ran_r[:nran]
-      rml.ran_zp=rml.ran_zpr[:nran]
+      rml.ran_zp=rml.ran_zp[:nran]
 
     if corrtype=='dense':
       pos=rmd
