@@ -1011,10 +1011,10 @@ class corr_methods(object):
     for i in xrange(len(xi)):
       xi1[i,:]=func(np.sum(xi,axis=0)-xi[i,:])
 
-    cov=np.zeros((len(xi1),len(xi1)))
+    cov=np.zeros((len(xi1[0,:]),len(xi1[0,:])))
     for i in xrange(len(xi1)):
       for j in xrange(len(xi1)):
-        cov[i,j]=np.sum((xi1[i,:]-np.mean(xi1[i,:],axis=0))*(xi1[j,:]-np.mean(xi1[j,:],axis=0)))*(len(xi1)-1.)/len(xi1)
+        cov[i,j]=np.sum((xi1[i,:]-np.mean(xi1,axis=0))*(xi1[j,:]-np.mean(xi1,axis=0)))*(len(xi1)-1.)/len(xi1)
 
     return cov
 
