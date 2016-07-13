@@ -1129,7 +1129,7 @@ class runs(object):
       r[:,i,:]=[de.meanr,dm.meanr,re.meanr,rm.meanr]
       weight[:,i,:]=[de.weight,dm.weight,re.weight,rm.weight]
       xi[:,i,:]=[de.xi,dm.xi,re.xi,rm.xi]
-      xi_im[:,i,:]=[de.xi_im,dm.xi,re.xi,rm.xi_im]
+      xi_im[:,i,:]=[de.xi_im,dm.xi,re.xi_im,rm.xi]
 
     r0=np.sum(r[0,:])/np.sum(weight[0,:])
     wgp=(np.sum(xi[0,:,:],axis=0)/np.sum(xi[1,:,:],axis=0)-np.sum(xi[2,:,:],axis=0)/np.sum(xi[3,:,:],axis=0))*2.*dpi
