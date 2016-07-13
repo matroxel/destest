@@ -977,8 +977,8 @@ class plot_methods(object):
     col=['r','b','g','c']
     name=['gp','gx','ee','xx']
     for i in xrange(len(out)):
-      plt.errorbar(r[out[i]>0]*(1.+.2*i),out[i][out[i]>0]*np.sqrt(r[out[i]>0]),yerr=err[i][out[i]>0],color=col[i],linestyle='',marker='o',label=name[i])
-      plt.errorbar(r[out[i]<0]*(1.+.2*i),-out[i][out[i]<0]*np.sqrt(r[out[i]<0]),yerr=err[i][out[i]<0],color=col[i],linestyle='',marker='s',label='')
+      plt.errorbar(r[out[i]>0]*(1.+.2*i),out[i][out[i]>0],yerr=err[i][out[i]>0],color=col[i],linestyle='',marker='o',label=name[i])
+      plt.errorbar(r[out[i]<0]*(1.+.2*i),-out[i][out[i]<0],yerr=err[i][out[i]<0],color=col[i],linestyle='',marker='s',label='')
     plt.xscale('log')
     plt.yscale('log')
     plt.legend(loc='upper right')
