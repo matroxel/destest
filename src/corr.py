@@ -1082,14 +1082,14 @@ class runs(object):
     if zlims is None:
       zlabel='_zlims_None'
     else:
-      zlabel='_zlims_'+'_'+zlims[0]+'-'+zlims[1]
+      zlabel='_zlims_'+'_'+str(zlims[0])+'-'+str(zlims[1])
 
     if mlims is None:
       mlabel='_mlims_None'
     else:
-      mlabel='_mlims_'+'_'+mlims[0]+'-'+mlims[1]
+      mlabel='_mlims_'+'_'+str(mlims[0])+'-'+str(mlims[1])
 
-    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+dpi+'_bins_'+bins+'_sep_'+sep[0]+'-'+sep[1])
+    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1]))
 
     return
 
@@ -1098,7 +1098,7 @@ class runs(object):
     rmdfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
     rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
     rmpfile=config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',
-    name='y1_rm',
+    name='y1_rmp',
     corrtype='dense',
     zlims=None,
     mlims=None,
@@ -1177,13 +1177,17 @@ class runs(object):
     if zlims is None:
       zlabel='_zlims_None'
     else:
-      zlabel='_zlims_'+'_'+zlims[0]+'-'+zlims[1]
+      zlabel='_zlims_'+'_'+str(zlims[0])+'-'+str(zlims[1])
 
     if mlims is None:
       mlabel='_mlims_None'
     else:
-      mlabel='_mlims_'+'_'+mlims[0]+'-'+mlims[1]
+      mlabel='_mlims_'+'_'+str(mlims[0])+'-'+str(mlims[1])
 
-    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+dpi+'_bins_'+bins+'_sep_'+sep[0]+'-'+sep[1])
+    if richlims is None:
+      richlabel='_richlims_None'
+    else:
+      richlabel='_richlims_'+'_'+str(richlims[0])+'-'+str(richlims[1])
 
+    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1]))
     return
