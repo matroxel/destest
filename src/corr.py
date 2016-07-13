@@ -1005,7 +1005,7 @@ class bandpowers(object):
 class runs(object):
 
   @staticmethod
-  def redmagic_IA(
+  def rm_ia(
     rmdfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
     rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highlum_1.0-04_e.fit',
     name='y1_rm',
@@ -1023,8 +1023,8 @@ class runs(object):
       try:
         rmd.ran_r=np.load(config.redmagicdirnersc+'dense_ran_r.npy')
       except:
-        np.save(config.redmagicdirnersc+'dense_ran_r.npy',cosmo.chi(rmd.ran_zp))
-        rmd.ran_r=np.load(config.redmagicdirnersc+'dense_ran_r.npy')
+        rmd.ran_r=cosmo.chi(rmd.ran_zp)
+        np.save(config.redmagicdirnersc+'dense_ran_r.npy',rmd.ran_r)
 
     if corrtype!='dense':
       rml=catalog.CatalogStore(name+'_lum',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
@@ -1032,8 +1032,8 @@ class runs(object):
       try:
         rml.ran_r=np.load(config.redmagicdirnersc+'lum_ran_r.npy')
       except:
-        np.save(config.redmagicdirnersc+'lum_ran_r.npy',cosmo.chi(rml.ran_zp))
-        rml.ran_r=np.load(config.redmagicdirnersc+'lum_ran_r.npy')
+        rml.ran_r=cosmo.chi(rml.ran_zp)
+        np.save(config.redmagicdirnersc+'lum_ran_r.npy',rml.ran_r)
 
     if corrtype=='dense':
       pos=rmd
@@ -1063,12 +1063,12 @@ class runs(object):
     catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
 
     catd=treecorr.Catalog(ra=pos.ra, dec=pos.dec, r=pos.r, ra_units='deg', dec_units='deg')
-    catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
+    #catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
 
     de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
     dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    #re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    #rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
 
     de.process(catd,cate,metric='Rperp')
     dm.process(catd,catm,metric='Rperp')
@@ -1094,7 +1094,7 @@ class runs(object):
     return
 
   @staticmethod
-  def redmapper_IA(
+  def rmp_ia(
     rmdfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
     rmlfile=config.redmagicdirnersc+'y1a1_gold_1.0.2b-full_redmapper_v6.4.11_redmagic_highdens_0.5-10_e.fit',
     rmpfile=config.redmapperdirnersc+'y1a1_gold_1.0.2b-full_run_redmapper_v6.4.11_lgt5_desformat_catalog.fit',
