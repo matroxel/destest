@@ -994,7 +994,7 @@ class plot_methods(object):
     col=['r','b','g','c']
     name=['gp','gx','ee','xx']
     for i in xrange(len(out)):
-      plt.errorbar(r*(1.+.2*i),-out[i]*np.sqrt(r),yerr=err[i]*np.sqrt(r),color=col[i],linestyle='',marker='o',label=name[i])
+      plt.errorbar(r*(1.+.2*i),-out[i],yerr=err[i]*np.sqrt(r),color=col[i],linestyle='',marker='o',label=name[i])
     plt.errorbar(r*(1.+.2*i),np.zeros(len(r)),color='k',linestyle='-',marker='',label='')
     plt.xscale('log')
     plt.ylim((-5,5))
