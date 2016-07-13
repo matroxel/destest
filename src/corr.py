@@ -1009,7 +1009,7 @@ class corr_methods(object):
 
     xi1=np.zeros_like(xi)
     for i in xrange(len(xi)):
-      xi1[i,:]=func(np.sum(xi,axis=1)-xi[i,:])
+      xi1[i,:]=func(np.sum(xi,axis=0)-xi[i,:])
 
     cov=np.zeros((len(xi1),len(xi1)))
     for i in xrange(len(xi1)):
