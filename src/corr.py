@@ -1068,20 +1068,20 @@ class runs(object):
     catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
 
     catd=treecorr.Catalog(ra=pos.ra, dec=pos.dec, r=pos.r, ra_units='deg', dec_units='deg')
-    #catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
+    catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
 
     de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
     dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    #re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    #rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+    rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
 
     de.process(catd,cate,metric='Rperp')
     dm.process(catd,catm,metric='Rperp')
-    # re.process(catr,cate,metric='Rperp')
-    # rm.process(catr,catm,metric='Rperp')
+    re.process(catr,cate,metric='Rperp')
+    rm.process(catr,catm,metric='Rperp')
 
-    wgp=de.xi/dm.xi#-re.xi/rm.xi
-    wgx=de.xi_im/dm.xi#-re.xi_im/rm.xi
+    wgp=de.xi/dm.xi-re.xi/rm.xi
+    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
     varxi=np.sqrt(de.varxi)
 
     if zlims is None:
