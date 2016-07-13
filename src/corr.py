@@ -1009,7 +1009,7 @@ class corr_methods(object):
 
     xi1=np.zeros_like(xi[0,:,:])
     for i in xrange(len(xi[0,:,0])):
-      xi1[:,i,:]=func(np.sum(xi,axis=1)-xi[:,i,:])
+      xi1[i,:]=func(np.sum(xi,axis=1)-xi[:,i,:])
 
     cov=np.zeros((len(xi1),len(xi1)))
     for i in xrange(len(xi1)):
@@ -1130,10 +1130,10 @@ class runs(object):
       re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
       rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
 
-      de.process_cross(catd,cate,metric='Rperp')
-      dm.process_cross(catd,catm,metric='Rperp')
-      re.process_cross(catr,cate,metric='Rperp')
-      rm.process_cross(catr,catm,metric='Rperp')
+      de.process(catd,cate,metric='Rperp')
+      dm.process(catd,catm,metric='Rperp')
+      re.process(catr,cate,metric='Rperp')
+      rm.process(catr,catm,metric='Rperp')
 
       r[:,i,:]=[de.meanr,dm.meanr,re.meanr,rm.meanr]
       weight[:,i,:]=[de.weight,dm.weight,re.weight,rm.weight]
@@ -1141,8 +1141,8 @@ class runs(object):
       xi_im[:,i,:]=[de.xi_im,dm.xi,re.xi_im,rm.xi]
 
     r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:])
-    wgp=corr_methods.proj_corr(xi)*2.*dpi
-    wgx=corr_methods.proj_corr(xi_im)*2.*dpi
+    wgp=corr_methods.proj_corr(np.sum(xi,axis=1))*2.*dpi
+    wgx=corr_methods.proj_corr(np.sum(xi_im,axis=1))*2.*dpi
     varwgp=np.sqrt(np.diagonal(corr_methods.get_jk_cov(xi,corr_methods.proj_corr)))*2.*dpi
     varwgx=np.sqrt(np.diagonal(corr_methods.get_jk_cov(xi_im,corr_methods.proj_corr)))*2.*dpi
     print r0,wgp,varwgp
@@ -1239,8 +1239,8 @@ class runs(object):
     # re.process(catr,cate,metric='Rperp')
     # rm.process(catr,catm,metric='Rperp')
 
-    wgp=de.xi/dm.xi#-re.xi/rm.xi
-    wgx=de.xi_im/dm.xi#-re.xi_im/rm.xi
+    wgp=de.xi/dm.xi-re.xi/rm.xi
+    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
     varxi=np.sqrt(de.varxi)
 
     if zlims is None:
