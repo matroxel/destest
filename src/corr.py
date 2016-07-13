@@ -1158,7 +1158,9 @@ class runs(object):
     else:
       mlabel='_mlims_'+'_'+str(mlims[0])+'-'+str(mlims[1])
 
-    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varwgp,varwgx],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1])+'_nran_'+str(nran)+'_jk_'+str(nreg))
+    label=name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1])+'_nran_'+str(nran)+'_jk_'+str(nreg)
+    np.savetxt(label+'.txt',np.vstack((r0,wgp,varwgp,wgx,varwgx)).T)
+    fig.plot_methods.plot_IA(r0,[wgp,wgx],[varwgp,varwgx],label)
 
     return
 
