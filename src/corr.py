@@ -1097,7 +1097,7 @@ class runs(object):
     cate=treecorr.Catalog(g1=shape.e1[maske]-shape.c1[maske], g2=shape.e2[maske]-shape.c2[maske], w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
     catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
 
-    nreg=np.max(pos.reg)+1
+    nreg=int(np.max(pos.reg)+1)
     r=np.zeros((4,nreg,bins))
     xi=np.zeros((4,nreg,bins))
     xi_im=np.zeros((4,nreg,bins))
