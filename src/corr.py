@@ -1010,7 +1010,7 @@ class corr_methods(object):
     cov=np.zeros((len(xi),len(xi)))
     for i in xrange(len(xi)):
       for j in xrange(len(xi)):
-        cov[i,j]=np.sum((xi[:,i]-np.mean(xi[:,i]))*(xi[:,j]-np.mean(xi[:,j])))*(len(xi)-1.)/len(xi)
+        cov[i,j]=np.sum((xi[i,:]-np.mean(xi[i,:]))*(xi[j,:]-np.mean(xi[j,:])))*(len(xi)-1.)/len(xi)
 
     return cov
 
