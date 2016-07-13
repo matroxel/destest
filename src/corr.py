@@ -1027,6 +1027,8 @@ class runs(object):
         rmd.ran_r=cosmo.chi(rmd.ran_zp)
         np.save(config.redmagicdirnersc+'dense_ran_r.npy',rmd.ran_r)
       rmd.ran_r=rmd.ran_r[:nran]
+      rmd.ran_ra=rmd.ran_ra[:nran]
+      rmd.ran_dec=rmd.ran_dec[:nran]
       rmd.ran_zp=rmd.ran_zp[:nran]
 
     if corrtype!='dense':
@@ -1038,6 +1040,8 @@ class runs(object):
         rml.ran_r=cosmo.chi(rml.ran_zp)
         np.save(config.redmagicdirnersc+'lum_ran_r.npy',rml.ran_r)
       rml.ran_r=rml.ran_r[:nran]
+      rml.ran_ra=rml.ran_ra[:nran]
+      rml.ran_dec=rml.ran_dec[:nran]
       rml.ran_zp=rml.ran_zp[:nran]
 
     if corrtype=='dense':
