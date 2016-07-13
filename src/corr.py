@@ -1087,7 +1087,7 @@ class runs(object):
 
     maske=shape.e1!=-9999
     maskd=np.ones(len(pos.ra)).astype(bool)
-    maskr=np.ones(len(pos.ra)).astype(bool)
+    maskr=np.ones(len(pos.ran_ra)).astype(bool)
     if zlims is not None:
       maske=maske&(shape.zp>zlims[0])&(shape.zp<=zlims[1])
       maskd=maskd&(pos.zp>zlims[0])&(pos.zp<=zlims[1])
