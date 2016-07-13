@@ -1048,6 +1048,7 @@ class runs(object):
       rmd.ran_ra=rmd.ran_ra[:nran]
       rmd.ran_dec=rmd.ran_dec[:nran]
       rmd.ran_zp=rmd.ran_zp[:nran]
+      rmd.ran_reg=rmd.ran_reg[:nran]
 
     if corrtype!='dense':
       rml=catalog.CatalogStore(name+'_lum',cattype='gal',cols=['coadd','ra','dec','zp','e1','e2','c1','c2','m','w','mabs'],catfile=rmlfile,release='y1',ranfile=rmlfile[:-5]+'randoms.fit')
@@ -1067,6 +1068,7 @@ class runs(object):
       rml.ran_ra=rml.ran_ra[:nran]
       rml.ran_dec=rml.ran_dec[:nran]
       rml.ran_zp=rml.ran_zp[:nran]
+      rml.ran_reg=rml.ran_reg[:nran]
 
     if corrtype=='dense':
       pos=rmd
@@ -1097,12 +1099,8 @@ class runs(object):
     cate=treecorr.Catalog(g1=shape.e1[maske]-shape.c1[maske], g2=shape.e2[maske]-shape.c2[maske], w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
     catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
 
-    nreg=int(np.max(pos.reg)+1)
-    r=np.zeros((4,nreg,bins))
-    xi=np.zeros((4,nreg,bins))
-    xi_im=np.zeros((4,nreg,bins))
-    weight=np.zeros((4,nreg,bins))
     for i in range(nreg):
+      print i
       maskd0=maskd&(pos.reg==i)
       maskr0=maskr&(pos.ran_reg==i)
       w=np.ones(len(pos.ra))
