@@ -1007,9 +1007,9 @@ class corr_methods(object):
   @staticmethod
   def get_jk_cov(xi,func):
 
-    xi1=np.zeros_like(xi)
-    for i in xrange(len(xi)):
-      xi1[i,:]=func(np.sum(xi,axis=0)-xi[i,:])
+    xi1=np.zeros_like(xi[0,:,:])
+    for i in xrange(len(xi1)):
+      xi1[i,:]=func(np.sum(xi,axis=1)-xi[:,i,:])
 
     cov=np.zeros((len(xi1[0,:]),len(xi1[0,:])))
     for i in xrange(len(xi1[0,:])):
