@@ -1139,10 +1139,12 @@ class runs(object):
       xi[:,i,:]=[de.xi,dm.xi,re.xi,rm.xi]
       xi_im[:,i,:]=[de.xi_im,dm.xi,re.xi_im,rm.xi]
 
-    np.savetxt('r.txt',r)
-    np.savetxt('weight.txt',weight)
-    np.savetxt('xi.txt',xi)
-    np.savetxt('xi_im.txt',xi_im)
+    np.savetxt('r.txt',r[0,:,:])
+    np.savetxt('weight.txt',weight[0,:,:])
+    np.savetxt('xi_0.txt',xi[0,:,:])
+    np.savetxt('xi_1.txt',xi[1,:,:])
+    np.savetxt('xi_2.txt',xi[2,:,:])
+    np.savetxt('xi_3.txt',xi[3,:,:])
     r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:,:],axis=0)
     wgp=corr_methods.proj_corr(np.sum(xi,axis=1))*2.*dpi
     wgx=corr_methods.proj_corr(np.sum(xi_im,axis=1))*2.*dpi
