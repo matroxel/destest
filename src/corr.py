@@ -1106,15 +1106,16 @@ class runs(object):
     weight=np.zeros((4,nreg,bins))
     for i in range(nreg):
       print i
-      maskd0=maskd&(pos.reg==i)
-      maskr0=maskr&(pos.ran_reg==i)
-      w=np.ones(len(pos.ra))
-      w[~maskd0]=0.
-      ran_w=np.ones(len(pos.ran_ra))
-      ran_w[~maskr0]=0.
+      maskdjk=(pos.reg[maskd]==i)
+      maskrjk=(pos.ran_reg[maskr]==i)
+      w=np.ones(len(maskdjk))
+      w[~maskdjk]=0.
+      print w, np.sum(w)
+      ran_w=np.ones(len(maskrjk))
+      ran_w[~maskrjk]=0.
 
-      catd=treecorr.Catalog(ra=pos.ra[maskd0], dec=pos.dec[maskd0], r=pos.r[maskd0], w=w, ra_units='deg', dec_units='deg')
-      catr=treecorr.Catalog(ra=pos.ran_ra[maskr0], dec=pos.ran_dec[maskr0], r=pos.ran_r[maskr0], w=ran_w, ra_units='deg', dec_units='deg')
+      catd=treecorr.Catalog(ra=pos.ra[maskd], dec=pos.dec[maskd], r=pos.r[maskd], w=w, ra_units='deg', dec_units='deg')
+      catr=treecorr.Catalog(ra=pos.ran_ra[maskr], dec=pos.ran_dec[maskr], r=pos.ran_r[maskr], w=ran_w, ra_units='deg', dec_units='deg')
 
       de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
       dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
