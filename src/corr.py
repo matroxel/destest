@@ -1143,7 +1143,7 @@ class runs(object):
     np.savetxt('weight.txt',weight)
     np.savetxt('xi.txt',xi)
     np.savetxt('xi_im.txt',xi_im)
-    r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:,:],axis=0))
+    r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:,:],axis=0)
     wgp=corr_methods.proj_corr(np.sum(xi,axis=1))*2.*dpi
     wgx=corr_methods.proj_corr(np.sum(xi_im,axis=1))*2.*dpi
     varwgp=np.sqrt(np.diagonal(corr_methods.get_jk_cov(xi,corr_methods.proj_corr)))*2.*dpi
