@@ -981,7 +981,7 @@ class plot_methods(object):
       plt.errorbar(r[out[i]<0]*(1.+.2*i),-out[i][out[i]<0],yerr=err[i][out[i]<0],color=col[i],linestyle='',marker='s',label='')
     plt.xscale('log')
     plt.yscale('log')
-    plt.legend(loc='upper right')
+    # plt.legend(loc='upper right')
     plt.xlabel('R [Mpc/h]')
     plt.savefig('plots/IA_'+label+'.png', bbox_inches='tight')
     plt.close()

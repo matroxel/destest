@@ -1114,7 +1114,6 @@ class runs(object):
     xi_im=np.zeros((4,nreg,bins))
     weight=np.zeros((4,nreg,bins))
     for i in range(nreg):
-      print i
       maskdjk=(pos.reg[maskd]==i)
       w=np.ones(len(maskdjk))
       w[~maskdjk]=0.
@@ -1140,7 +1139,11 @@ class runs(object):
       xi[:,i,:]=[de.xi,dm.xi,re.xi,rm.xi]
       xi_im[:,i,:]=[de.xi_im,dm.xi,re.xi_im,rm.xi]
 
-    r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:])
+    np.savetxt('r.txt',r)
+    np.savetxt('weight.txt',weight)
+    np.savetxt('xi.txt',xi)
+    np.savetxt('xi_im.txt',xi_im)
+    r0=np.sum(r[0,:,:],axis=0)/np.sum(weight[0,:,:],axis=0))
     wgp=corr_methods.proj_corr(np.sum(xi,axis=1))*2.*dpi
     wgx=corr_methods.proj_corr(np.sum(xi_im,axis=1))*2.*dpi
     varwgp=np.sqrt(np.diagonal(corr_methods.get_jk_cov(xi,corr_methods.proj_corr)))*2.*dpi
