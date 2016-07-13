@@ -1002,6 +1002,18 @@ class bandpowers(object):
 #   plt.savefig('tmp'+str(i)+'.png')
 #   plt.close()
 
+class corr_methods(object):
+
+  @staticmethod
+  def get_jk_cov(xi):
+
+    cov=np.zeros((len(xi),len(xi)))
+    for i in xrange(len(xi)):
+      for j in xrange(len(xi)):
+        cov[i,j]=np.sum((xi[:,i]-np.mean(xi[:,i]))*(xi[:,j]-np.mean(xi[:,j])))*(len(xi)-1.)/len(xi)
+
+    return cov
+
 class runs(object):
 
   @staticmethod
@@ -1026,6 +1038,12 @@ class runs(object):
       except:
         rmd.ran_r=cosmo.chi(rmd.ran_zp)
         np.save(config.redmagicdirnersc+'dense_ran_r.npy',rmd.ran_r)
+      try:
+        rmd.reg=np.load(config.redmagicdirnersc+'highdens_regs.npy')
+        rmd.ran_reg=np.load(config.redmagicdirnersc+'highdens_ran_regs.npy')
+      except:
+        print 'need regions files'
+        return
       rmd.ran_r=rmd.ran_r[:nran]
       rmd.ran_ra=rmd.ran_ra[:nran]
       rmd.ran_dec=rmd.ran_dec[:nran]
@@ -1039,6 +1057,12 @@ class runs(object):
       except:
         rml.ran_r=cosmo.chi(rml.ran_zp)
         np.save(config.redmagicdirnersc+'lum_ran_r.npy',rml.ran_r)
+      try:
+        rml.reg=np.load(config.redmagicdirnersc+'highlum_regs.npy')
+        rml.ran_reg=np.load(config.redmagicdirnersc+'highlum_ran_regs.npy')
+      except:
+        print 'need regions files'
+        return
       rml.ran_r=rml.ran_r[:nran]
       rml.ran_ra=rml.ran_ra[:nran]
       rml.ran_dec=rml.ran_dec[:nran]
@@ -1061,9 +1085,11 @@ class runs(object):
 
     maske=shape.e1!=-9999
     maskd=np.ones(len(pos.ra)).astype(bool)
+    maskr=np.ones(len(pos.ra)).astype(bool)
     if zlims is not None:
       maske=maske&(shape.zp>zlims[0])&(shape.zp<=zlims[1])
       maskd=maskd&(pos.zp>zlims[0])&(pos.zp<=zlims[1])
+      maskr=maskr&(pos.ran_zp>zlims[0])&(pos.ran_zp<=zlims[1])
     if mlims is not None:
       maske=maske&(shape.mabs_3>mlims[0])&(shape.mabs_3<=mlims[1])
       maskd=maskd&(pos.mabs_3>mlims[0])&(pos.mabs_3<=mlims[1])
@@ -1071,23 +1097,44 @@ class runs(object):
     cate=treecorr.Catalog(g1=shape.e1[maske]-shape.c1[maske], g2=shape.e2[maske]-shape.c2[maske], w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
     catm=treecorr.Catalog(k=(1.+shape.m[maske]), w=shape.w[maske], ra=shape.ra[maske], dec=shape.dec[maske], r=shape.r[maske], ra_units='deg', dec_units='deg')
 
-    catd=treecorr.Catalog(ra=pos.ra, dec=pos.dec, r=pos.r, ra_units='deg', dec_units='deg')
-    catr=treecorr.Catalog(ra=pos.ran_ra, dec=pos.ran_dec, r=pos.ran_r, ra_units='deg', dec_units='deg')
+    nreg=np.max(pos.reg)+1
+    r=np.zeros((4,nreg,bins))
+    xi=np.zeros((4,nreg,bins))
+    xi_im=np.zeros((4,nreg,bins))
+    weight=np.zeros((4,nreg,bins))
+    for i in range(nreg):
+      maskd0=maskd&(pos.reg==i)
+      maskr0=maskr&(pos.ran_reg==i)
+      w=np.ones(len(pos.ra))
+      w[~maskd0]=0.
+      ran_w=np.ones(len(pos.ran_ra))
+      ran_w[~maskr0]=0.
 
-    de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
-    rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+      catd=treecorr.Catalog(ra=pos.ra[maskd0], dec=pos.dec[maskd0], r=pos.r[maskd0], w=w, ra_units='deg', dec_units='deg')
+      catr=treecorr.Catalog(ra=pos.ran_ra[maskr0], dec=pos.ran_dec[maskr0], r=pos.ran_r[maskr0], w=ran_w, ra_units='deg', dec_units='deg')
 
-    de.process(catd,cate,metric='Rperp')
-    dm.process(catd,catm,metric='Rperp')
-    re.process(catr,cate,metric='Rperp')
-    rm.process(catr,catm,metric='Rperp')
+      de = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+      dm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+      re = treecorr.NGCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
+      rm = treecorr.NKCorrelation(nbins=bins, min_sep=sep[0], max_sep=sep[1], min_rpar = -dpi, max_rpar = dpi, bin_slop=slop, verbose=0)
 
-    wgp=de.xi/dm.xi-re.xi/rm.xi
-    wgx=de.xi_im/dm.xi-re.xi_im/rm.xi
-    varxi=np.sqrt(de.varxi)
-    print np.exp(de.meanlogr),wgp,wgx,varxi
+      de.process_cross(catd,cate,metric='Rperp')
+      dm.process_cross(catd,catm,metric='Rperp')
+      re.process_cross(catr,cate,metric='Rperp')
+      rm.process_cross(catr,catm,metric='Rperp')
+
+      r[:,i,:]=[de.meanr,dm.meanr,re.meanr,rm.meanr]
+      weight[:,i,:]=[de.weight,dm.weight,re.weight,rm.weight]
+      xi[:,i,:]=[de.xi,dm.xi,re.xi,rm.xi]
+      xi_im[:,i,:]=[de.xi_im,dm.xi_im,re.xi_im,rm.xi_im]
+
+    r0=np.sum(r[0,:])/np.sum(weight[0,:])
+    wgp=(np.sum(xi[0,:,:],axis=0)/np.sum(xi[1,:,:],axis=0)-np.sum(xi[2,:,:],axis=0)/np.sum(xi[3,:,:],axis=0))*2.*dpi
+    wgx=(np.sum(xi_im[0,:,:],axis=0)/np.sum(xi_im[1,:,:],axis=0)-np.sum(xi_im[2,:,:],axis=0)/np.sum(xi_im[3,:,:],axis=0))*2.*dpi
+    varwgp=np.sqrt(np.diagonal(get_cov((xi[0,:,:]/xi[1,:,:]-xi[2,:,:]/xi[3,:,:]))*2.*dpi)))
+    varwgx=np.sqrt(np.diagonal(get_cov((xi_im[0,:,:]/xi_im[1,:,:]-xi_im[2,:,:]/xi_im[3,:,:]))*2.*dpi)))
+    print r0,wgp,varwgp
+    print r0,wgx,varwgx
 
     if zlims is None:
       zlabel='_zlims_None'
@@ -1099,7 +1146,7 @@ class runs(object):
     else:
       mlabel='_mlims_'+'_'+str(mlims[0])+'-'+str(mlims[1])
 
-    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1]))
+    fig.plot_methods.plot_IA(np.exp(de.meanlogr),[wgp,wgx],[varxi,varxi],name+'_'+corrtype+zlabel+mlabel+'_dpi_'+str(dpi)+'_bins_'+str(bins)+'_sep_'+str(sep[0])+'-'+str(sep[1])+'_nran_'+str(nran)+'_jk_'+str(nreg))
 
     return
 
