@@ -1131,8 +1131,8 @@ class runs(object):
     r0=np.sum(r[0,:])/np.sum(weight[0,:])
     wgp=(np.sum(xi[0,:,:],axis=0)/np.sum(xi[1,:,:],axis=0)-np.sum(xi[2,:,:],axis=0)/np.sum(xi[3,:,:],axis=0))*2.*dpi
     wgx=(np.sum(xi_im[0,:,:],axis=0)/np.sum(xi_im[1,:,:],axis=0)-np.sum(xi_im[2,:,:],axis=0)/np.sum(xi_im[3,:,:],axis=0))*2.*dpi
-    varwgp=np.sqrt(np.diagonal(get_cov((xi[0,:,:]/xi[1,:,:]-xi[2,:,:]/xi[3,:,:]))*2.*dpi)))
-    varwgx=np.sqrt(np.diagonal(get_cov((xi_im[0,:,:]/xi_im[1,:,:]-xi_im[2,:,:]/xi_im[3,:,:]))*2.*dpi)))
+    varwgp=np.sqrt(np.diagonal(corr_methods.get_jk_cov((xi[0,:,:]/xi[1,:,:]-xi[2,:,:]/xi[3,:,:]))*2.*dpi)))
+    varwgx=np.sqrt(np.diagonal(corr_methods.get_jk_cov((xi_im[0,:,:]/xi_im[1,:,:]-xi_im[2,:,:]/xi_im[3,:,:]))*2.*dpi)))
     print r0,wgp,varwgp
     print r0,wgx,varwgx
 
