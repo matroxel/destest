@@ -348,8 +348,66 @@ class xi_2pt(object):
   @staticmethod
   def calc_alpha(gp,pp,e1,e2,psf1,psf2):
 
-    return (gp-e1*psf1-e2*psf2)/(pp-psf1**2-psf2**2)    
+    return (gp-e1*psf1-e2*psf2)/(pp-psf1**2-psf2**2)
 
+  @staticmethod
+  def rho1(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='de',gb='de',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho2(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='psf_e',gb='de',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho3(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='edt',gb='edt',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho4(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='de',gb='edt',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho5(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='psf_e',gb='edt',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def calc_psf_dxi(cat,psfcat):
+
+    dpsfsize = np.mean((psfcat.psfex_size-psfcat.size)/psfcat.size)
+    psfsize = np.mean(1./(cat.rgp**2-1.)) # see Mike/Daniel slack
+
+    psfcat.edt1=dpsfsize*psfact.psf_e1
+    psfcat.edt2=dpsfsize*psfact.psf_e2
+
+    psfcat.de1=psfcat.psf_e1-psfcat.e1
+    psfcat.de2=psfcat.psf_e2-psfcat.e2
+
+    psfcat.tbins=20
+    psfcat.sep=np.array([0.1,500])
+    psfcat.slop=0.1
+
+    cat.tbins=20
+    cat.sep=np.array([0.1,500])
+    cat.slop=0.1
+
+    return 2.*dpsfsize*psfsize*xi_2pt.xi_2pt(cat,corr='GG')
+           + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) 
+           - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
 
   @staticmethod
   def create_shear_rm_cat(cat,cat2):
@@ -364,8 +422,6 @@ class xi_2pt(object):
     rm10s.coadd=(cat.coadd[m1])[s1]
 
     return rm10s
-
-
 
   @staticmethod
   def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=True,usempi=False,comm=None):

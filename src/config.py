@@ -169,7 +169,6 @@ psf_col_lookup = {
   'x_mike':'x',
   'y_mike':'y',
   'mag':'mag',
-  'psfex_size':'psfex_size',
   'erin_e1':'erin_e1',
   'erin_e2':'erin_e2',
   'erin_size':'erin_size',
