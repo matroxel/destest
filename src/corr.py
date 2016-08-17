@@ -388,7 +388,7 @@ class xi_2pt(object):
   @staticmethod
   def calc_psf_dxi(cat,psfcat):
 
-    dpsfsize = np.mean((psfcat.psfex_size-psfcat.size)/psfcat.size)
+    dpsfsize = np.mean((psfcat.psf_size-psfcat.size)/psfcat.psf_size)
     psfsize = np.mean(1./(cat.rgp**2-1.)) # see Mike/Daniel slack
 
     psfcat.edt1=dpsfsize*psfact.psf_e1
@@ -405,6 +405,7 @@ class xi_2pt(object):
     cat.sep=np.array([0.1,500])
     cat.slop=0.1
 
+    return 2.*dpsfsize*psfsize*1., psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)),alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
     return 2.*dpsfsize*psfsize*xi_2pt.xi_2pt(cat,corr='GG') + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
 
   @staticmethod
