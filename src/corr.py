@@ -413,7 +413,13 @@ class xi_2pt(object):
     theta,out,err,chi2=xi_2pt.xi_2pt(cat,corr='GG')
     xip=out[0]
 
+    theta,gpout,err,chi2=corr.xi_2pt.xi_2pt(i3,catb=i3,corr='GG',ga='psf',gb='e')
+    theta,ppout,err,chi2=corr.xi_2pt.xi_2pt(i3,catb=i3,corr='GG',ga='psf',gb='psf')
+    alpha=(gpout[0]-np.average(i3.e1,weights=i3.w)*np.average(i3.psf1,weights=i3.w)-np.average(i3.e2,weights=i3.w)*np.average(i3.psf2,weights=i3.w))/(ppout[0]-np.abs(np.average(np.sqrt(i3.psf1**2+i3.psf2**2),weights=i3.w)**2.))
+    alpha0=-0.05
+
     dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
+    print 2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha0*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
 
     return theta,dxip,dxip/xip
 
