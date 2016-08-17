@@ -355,35 +355,35 @@ class xi_2pt(object):
 
     theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='de',gb='de',corr='GG')
 
-    return 1.#out[0]
+    return out[0]
 
   @staticmethod
   def rho2(cat):
 
     theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='psf_e',gb='de',corr='GG')
 
-    return 1.#out[0]
+    return out[0]
 
   @staticmethod
   def rho3(cat):
 
     theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='edt',gb='edt',corr='GG')
 
-    return 1.#out[0]
+    return out[0]
 
   @staticmethod
   def rho4(cat):
 
     theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='de',gb='edt',corr='GG')
 
-    return 1.#out[0]
+    return out[0]
 
   @staticmethod
   def rho5(cat):
 
     theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='psf_e',gb='edt',corr='GG')
 
-    return 1.#out[0]
+    return out[0]
 
   @staticmethod
   def calc_psf_dxi(cat,psfcat):
@@ -405,8 +405,12 @@ class xi_2pt(object):
     cat.sep=np.array([0.1,500])
     cat.slop=0.1
 
-    return 2.*dpsfsize*psfsize*1., psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)),alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
-    return 2.*dpsfsize*psfsize*xi_2pt.xi_2pt(cat,corr='GG') + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,corr='GG')
+    xip=out[0]
+
+    dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
+
+    return theta,dxip,dxip/xip
 
   @staticmethod
   def create_shear_rm_cat(cat,cat2):
