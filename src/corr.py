@@ -391,8 +391,8 @@ class xi_2pt(object):
     dpsfsize = np.mean((psfcat.psf_size-psfcat.size)/psfcat.psf_size)
     psfsize = np.mean(1./(cat.rgp**2-1.)) # see Mike/Daniel slack
 
-    psfcat.edt1=dpsfsize*psfact.psf_e1
-    psfcat.edt2=dpsfsize*psfact.psf_e2
+    psfcat.edt1=dpsfsize*psfcat.psf_e1
+    psfcat.edt2=dpsfsize*psfcat.psf_e2
 
     psfcat.de1=psfcat.psf_e1-psfcat.e1
     psfcat.de2=psfcat.psf_e2-psfcat.e2
