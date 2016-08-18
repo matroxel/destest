@@ -424,7 +424,7 @@ class xi_2pt(object):
 
     dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
     dxip0=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha0*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
-    np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,alpha0,gpout[0],ppout[0])))
+    np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,gpout[0],ppout[0])))
 
     return theta,dxip,xip
 
