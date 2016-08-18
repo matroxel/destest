@@ -419,9 +419,10 @@ class xi_2pt(object):
     alpha0=-0.05
 
     dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
-    print 2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha0*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
+    dxip0=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha0*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
+    np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,alpha0)))
 
-    return theta,dxip,dxip/xip
+    return theta,dxip,xip
 
   @staticmethod
   def create_shear_rm_cat(cat,cat2):
