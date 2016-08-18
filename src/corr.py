@@ -353,35 +353,35 @@ class xi_2pt(object):
   @staticmethod
   def rho1(cat):
 
-    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='de',gb='de',corr='GG')
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='de',gb='de',corr='GG')
 
     return out[0]
 
   @staticmethod
   def rho2(cat):
 
-    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='psf_e',gb='de',corr='GG')
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='psf_e',gb='de',corr='GG')
 
     return out[0]
 
   @staticmethod
   def rho3(cat):
 
-    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='edt',gb='edt',corr='GG')
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='edt',gb='edt',corr='GG')
 
     return out[0]
 
   @staticmethod
   def rho4(cat):
 
-    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='de',gb='edt',corr='GG')
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='de',gb='edt',corr='GG')
 
     return out[0]
 
   @staticmethod
   def rho5(cat):
 
-    theta,out,err,chi2=xi_2pt.xi_2pt(cat,ga='psf_e',gb='edt',corr='GG')
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='psf_e',gb='edt',corr='GG')
 
     return out[0]
 
@@ -415,12 +415,16 @@ class xi_2pt(object):
 
     theta,gpout,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,corr='GG',ga='psf',gb='e')
     theta,ppout,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,corr='GG',ga='psf',gb='psf')
-    alpha=(gpout[0]-np.average(cat.e1,weights=cat.w)*np.average(cat.psf1,weights=cat.w)-np.average(cat.e2,weights=cat.w)*np.average(cat.psf2,weights=cat.w))/(ppout[0]-np.abs(np.average(np.sqrt(cat.psf1**2+cat.psf2**2),weights=cat.w)**2.))
+    me1,me2=lin.linear_methods.calc_mean_stdev_rms_e(cat,full=False)
+    mpsf1=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psf1,full=False)
+    mpsf2=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psf2,full=False)
+    mpsf=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psfe,full=False)
+    alpha=(gpout[0]-me1*mpsf1-me2*mpsf2)/(ppout[0]-mpsf**2.)
     alpha0=-0.05
 
     dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
     dxip0=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha0*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
-    np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,alpha0)))
+    np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,alpha0,gpout[0],ppout[0])))
 
     return theta,dxip,xip
 
