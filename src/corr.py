@@ -397,7 +397,7 @@ class xi_2pt(object):
     psfcat.de1=psfcat.psf_e1-psfcat.e1
     psfcat.de2=psfcat.psf_e2-psfcat.e2
 
-    psfcat.tbins=20
+    psfcat.tbins=10
     psfcat.sep=np.array([0.1,500])
     psfcat.slop=0.1
     psfcat.m1=np.zeros(len(psfcat.ra))
@@ -406,7 +406,7 @@ class xi_2pt(object):
     psfcat.c2=np.zeros(len(psfcat.ra))
     psfcat.w=np.ones(len(psfcat.ra))
 
-    cat.tbins=20
+    cat.tbins=10
     cat.sep=np.array([0.1,500])
     cat.slop=0.1
 
