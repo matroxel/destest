@@ -1,6 +1,6 @@
 import numpy as np
 import os
-import scipy.interpolate as interp
+import scipy
 import fitsio as fio
 
 import catalog
@@ -600,6 +600,149 @@ class run(object):
 
     return
 
+
+  @staticmethod
+  def submit_rho_leakage_test(
+    deltaxi,
+    optdict,
+    test='rho_leakage',
+    workdir='',
+    procs=1,
+    hr=3,
+    cosmosisrootdir='',
+    cosmosissource='source '+config.cosmosisnerscdir+'setup-cosmosis-nersc-edison', 
+    inifile='cosmosis.ini',
+    valuefile='values.ini',
+    submit=False):
+    """
+    A wrapper to submit cosmosis runs specifically for delta xi+ systematic contamination. Could also make it optional which (xi vs cl) to use.
+
+    Use:
+
+    ....
+
+
+    """
+
+    def to_fits(theta,xip,xim,fileout,filein=workdir+'lsst_default.fits'):
+
+      # From github.com/joezuntz/2point
+      import twopoint
+
+      # Setup xi extensions
+      xipext = twopoint.SpectrumMeasurement(
+        'xip', # hdu name
+        (np.ones(len(theta)),np.ones(len(theta))), # tomographic bins
+        (twopoint.Types.galaxy_shear_plus_real, twopoint.Types.galaxy_shear_plus_real), # type of 2pt statistic
+        ('nofz', 'nofz'), # associated nofz
+        "SAMPLE", # window function
+        np.arange(len(theta)), # id
+        xip, # value
+        angle=theta, # theta value
+        angle_unit='arcmin') # units
+
+      ximext = twopoint.SpectrumMeasurement(
+        'xim',
+        (np.ones(len(theta)),np.ones(len(theta))), 
+        (twopoint.Types.galaxy_shear_minus_real, twopoint.Types.galaxy_shear_minus_real), 
+        ('nofz', 'nofz'), 
+        "SAMPLE", 
+        np.arange(len(theta)), 
+        xim,
+        angle=theta,
+        angle_unit='arcmin') 
+
+      # write to fits file
+      from astropy.io import fits
+      data=fits.open(filein)
+      nofz=twopoint.NumberDensity.from_fits(data['nofz'])
+      covmat=twopoint.CovarianceMatrixInfo.from_fits(data['covmat'])
+      data=twopoint.TwoPointFile([xipext,ximext],[nofz],None,covmat)
+      data.to_fits(fileout, clobber=True)
+
+      return
+
+    # Check for required cosmosis files
+    if inifile not in os.listdir(workdir):
+      print 'Missing ini file'
+    if valuefile not in os.listdir(workdir):
+      print 'Missing value file'
+
+    if submit:
+      import subprocess as sp
+
+    if submit:
+      # setup header of submit file and assign subprocess
+      p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=workdir)
+      output,input = p.stdout, p.stdin
+
+      jobstring0="""#!/bin/bash
+      #PBS -l nodes=1:ppn=%s
+      #PBS -l walltime=%s:00:00
+      #PBS -N %s
+      #PBS -o %s.log
+      #PBS -j oe
+      #PBS -m abe 
+      #PBS -M michael.troxel@manchester.ac.uk
+      module use /home/zuntz/modules/module-files
+      module load python
+      module use /etc/modulefiles/
+      cd /home/troxel/cosmosis/
+      source my-source
+      cd %s
+      """ % (str(procs),str(hr),test,test,workdir)
+    else:
+      # setup header of bash script
+      jobstring0="""#!/bin/bash
+      cd %s
+      %s
+      cd %s
+      """ % (cosmosisrootdir,cosmosissource,workdir)
+
+    # initialise final jobstring
+    jobstring=jobstring0
+
+    # call theory xip, xim for testing
+    c0=_cosmosis(infile=workdir+'cosmosis.ini',fitsfile=workdir+'lsst_default.fits',values=workdir+'values_fixed.ini')
+    c0.xi(1,1,theta=deltaxi['meanr'])
+
+    # Check for and make output dir
+    try:
+      os.listdir(workdir+test)
+    except:
+      os.mkdir(workdir+test)
+
+    # write modified xip, xim to twopoint fits file for cosmosis
+    to_fits(deltaxi['meanr'],c0.xip+deltaxi['xi'],c0.xim,workdir+test+'/xi_plus_dxi.fits')
+
+    # setup file paths
+    infile=workdir+'cosmosis.ini'
+    savedir="""''"""
+    outfile=workdir+test+'/output.txt'
+    nzinfile=workdir+test+'/xi_plus_dxi.fits'
+
+    # setup data block names
+    datablocks="""'xip xim'"""
+    nzdatablocks='nofz'
+
+    # setup cosmosis call
+    jobstring+="""mpirun -n %s cosmosis --mpi %s -p output.filename=%s test.save_dir=%s fits_nz.nz_file=%s fits_nz.data_sets=%s 2pt_like.data_file=%s 2pt_like.data_sets=%s
+    """ % (procs,infile,outfile,savedir,nzinfile,nzdatablocks,nzinfile,datablocks)
+    jobstring+="""mpirun -n 1 postprocess %s -o %s 
+    """ % (outfile,workdir+test)#--no-plots
+
+    # submit job or print bash script
+    if submit:
+      print jobstring
+      output,outputerr=p.communicate(input=jobstring)
+      time.sleep(0.1)
+    else:
+      print jobstring
+      with open('cosmosis_rho.submit','w') as f:
+        f.write(jobstring)
+
+    return
+
 class make(object):
 
   @staticmethod
@@ -826,8 +969,80 @@ class make(object):
     tmp=np.zeros((pz0.tomo,nbins))
     for i in range(len(pz0.pz)):
 
-      f=interp.interp1d(pz0.bin,pz0.pz[i],kind='cubic',fill_value=0.)
+      f=scipy.interpolate.interp1d(pz0.bin,pz0.pz[i],kind='cubic',fill_value=0.)
       f2=extrap1d(f)
       tmp[i]=f2(np.linspace(np.min(pz0.bin),zmax,nbins))
 
     return tmp
+
+
+class _cosmosis(object):
+
+  def __init__(self,infile='/home/troxel/destest/params.ini',fitsfile=None,values=None):
+    from cosmosis.runtime.config import Inifile
+    from cosmosis.runtime.pipeline import LikelihoodPipeline
+
+    ini=Inifile(infile)
+    if fitsfile is not None:
+      ini.set('fits_nz', 'nz_file', fitsfile)
+      ini.set('2pt_like', 'data_file', fitsfile)
+    if values is not None:
+      ini.set('pipeline', 'values', values)
+    ini.set('pipeline','modules',ini.get('pipeline','modules').replace('2pt_like',''))
+    ini.set('runtime','sampler','test')
+    print ini.get('pipeline', 'values')
+    self.pipeline=LikelihoodPipeline(ini)
+    self.data=self.pipeline.run_parameters([])
+
+  def cls(self,i,j,ell=None,interpout=False):
+
+    ell0=self.data['shear_cl','ell']
+    cl0=self.data['shear_cl','bin_'+str(i)+'_'+str(j)]
+
+    if ell is None:
+      self.ell=ell0
+      self.cl=cl0
+    else:
+      f=scipy.interpolate.interp1d(ell0,cl0)
+      self.ell=ell
+      self.cl=f(ell)
+
+    if interpout:
+      return f
+    else:
+      return
+
+  def xi(self,i,j,theta=None):
+
+    theta0=self.data['shear_xi','theta']
+    xip0=self.data['shear_xi','xiplus_'+str(i)+'_'+str(j)]
+    xim0=self.data['shear_xi','ximinus_'+str(i)+'_'+str(j)]
+
+    if theta is None:
+      self.theta=theta0/np.pi*180.*60.
+      self.xip=xip0
+      self.xim=xim0
+    else:
+      theta=theta*np.pi/180./60.
+      f=scipy.interpolate.interp1d(theta0,xip0)
+      f2=scipy.interpolate.interp1d(theta0,xim0)
+      self.theta=theta
+      self.xip=f(theta)
+      self.xim=f2(theta)
+
+    return
+
+  def xiobs(self,bandpowers):
+
+    f=scipy.interpolate.interp1d(self.theta,self.xip)
+    f2=scipy.interpolate.interp1d(self.theta,self.xim)
+    def func(t,f,i):
+      return bandpowers.window_theta_geometric(t,i)*f(t)
+
+    self.xipobs=np.zeros(bandpowers.nt)
+    self.ximobs=np.zeros(bandpowers.nt)
+    for i in range(bandpowers.nt):
+      self.xipobs[i]=scipy.integrate.quad(func,bandpowers.tmin[i],bandpowers.tmax[i],args=(f,i))[0]
+      self.ximobs[i]=scipy.integrate.quad(func,bandpowers.tmin[i],bandpowers.tmax[i],args=(f2,i))[0]
+
+    return
