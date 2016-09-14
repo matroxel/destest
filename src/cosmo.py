@@ -610,7 +610,7 @@ class run(object):
     procs=1,
     hr=3,
     cosmosisrootdir='',
-    cosmosissource='source '+config.cosmosisnerscdir+'setup-cosmosis-nersc-edison', 
+    cosmosissource='source '+config.cosmosisrootdir+'setup-cosmosis-nersc-edison', 
     inifile='cosmosis.ini',
     valuefile='values.ini',
     submit=False):
