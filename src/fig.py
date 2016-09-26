@@ -119,7 +119,7 @@ class plot_methods(object):
   @staticmethod
   def plot_hexbin(x1,ra,dec,bins=config.cfg.get('hexbins',20),name='',label='',tile=''):
 
-    s82=(dec>-10)
+    s82=(dec>-10)&(ra<10)&(ra>-50)
     spta=(~s82)&(ra<0)
     sptc=(~s82)&(ra>50)
     sptb=(~s82)&(~spta)&(~sptc)
