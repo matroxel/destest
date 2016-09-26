@@ -124,10 +124,14 @@ class plot_methods(object):
     sptc=(~s82)&(ra>50)&(dec<-30)
     sptb=(~s82)&(~spta)&(~sptc)&(dec<-30)
 
-    plot_methods.plot_hexbin_base(x1,ra[s82],dec[s82],label=label,bins=bins,part='s82',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,ra[spta],dec[spta],label=label,bins=bins,part='spta',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,ra[sptb],dec[sptb],label=label,bins=bins,part='sptb',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,ra[sptc],dec[sptc],label=label,bins=bins,part='sptc',name=name,tile=tile)
+    if np.any(s82):
+      plot_methods.plot_hexbin_base(x1,ra[s82],dec[s82],label=label,bins=bins,part='s82',name=name,tile=tile)
+    if np.any(spta):
+      plot_methods.plot_hexbin_base(x1,ra[spta],dec[spta],label=label,bins=bins,part='spta',name=name,tile=tile)
+    if np.any(sptb):
+      plot_methods.plot_hexbin_base(x1,ra[sptb],dec[sptb],label=label,bins=bins,part='sptb',name=name,tile=tile)
+    if np.any(sptc):
+      plot_methods.plot_hexbin_base(x1,ra[sptc],dec[sptc],label=label,bins=bins,part='sptc',name=name,tile=tile)
 
     return
 
