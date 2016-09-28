@@ -7,7 +7,10 @@ except:
 
 import os
 if "NERSC_HOST" not in os.environ:
-  from mpi4py import MPI
+  try:
+    from mpi4py import MPI
+  except ImportError:
+    print 'No mpi4py'
 else:
   print 'No mpi4py'
 
@@ -360,7 +363,7 @@ class xi_2pt(object):
   @staticmethod
   def rho2(cat):
 
-    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='psf_e',gb='de',corr='GG')
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='e',gb='de',corr='GG')
 
     return out[0]
 
@@ -419,11 +422,17 @@ class xi_2pt(object):
     mpsf1=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psf1,full=False)
     mpsf2=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psf2,full=False)
     mpsf=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psfe,full=False)
-    alpha=(gpout[0]-me1*mpsf1-me2*mpsf2)/(ppout[0]-mpsf**2.)
+    alpha=(gpout[0]-me1*mpsf1-me2*mpsf2)/(ppout[0]-mpsf1**2.-mpsf2**2.)
     alpha0=-0.05
 
-    dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
-    dxip0=2.*dpsfsize*psfsize*xip + psfsize**2*(xi_2pt.rho1(psfcat)+xi_2pt.rho3(psfcat)+xi_2pt.rho4(psfcat)) - alpha0*psfsize*(xi_2pt.rho2(psfcat)+xi_2pt.rho5(psfcat))
+    rho1=xi_2pt.rho1(psfcat)
+    rho2=xi_2pt.rho2(psfcat)
+    rho3=xi_2pt.rho3(psfcat)
+    rho4=xi_2pt.rho4(psfcat)
+    rho5=xi_2pt.rho5(psfcat)
+
+    dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(rho1+rho3+rho4) - alpha*psfsize*(rho2+rho5)
+    dxip0=2.*dpsfsize*psfsize*xip + psfsize**2*(rho1+rho3+rho4) - alpha0*psfsize*(rho2+rho5)
     np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,gpout[0],ppout[0])))
 
     return theta,dxip,xip
