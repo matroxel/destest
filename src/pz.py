@@ -55,6 +55,7 @@ class pz_methods(object):
       return
 
     mask0=(pointz>=pzlow)&(pointz<=pzhigh)
+    print pointz,pointw
 
     if nztype=='mean':
       pzdist=pz0.z_mean_full
