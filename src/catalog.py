@@ -619,7 +619,7 @@ class CatalogMethods(object):
       print 'error loading fits file: ',shape
 
     tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
-    goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxiter)
+    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
     colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
