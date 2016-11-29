@@ -307,15 +307,47 @@ truth_col_lookup = {
 }
 
 
-gold_col_lookup = {  
+matched_gold_col_lookup = {  
 
   'coadd':'coadd_objects_id',
   'ra':'ra',
   'dec':'dec',
-  'sm':'spread_model_i',
-  'i':'mag_auto_i'
-
+  'flags_badregion':'flags_badregion',
+  'flags_gold':'flags_gold',
+  'modest_class':'modest_class'
 }
+
+matched_i3_col_lookup = {  
+
+  'coadd':'coadd_objects_id',
+  'e1':'e1',
+  'e2':'e2',
+  'flags':'flags',
+  'snr':'snr',
+  'rgp':'rgpp_rp',
+  'radius':'radius',
+  'psf1':'psf_e1',
+  'psf2':'psf_e2',
+  'psffwhm':'psf_size',
+  'm1':'m1',
+  'm2':'m2',
+  'c1':'c2',
+  'w':'weight'
+}
+
+matched_ng_col_lookup = {  
+
+  'coadd':'coadd_objects_id',
+  'e1':'e1',
+  'e2':'e2',
+  'flags':'flags',
+  'snr':'snr',
+  'psf1':'psf_e1',
+  'psf2':'psf_e2',
+  'psffwhm':'psf_size',
+  'w':'weight'
+}
+
 
 buzzard_col_lookup = {
   

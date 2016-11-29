@@ -77,7 +77,6 @@ class CatalogStore(object):
         cols1=None
 
       if goldfile is not None:
-        print 'not ready to use matched catalog format in this version'
         if (i3file is None)|(ngfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
 
@@ -592,6 +591,92 @@ class CatalogMethods(object):
 
     return cols,[array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
 
+  @staticmethod
+  def get_matched_cat_cols(gold,shape,goldcols,shapecols,goldtable,shapetable,shapecuts,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=1):
+    """
+    Work function for CatalogStore to parse and read in catalog informaiton from one or more fits files.
+    """
+
+    import fitsio as fio
+    import re
+
+    lenst=0
+      # File format may not be readable
+      try:
+        gold=fio.FITS(gold)
+      except IOError:
+        print 'error loading fits file: ',gold
+      try:
+        shape=fio.FITS(shape)
+      except IOError:
+        print 'error loading fits file: ',shape
+
+      tmparray = gold.read(columns=['flags_gold','flags_badregion'])
+      goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxiter)
+
+      # Verify that the columns requested exist in the file
+      colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
+      if colex<1:
+        for i,x in enumerate(shapecols):
+          cols[i]=x.lower()
+        colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
+        if colex<1:
+          raise ColError('columns '+colist+' do not exist in file: '+shape)
+
+      colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
+      if colex<1:
+        for i,x in enumerate(goldcols):
+          cols[i]=x.lower()
+        colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
+        if colex<1:
+          raise ColError('columns '+colist+' do not exist in file: '+gold)
+
+      cutcols=shapecuts['col']
+      colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
+      if colex<1:
+        cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
+        colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
+        if colex<1:
+          raise ColError('cut columns '+colist+' do not exist in file: '+shape)
+
+      # Dump the columns needed for masking into memory if everything is there
+      try:
+        tmparray=shape[hdu].read(columns=cutcols)
+      except IOError:
+        print 'error loading fits file: ',shape
+
+      # Generate the selection mask based on the passed cut function
+      shapemask=np.array([])
+      for icut,cut in enumerate(shapecuts): 
+        shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecut['min'],shapecut['eq'],shapecut['max'])
+
+      # Dump the requested columns into memory if everything is there
+      try:
+        goldarray=fits[hdu].read(columns=goldcols)
+      except IOError:
+        print 'error loading fits file: ',gold
+      try:
+        shapearray=fits[hdu].read(columns=shapecols)
+      except IOError:
+        print 'error loading fits file: ',shape
+
+      goldarray=goldarray[goldmask&shapemask]
+      shapearray=shapearray[goldmask&shapemask]
+
+      array = np.concatenate(goldarray,shapearray)
+
+      goldarray.dtype.names = goldtable[key] for key in goldcols
+      shapearray.dtype.names = shapetable[key] for key in shapecols if key is not 'coadd'
+
+      array=np.empty(np.sum(goldmask&shapemask), dtype=goldarray.dtype.descr+shapearray.dtype.descr)
+      for name in goldarray.dtype.names:
+        array[name]=goldarray[name]
+      for name in shapearray.dtype.names:
+        array[name]=shapearray[name]
+
+      fits.close()
+
+    return goldarray.dtype.names+shapearray.dtype.names,[array[col] for i,col in enumerate(cols)],[],[]
 
   @staticmethod
   def col_exists(cols,colnames):
@@ -695,6 +780,7 @@ class CatalogMethods(object):
   @staticmethod
   def sort2(x,y):
     """
+    
     Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
     """
 
@@ -1076,6 +1162,7 @@ class CatalogMethods(object):
     print ranmap
     hpmin=np.min(hpmap)
     hpmax=np.max(hpmap)
+    print '....',hpmin,hpmax
 
     tmp0=hp.nside2npix(rannside)//hp.nside2npix(masknside)
 
@@ -1083,7 +1170,7 @@ class CatalogMethods(object):
     while len(ran)<nran:
       print nran,len(ran)
 
-      tmp=rand.randint(hpmin*tmp0,high=hpmax*tmp0,size=nran)
+      tmp=rand.randint(hpmin*tmp0,high=(hpmax+1)*tmp0,size=nran)
       mask=np.in1d(tmp//tmp0,hpmap,assume_unique=False)
       ran=np.append(ran,tmp[mask])
 
