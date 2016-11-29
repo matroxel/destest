@@ -601,80 +601,80 @@ class CatalogMethods(object):
     import re
 
     lenst=0
-      # File format may not be readable
-      try:
-        gold=fio.FITS(gold)
-      except IOError:
-        print 'error loading fits file: ',gold
-      try:
-        shape=fio.FITS(shape)
-      except IOError:
-        print 'error loading fits file: ',shape
+    # File format may not be readable
+    try:
+      gold=fio.FITS(gold)
+    except IOError:
+      print 'error loading fits file: ',gold
+    try:
+      shape=fio.FITS(shape)
+    except IOError:
+      print 'error loading fits file: ',shape
 
-      tmparray = gold.read(columns=['flags_gold','flags_badregion'])
-      goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxiter)
+    tmparray = gold.read(columns=['flags_gold','flags_badregion'])
+    goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxiter)
 
-      # Verify that the columns requested exist in the file
+    # Verify that the columns requested exist in the file
+    colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
+    if colex<1:
+      for i,x in enumerate(shapecols):
+        cols[i]=x.lower()
       colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
       if colex<1:
-        for i,x in enumerate(shapecols):
-          cols[i]=x.lower()
-        colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
-        if colex<1:
-          raise ColError('columns '+colist+' do not exist in file: '+shape)
+        raise ColError('columns '+colist+' do not exist in file: '+shape)
 
+    colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
+    if colex<1:
+      for i,x in enumerate(goldcols):
+        cols[i]=x.lower()
       colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
       if colex<1:
-        for i,x in enumerate(goldcols):
-          cols[i]=x.lower()
-        colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
-        if colex<1:
-          raise ColError('columns '+colist+' do not exist in file: '+gold)
+        raise ColError('columns '+colist+' do not exist in file: '+gold)
 
-      cutcols=shapecuts['col']
+    cutcols=shapecuts['col']
+    colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
+    if colex<1:
+      cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
       colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
       if colex<1:
-        cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
-        colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
-        if colex<1:
-          raise ColError('cut columns '+colist+' do not exist in file: '+shape)
+        raise ColError('cut columns '+colist+' do not exist in file: '+shape)
 
-      # Dump the columns needed for masking into memory if everything is there
-      try:
-        tmparray=shape[hdu].read(columns=cutcols)
-      except IOError:
-        print 'error loading fits file: ',shape
+    # Dump the columns needed for masking into memory if everything is there
+    try:
+      tmparray=shape[hdu].read(columns=cutcols)
+    except IOError:
+      print 'error loading fits file: ',shape
 
-      # Generate the selection mask based on the passed cut function
-      shapemask=np.array([])
-      for icut,cut in enumerate(shapecuts): 
-        shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecut['min'],shapecut['eq'],shapecut['max'])
+    # Generate the selection mask based on the passed cut function
+    shapemask=np.array([])
+    for icut,cut in enumerate(shapecuts): 
+      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecut['min'],shapecut['eq'],shapecut['max'])
 
-      # Dump the requested columns into memory if everything is there
-      try:
-        goldarray=fits[hdu].read(columns=goldcols)
-      except IOError:
-        print 'error loading fits file: ',gold
-      try:
-        shapearray=fits[hdu].read(columns=shapecols)
-      except IOError:
-        print 'error loading fits file: ',shape
+    # Dump the requested columns into memory if everything is there
+    try:
+      goldarray=fits[hdu].read(columns=goldcols)
+    except IOError:
+      print 'error loading fits file: ',gold
+    try:
+      shapearray=fits[hdu].read(columns=shapecols)
+    except IOError:
+      print 'error loading fits file: ',shape
 
-      goldarray=goldarray[goldmask&shapemask]
-      shapearray=shapearray[goldmask&shapemask]
+    goldarray=goldarray[goldmask&shapemask]
+    shapearray=shapearray[goldmask&shapemask]
 
-      array = np.concatenate(goldarray,shapearray)
+    array = np.concatenate(goldarray,shapearray)
 
-      goldarray.dtype.names = goldtable[key] for key in goldcols
-      shapearray.dtype.names = shapetable[key] for key in shapecols if key is not 'coadd'
+    goldarray.dtype.names = goldtable[key] for key in goldcols
+    shapearray.dtype.names = shapetable[key] for key in shapecols if key is not 'coadd'
 
-      array=np.empty(np.sum(goldmask&shapemask), dtype=goldarray.dtype.descr+shapearray.dtype.descr)
-      for name in goldarray.dtype.names:
-        array[name]=goldarray[name]
-      for name in shapearray.dtype.names:
-        array[name]=shapearray[name]
+    array=np.empty(np.sum(goldmask&shapemask), dtype=goldarray.dtype.descr+shapearray.dtype.descr)
+    for name in goldarray.dtype.names:
+      array[name]=goldarray[name]
+    for name in shapearray.dtype.names:
+      array[name]=shapearray[name]
 
-      fits.close()
+    fits.close()
 
     return goldarray.dtype.names+shapearray.dtype.names,[array[col] for i,col in enumerate(cols)],[],[]
 
