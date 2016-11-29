@@ -44,11 +44,17 @@ class CatalogStore(object):
 
       # Select column name lookup dict
       if cattype=='i3':
-        table=config.i3_col_lookup
+        if goldfile is not None:
+          table=config.matched_i3_col_lookup
+        else:
+          table=config.i3_col_lookup
       elif cattype=='i3epoch':
         table=config.i3_epoch_col_lookup
       elif cattype=='ng':
-        table=config.ng_col_lookup
+        if goldfile is not None:
+          table=config.matched_ng_col_lookup
+        else:
+          table=config.ng_col_lookup
       elif cattype=='gal':
         table=config.gal_col_lookup
       elif cattype=='redmapper':
@@ -77,11 +83,11 @@ class CatalogStore(object):
         cols1=None
 
       if goldfile is not None:
-        if (i3file is None)|(ngfile is None):
+        if (catfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
 
         cols1=[table.get(x,x) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_cat_cols_matched(catdir,goldfile,catfile,cols1,table,cuts,full=full,ext=ext)):
+        for i,x in enumerate(CatalogMethods.get_matched_cat_cols(goldfile,catfile,config.matched_gold_col_lookup,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)):
           setattr(self,cols[i],x)
 
       elif (catfile!=None)|(catdir!=None):
