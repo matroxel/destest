@@ -622,7 +622,7 @@ class CatalogMethods(object):
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
-    colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
+    colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(shapecols):
         shapecols[i]=x.lower()
@@ -631,7 +631,7 @@ class CatalogMethods(object):
         print shapecols,shapefits[hdu].get_colnames()
         raise ColError('columns '+colist+' do not exist in file: '+shape)
 
-    colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
+    colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(goldcols):
         shapecols[i]=x.lower()
@@ -640,7 +640,7 @@ class CatalogMethods(object):
         raise ColError('columns '+colist+' do not exist in file: '+gold)
 
     cutcols=shapecuts['col']
-    colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
+    colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in cutcols],shapefits[hdu].get_colnames())
     if colex<1:
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
       colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
@@ -649,7 +649,7 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      tmparray=shapefits[hdu].read(columns=cutcols)
+      tmparray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
     except IOError:
       print 'error loading fits file: ',shape
 
@@ -660,11 +660,11 @@ class CatalogMethods(object):
 
     # Dump the requested columns into memory if everything is there
     try:
-      goldarray=goldfits[hdu].read(columns=goldcols)
+      goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
     except IOError:
       print 'error loading fits file: ',gold
     try:
-      shapearray=shapefits[hdu].read(columns=shapecols)
+      shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in cutcols])
     except IOError:
       print 'error loading fits file: ',shape
 
