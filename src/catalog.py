@@ -665,8 +665,8 @@ class CatalogMethods(object):
 
     array = np.concatenate(goldarray,shapearray)
 
-    goldarray.dtype.names = goldtable[key] for key in goldcols
-    shapearray.dtype.names = shapetable[key] for key in shapecols if key is not 'coadd'
+    goldarray.dtype.names = (goldtable[key] for key in goldcols)
+    shapearray.dtype.names = (shapetable[key] for key in shapecols if key is not 'coadd')
 
     array=np.empty(np.sum(goldmask&shapemask), dtype=goldarray.dtype.descr+shapearray.dtype.descr)
     for name in goldarray.dtype.names:
