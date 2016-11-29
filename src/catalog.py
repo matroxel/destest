@@ -85,9 +85,10 @@ class CatalogStore(object):
       if goldfile is not None:
         if (catfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
+        goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
 
         cols1=[table.get(x,x) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_matched_cat_cols(goldfile,catfile,config.matched_gold_col_lookup,table,cutfunc,tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)):
+        for i,x in enumerate(CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)):
           setattr(self,cols[i],x)
 
       elif (catfile!=None)|(catdir!=None):
