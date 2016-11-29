@@ -672,7 +672,7 @@ class CatalogMethods(object):
     shapearray=shapearray[goldmask&shapemask]
 
     import numpy.lib.recfunctions as nlr
-    array=nlr.append_fields(goldarray,shapearray.dtype.names,shapearray)
+    array=nlr.append_fields(goldarray,shapearray.dtype.names,[shapearray[i] for i in range(len(shapearray.dtype.names))])
 
     goldarray.dtype.names = (goldtable[key] for key in goldcols)
     shapearray.dtype.names = (shapetable[key] for key in shapecols if key is not 'coadd')
