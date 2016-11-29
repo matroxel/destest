@@ -618,7 +618,7 @@ class CatalogMethods(object):
     except IOError:
       print 'error loading fits file: ',shape
 
-    tmparray = gold.read(columns=['flags_gold','flags_badregion'])
+    tmparray = gold[hdu].read(columns=['flags_gold','flags_badregion'])
     goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
