@@ -841,6 +841,12 @@ class CatalogMethods(object):
     return
 
   @staticmethod
+  def matched_metacal_cut():
+    cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+
+    return cuts
+
+  @staticmethod
   def final_null_cuts():
     """
     Masking functions for use in CatalogStore initialisation. 
