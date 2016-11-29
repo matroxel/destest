@@ -622,27 +622,27 @@ class CatalogMethods(object):
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
-    colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
+    colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(shapecols):
         cols[i]=x.lower()
-      colex,colist=CatalogMethods.col_exists(shapecols,shape[hdu].get_colnames())
+      colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
       if colex<1:
         raise ColError('columns '+colist+' do not exist in file: '+shape)
 
-    colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
+    colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(goldcols):
         cols[i]=x.lower()
-      colex,colist=CatalogMethods.col_exists(goldcols,gold[hdu].get_colnames())
+      colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
       if colex<1:
         raise ColError('columns '+colist+' do not exist in file: '+gold)
 
     cutcols=shapecuts['col']
-    colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
+    colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
     if colex<1:
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
-      colex,colist=CatalogMethods.col_exists(cutcols,shape[hdu].get_colnames())
+      colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
       if colex<1:
         raise ColError('cut columns '+colist+' do not exist in file: '+shape)
 
