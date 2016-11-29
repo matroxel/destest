@@ -625,7 +625,7 @@ class CatalogMethods(object):
     colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(shapecols):
-        cols[i]=x.lower()
+        shapecols[i]=x.lower()
       colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
       if colex<1:
         raise ColError('columns '+colist+' do not exist in file: '+shape)
@@ -633,7 +633,7 @@ class CatalogMethods(object):
     colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(goldcols):
-        cols[i]=x.lower()
+        shapecols[i]=x.lower()
       colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
       if colex<1:
         raise ColError('columns '+colist+' do not exist in file: '+gold)
