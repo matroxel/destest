@@ -610,15 +610,15 @@ class CatalogMethods(object):
     lenst=0
     # File format may not be readable
     try:
-      gold=fio.FITS(gold)
+      goldfits=fio.FITS(gold)
     except IOError:
       print 'error loading fits file: ',gold
     try:
-      shape=fio.FITS(shape)
+      shapefits=fio.FITS(shape)
     except IOError:
       print 'error loading fits file: ',shape
 
-    tmparray = gold[hdu].read(columns=['flags_gold','flags_badregion'])
+    tmparray = goldfits[hdu].read(columns=['flags_gold','flags_badregion'])
     goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
@@ -648,7 +648,7 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      tmparray=shape[hdu].read(columns=cutcols)
+      tmparray=shapefits[hdu].read(columns=cutcols)
     except IOError:
       print 'error loading fits file: ',shape
 
@@ -659,11 +659,11 @@ class CatalogMethods(object):
 
     # Dump the requested columns into memory if everything is there
     try:
-      goldarray=fits[hdu].read(columns=goldcols)
+      goldarray=goldfits[hdu].read(columns=goldcols)
     except IOError:
       print 'error loading fits file: ',gold
     try:
-      shapearray=fits[hdu].read(columns=shapecols)
+      shapearray=shapefits[hdu].read(columns=shapecols)
     except IOError:
       print 'error loading fits file: ',shape
 
