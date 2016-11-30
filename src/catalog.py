@@ -622,6 +622,7 @@ class CatalogMethods(object):
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
+    print [shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames()
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(shapecols):
@@ -634,7 +635,7 @@ class CatalogMethods(object):
     colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(goldcols):
-        shapecols[i]=x.lower()
+        goldcols[i]=x.lower()
       colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
       if colex<1:
         raise ColError('columns '+colist+' do not exist in file: '+gold)
