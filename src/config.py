@@ -342,8 +342,8 @@ matched_ng_col_lookup = {
   'e2':'e2',
   'flags':'flags',
   'snr':'snr',
-  'psf1':'psf_e1  ',
-  'psf2':'psf_e2  ',
+  'psf1':'psf_e1',
+  'psf2':'psf_e2',
   'psffwhm':'psf_size',
   'w':'weight'
 }
