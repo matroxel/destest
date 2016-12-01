@@ -663,12 +663,12 @@ class CatalogMethods(object):
       shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecuts['min'],shapecuts['eq'],shapecuts['max'])
 
     # Dump the requested columns into memory if everything is there
-    print [goldtable.get(x,x) for x in goldcols]
+    print 'orig gold',[goldtable.get(x,x) for x in goldcols]
     try:
       goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
     except IOError:
       print 'error loading fits file: ',gold
-    print [shapetable.get(x,x) for x in cutcols]
+    print 'orig shape',[shapetable.get(x,x) for x in cutcols]
     try:
       shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in cutcols])
     except IOError:
@@ -677,10 +677,10 @@ class CatalogMethods(object):
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
 
-    print shapearray.dtype.names, goldarray.dtype.names
+    print 'shape, gold',shapearray.dtype.names, goldarray.dtype.names
     import numpy.lib.recfunctions as nlr
     array=nlr.append_fields(goldarray,shapearray.dtype.names,[shapearray[name] for name in shapearray.dtype.names])
-    print array.dtype.names
+    print 'array',array.dtype.names
 
     newdict = goldtable.copy()
     newdict.update(shapetable)
@@ -689,7 +689,7 @@ class CatalogMethods(object):
 
     from numpy.lib import recfunctions as rf
     array = rf.rename_fields(array,inv_dict)
-    print array.dtype.names
+    print 'array end',array.dtype.names
 
     goldfits.close()
     shapefits.close()
