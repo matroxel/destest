@@ -88,7 +88,9 @@ class CatalogStore(object):
         goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
 
         cols1=[table.get(x,x) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)):
+        cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
+
+        for i,x in enumerate(catcols):
           setattr(self,cols[i],x)
 
       elif (catfile!=None)|(catdir!=None):
@@ -684,7 +686,7 @@ class CatalogMethods(object):
     goldfits.close()
     shapefits.close()
 
-    return array.dtype.names,[array[col] for i,col in enumerate(array.dtype.names)],[],[]
+    return array.dtype.names,[array[col] for i,col in enumerate(array.dtype.names)],np.repeat([shape],len(array)),np.arange(len(array))
 
   @staticmethod
   def col_exists(cols,colnames):
