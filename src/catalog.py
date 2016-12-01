@@ -627,6 +627,7 @@ class CatalogMethods(object):
 
     tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
+    print 'goldmask1',np.sum(goldmask)
 
     # Verify that the columns requested exist in the file
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
@@ -663,6 +664,7 @@ class CatalogMethods(object):
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
       shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecuts['min'],shapecuts['eq'],shapecuts['max'])
+      print 'shapemask1',np.sum(shapemask)
 
     # Dump the requested columns into memory if everything is there
     print 'orig gold',[goldtable.get(x,x) for x in goldcols]
@@ -683,6 +685,8 @@ class CatalogMethods(object):
         shapearray=shapearray[y]
         goldmask=goldmask[x]
         shapemask=shapemask[y]
+        print 'shapemask2',np.sum(shapemask)
+        print 'goldmask2',np.sum(goldmask)
 
     print 'gold1',goldarray
     print 'shape1',shapearray
