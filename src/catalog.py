@@ -685,7 +685,7 @@ class CatalogMethods(object):
     print 'gold1',goldarray
     print 'shape1',shapearray
 
-    goldarray=goldarray[goldmask&shapemask
+    goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
 
     print 'gold2',goldarray
