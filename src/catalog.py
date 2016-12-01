@@ -674,6 +674,12 @@ class CatalogMethods(object):
     except IOError:
       print 'error loading fits file: ',shape
 
+
+    if np.any(np.diff(goldarray[goldtable('coadd')]) < 1)|np.any(np.diff(shapearray[shapetable('coadd')]) < 1):
+        x,y=CatalogMethods.sort2(goldarray[goldtable('coadd')],shapearray[shapetable('coadd')])
+        goldarray=goldarray[x]
+        shapearray=shapearray[x]
+
     print 'gold1',goldarray
     print 'shape1',shapearray
 
