@@ -91,6 +91,7 @@ class CatalogStore(object):
         cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
 
         for i,x in enumerate(catcols):
+          print cols[i],x
           setattr(self,cols[i],x)
 
       elif (catfile!=None)|(catdir!=None):
