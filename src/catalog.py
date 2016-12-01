@@ -626,7 +626,7 @@ class CatalogMethods(object):
       raise
 
     tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
-    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
+    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
     print 'goldmask1',np.sum(goldmask)
 
     # Verify that the columns requested exist in the file
