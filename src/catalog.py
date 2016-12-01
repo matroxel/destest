@@ -668,7 +668,7 @@ class CatalogMethods(object):
       goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
     except IOError:
       print 'error loading fits file: ',gold
-    print 'orig shape',[shapetable.get(x,x) for x in cutcols]
+    print 'orig shape',[shapetable.get(x,x) for x in shapecols]
     try:
       shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
     except IOError:
