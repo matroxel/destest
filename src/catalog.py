@@ -134,17 +134,17 @@ class CatalogStore(object):
       if 'coadd' not in cols:
         self.coadd=self.add_shared_array(len(filenames),np.arange(len(filenames)),p)
 
-      if cattype=='ng':
-        self.e1=self.mcal_g_1
-        self.mcal_g_1=None
-        self.e2=self.mcal_g_2
-        self.mcal_g_2=None
-        self.psf1=self.psfrec_g_1
-        self.psfrec_g_1=None
-        self.psf2=self.psfrec_g_2
-        self.psfrec_g_2=None
-        self.coadd=self.id
-        self.id=None
+      # if cattype=='ng':
+      #   self.e1=self.mcal_g_1
+      #   self.mcal_g_1=None
+      #   self.e2=self.mcal_g_2
+      #   self.mcal_g_2=None
+      #   self.psf1=self.psfrec_g_1
+      #   self.psfrec_g_1=None
+      #   self.psf2=self.psfrec_g_2
+      #   self.psfrec_g_2=None
+      #   self.coadd=self.id
+      #   self.id=None
 
       #Generate derived quantities
       if cattype in ['i3','ng']:
