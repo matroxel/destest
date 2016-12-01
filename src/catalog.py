@@ -653,7 +653,7 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      tmparray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
+      tmparray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in cutcols])
     except IOError:
       print 'error loading fits file: ',shape
 
@@ -670,7 +670,7 @@ class CatalogMethods(object):
       print 'error loading fits file: ',gold
     print 'orig shape',[shapetable.get(x,x) for x in cutcols]
     try:
-      shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in cutcols])
+      shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
     except IOError:
       print 'error loading fits file: ',shape
 
