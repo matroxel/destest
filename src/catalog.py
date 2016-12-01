@@ -622,15 +622,12 @@ class CatalogMethods(object):
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
 
     # Verify that the columns requested exist in the file
-    print [shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames()
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
-    print colex, colist
     if colex<1:
       for i,x in enumerate(shapecols):
         shapecols[i]=x.lower()
       colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
       if colex<1:
-        print shapecols,shapefits[hdu].get_colnames()
         raise ColError('columns '+colist+' do not exist in file: '+shape)
 
     colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
@@ -676,18 +673,17 @@ class CatalogMethods(object):
     import numpy.lib.recfunctions as nlr
     array=nlr.append_fields(goldarray,shapearray.dtype.names,[shapearray[name] for name in shapearray.dtype.names])
 
-    goldarray.dtype.names = (goldtable[key] for key in goldcols)
-    shapearray.dtype.names = (shapetable[key] for key in shapecols if key is not 'coadd')
+    newdict = goldtable.copy()
+    newdict.update(shapetable)
 
-    array=np.empty(np.sum(goldmask&shapemask), dtype=goldarray.dtype.descr+shapearray.dtype.descr)
-    for name in goldarray.dtype.names:
-      array[name]=goldarray[name]
-    for name in shapearray.dtype.names:
-      array[name]=shapearray[name]
+    inv_dict = {v: k for k, v in newdict.iteritems()}
+
+    from numpy.lib import recfunctions as rf
+    array = rf.rename_fields(array,inv_dict)
 
     fits.close()
 
-    return goldarray.dtype.names+shapearray.dtype.names,[array[col] for i,col in enumerate(cols)],[],[]
+    return array.dtype.names,[array[col] for i,col in enumerate(array.dtype.names)],[],[]
 
   @staticmethod
   def col_exists(cols,colnames):
