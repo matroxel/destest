@@ -618,10 +618,12 @@ class CatalogMethods(object):
       goldfits=fio.FITS(gold)
     except IOError:
       print 'error loading fits file: ',gold
+      raise
     try:
       shapefits=fio.FITS(shape)
     except IOError:
       print 'error loading fits file: ',shape
+      raise
 
     tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxiter)
@@ -844,8 +846,11 @@ class CatalogMethods(object):
     """
     Convenience function to match and add new nbc values from a fits file to a CatalogeStore object. Takes a CatalogStore object to modify.
     """
-
-    fits=fio.FITS(file)
+    try:
+      fits=fio.FITS(file)
+    except IOError:
+      print 'error loading fits file: ',file
+      raise
     tmp=fits[-1].read()
 
     m1,s1,m2,s2=CatalogMethods.sort(cat.coadd,tmp['coadd_objects_id'])
@@ -1386,7 +1391,12 @@ class CatalogMethods(object):
 
       print 'loading '+file0
 
-      tmp=fio.FITS(file0)[-1].read()
+      try:
+        tmp=fio.FITS(file0)[-1].read()
+      except IOError:
+        print 'error loading fits file: ',file0
+        raise
+
       store=np.ones(tmp.shape, dtype=tmp.dtype.descr + [('e1','f8')]+[('e2','f8')]+[('m','f8')]+[('c1','f8')]+[('c2','f8')]+[('weight','f8')])
       for name in tmp.dtype.names:
         store[name]=tmp[name]
@@ -1421,7 +1431,11 @@ class CatalogMethods(object):
 
       return
 
-    spec=fio.FITS(spec0)[-1].read()
+    try:
+      spec=fio.FITS(spec0)[-1].read()
+    except IOError:
+      print 'error loading fits file: ',spec0
+      raise
 
     store_rmd=read_cat(rmd,spec)
     store_rml=read_cat(rml,spec)
@@ -1431,7 +1445,13 @@ class CatalogMethods(object):
 
       for ifile,file0 in enumerate(glob.glob(shape+'*')):
         print ifile,file0
-        tmp2=fio.FITS(file0)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+        try:
+          tmp2=fio.FITS(file0)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+        
+        except IOError:
+          print 'error loading fits file: ',file0
+          raise
+
         mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
         tmp2=tmp2[mask]
 
@@ -1440,8 +1460,13 @@ class CatalogMethods(object):
         store_shape(store_rpm,tmp2)
 
     else:
-      
-      tmp2=fio.FITS(shape)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+      try:      
+        tmp2=fio.FITS(shape)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+    
+      except IOError:
+        print 'error loading fits file: ',shape
+        raise
+    
       mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
       tmp2=tmp2[mask]
 
