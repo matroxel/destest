@@ -148,6 +148,8 @@ class CatalogStore(object):
       #   self.coadd=self.id
       #   self.id=None
 
+      print dir(self)
+
       #Generate derived quantities
       if cattype in ['i3','ng']:
         if ('e1' in cols)&('e2' in cols):
