@@ -681,7 +681,8 @@ class CatalogMethods(object):
     from numpy.lib import recfunctions as rf
     array = rf.rename_fields(array,inv_dict)
 
-    fits.close()
+    gold.close()
+    shape.close()
 
     return array.dtype.names,[array[col] for i,col in enumerate(array.dtype.names)],[],[]
 
