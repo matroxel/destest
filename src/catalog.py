@@ -680,12 +680,14 @@ class CatalogMethods(object):
     if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1)|np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
         x,y=CatalogMethods.sort2(goldarray[goldtable.get('coadd')],shapearray[shapetable.get('coadd')])
         goldarray=goldarray[x]
-        shapearray=shapearray[x]
+        shapearray=shapearray[y]
+        goldmask=goldmask[x]
+        shapemask=shapemask[y]
 
     print 'gold1',goldarray
     print 'shape1',shapearray
 
-    goldarray=goldarray[goldmask&shapemask]
+    goldarray=goldarray[goldmask&shapemask
     shapearray=shapearray[goldmask&shapemask]
 
     print 'gold2',goldarray
