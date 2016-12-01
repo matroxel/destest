@@ -674,8 +674,14 @@ class CatalogMethods(object):
     except IOError:
       print 'error loading fits file: ',shape
 
+    print 'gold1',goldarray
+    print 'shape1',shapearray
+
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
+
+    print 'gold2',goldarray
+    print 'shape2',shapearray
 
     print 'shape, gold',shapearray.dtype.names, goldarray.dtype.names
     import numpy.lib.recfunctions as nlr
