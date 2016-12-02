@@ -745,7 +745,7 @@ class CatalogMethods(object):
     print 'time15',time.time()-t0
 
     outlist = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)].append([shapearray[col] for i,col in enumerate(shapearray.dtype.names) if col != 'coadd'])
-    return array.dtype.names,outlist,np.repeat([shape],len(array)),np.arange(len(array))
+    return array.dtype.names,outlist,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
 
   @staticmethod
   def col_exists(cols,colnames):
