@@ -700,6 +700,7 @@ class CatalogMethods(object):
     print 'time9',time.time()-t0
 
     if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1)|np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
+        print 'time100a',time.time()-t0
         x,y=CatalogMethods.sort2(goldarray[goldtable.get('coadd')],shapearray[shapetable.get('coadd')])
         goldarray=goldarray[x]
         shapearray=shapearray[y]
@@ -707,6 +708,7 @@ class CatalogMethods(object):
         shapemask=shapemask[y]
         print 'shapemask2',np.sum(shapemask)
         print 'goldmask2',np.sum(goldmask)
+        print 'time100b',time.time()-t0
 
     print 'time10',time.time()-t0
     print 'gold1',goldarray
