@@ -679,6 +679,14 @@ class CatalogMethods(object):
       print 'error loading fits file: ',shape
 
 
+    if len(np.unique(goldarray))!=len(goldarray):
+      print 'non-unique ids in file: ',gold
+      raise
+
+    if len(np.unique(shapearray))!=len(shapearray):
+      print 'non-unique ids in file: ',shape
+      raise
+
     if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1)|np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
         x,y=CatalogMethods.sort2(goldarray[goldtable.get('coadd')],shapearray[shapetable.get('coadd')])
         goldarray=goldarray[x]
@@ -697,10 +705,16 @@ class CatalogMethods(object):
     print 'gold2',goldarray
     print 'shape2',shapearray
 
-    print 'shape, gold',shapearray.dtype.names, goldarray.dtype.names
+    print 'before nlr'
     import numpy.lib.recfunctions as nlr
-    array=nlr.append_fields(goldarray,shapearray.dtype.names,[shapearray[name] for name in shapearray.dtype.names])
-    print 'array',array.dtype.names
+    array=nlr.rec_join('coadd_objects_id',gold,shape)
+    print 'after nlr'
+
+
+    # print 'shape, gold',shapearray.dtype.names, goldarray.dtype.names
+    # import numpy.lib.recfunctions as nlr
+    # array=nlr.append_fields(goldarray,shapearray.dtype.names,[shapearray[name] for name in shapearray.dtype.names])
+    # print 'array',array.dtype.names
 
     newdict = goldtable.copy()
     newdict.update(shapetable)
