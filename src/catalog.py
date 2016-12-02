@@ -716,7 +716,7 @@ class CatalogMethods(object):
 
     print 'before nlr'
     import numpy.lib.recfunctions as nlr
-    array=nlr.rec_join('coadd_objects_id',gold,shape)
+    array=nlr.rec_join('coadd_objects_id',goldarray,shapearray)
     print 'after nlr'
     print 'time13',time.time()-t0
 
