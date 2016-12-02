@@ -688,41 +688,33 @@ class CatalogMethods(object):
       print 'error loading fits file: ',shape
     print 'time8',time.time()-t0
 
+    if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
+      i=np.argsort(goldarray[goldtable.get('coadd')])
+      goldarray=goldarray[i]
+      goldmask = goldmask[i]
+    print 'time9',time.time()-t0
+    if np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
+      i=np.argsort(shapearray[shapetable.get('coadd')])
+      shapearray=shapearray[i]
+      shapemask=shapemask[i]
+    print 'time10',time.time()-t0
 
-    if len(np.unique(goldarray))!=len(goldarray):
+    if np.any(np.diff(goldarray[goldtable.get('coadd')])==0):
       print 'non-unique ids in file: ',gold
       raise
-    print 'time9',time.time()-t0
+    print 'time11',time.time()-t0
 
-    if len(np.unique(shapearray))!=len(shapearray):
+    if np.any(np.diff(shapearray[shapetable.get('coadd')])==0):
       print 'non-unique ids in file: ',shape
       raise
-    print 'time9',time.time()-t0
-
-    if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1)|np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
-        print 'time100a',time.time()-t0
-        x,y=CatalogMethods.sort2(goldarray[goldtable.get('coadd')],shapearray[shapetable.get('coadd')])
-        goldarray=goldarray[x]
-        shapearray=shapearray[y]
-        goldmask=goldmask[x]
-        shapemask=shapemask[y]
-        print 'shapemask2',np.sum(shapemask)
-        print 'goldmask2',np.sum(goldmask)
-        print 'time100b',time.time()-t0
-
-    print 'time10',time.time()-t0
-    print 'gold1',goldarray
-    print 'shape1',shapearray
+    print 'time12',time.time()-t0
 
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
-    print 'time11',time.time()-t0
 
-    print 'gold2',goldarray
-    print 'shape2',shapearray
+    print 'time13',time.time()-t0
 
     print 'before nlr'
-    print 'time12',time.time()-t0
     import numpy.lib.recfunctions as nlr
     array=nlr.rec_join('coadd_objects_id',gold,shape)
     print 'after nlr'
