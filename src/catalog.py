@@ -610,6 +610,7 @@ class CatalogMethods(object):
     """
 
     import fitsio as fio
+    import numpy.lib.recfunctions as nlr
     import time
 
     lenst=0
@@ -720,7 +721,6 @@ class CatalogMethods(object):
     print 'time16',time.time()-t0
 
     print 'before nlr'
-    import numpy.lib.recfunctions as nlr
     array=nlr.rec_join('coadd',goldarray,shapearray)
     print 'after nlr'
     print 'time13',time.time()-t0
