@@ -720,10 +720,10 @@ class CatalogMethods(object):
     shapearray = nlr.rename_fields(shapearray,{v: k for k, v in shapetable.iteritems()})
     print 'time16',time.time()-t0
 
-    print 'before nlr'
-    array=nlr.rec_join('coadd',goldarray,shapearray)
-    print 'after nlr'
-    print 'time13',time.time()-t0
+    # print 'before nlr'
+    # array=nlr.rec_join('coadd',goldarray,shapearray)
+    # print 'after nlr'
+    # print 'time13',time.time()-t0
 
     # print 'shape, gold',shapearray.dtype.names, goldarray.dtype.names
     # import numpy.lib.recfunctions as nlr
@@ -743,7 +743,9 @@ class CatalogMethods(object):
     shapefits.close()
 
     print 'time15',time.time()-t0
-    return array.dtype.names,[array[col] for i,col in enumerate(array.dtype.names)],np.repeat([shape],len(array)),np.arange(len(array))
+
+    outlist = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)].append([shapearray[col] for i,col in enumerate(shapearray.dtype.names) if col != 'coadd'])
+    return array.dtype.names,outlist,np.repeat([shape],len(array)),np.arange(len(array))
 
   @staticmethod
   def col_exists(cols,colnames):
