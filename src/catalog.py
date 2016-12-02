@@ -710,30 +710,34 @@ class CatalogMethods(object):
     print 'time12',time.time()-t0
 
     goldarray=goldarray[goldmask&shapemask]
-    shapearray=shapearray[goldmask&shapemask]
-
     print 'time13',time.time()-t0
+    shapearray=shapearray[goldmask&shapemask]
+    print 'time14',time.time()-t0
+
+    goldarray = nlr.rename_fields(goldarray,{v: k for k, v in goldtable.iteritems()})
+    print 'time15',time.time()-t0
+    shapearray = nlr.rename_fields(shapearray,{v: k for k, v in shapetable.iteritems()})
+    print 'time16',time.time()-t0
 
     print 'before nlr'
     import numpy.lib.recfunctions as nlr
-    array=nlr.rec_join('coadd_objects_id',goldarray,shapearray)
+    array=nlr.rec_join('coadd',goldarray,shapearray)
     print 'after nlr'
     print 'time13',time.time()-t0
-
 
     # print 'shape, gold',shapearray.dtype.names, goldarray.dtype.names
     # import numpy.lib.recfunctions as nlr
     # array=nlr.append_fields(goldarray,shapearray.dtype.names,[shapearray[name] for name in shapearray.dtype.names])
     # print 'array',array.dtype.names
 
-    newdict = goldtable.copy()
-    newdict.update(shapetable)
+    # newdict = goldtable.copy()
+    # newdict.update(shapetable)
 
-    inv_dict = {v: k for k, v in newdict.iteritems()}
+    # inv_dict = {v: k for k, v in newdict.iteritems()}
 
-    print 'time14',time.time()-t0
-    array = nlr.rename_fields(array,inv_dict)
-    print 'array end',array.dtype.names
+    # print 'time14',time.time()-t0
+    # array = nlr.rename_fields(array,inv_dict)
+    # print 'array end',array.dtype.names
 
     goldfits.close()
     shapefits.close()
