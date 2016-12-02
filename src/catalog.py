@@ -91,7 +91,6 @@ class CatalogStore(object):
         cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
 
         for i,x in enumerate(catcols):
-          print cols2[i],x
           setattr(self,cols2[i],x)
 
       elif (catfile!=None)|(catdir!=None):
@@ -148,8 +147,6 @@ class CatalogStore(object):
       #   self.psfrec_g_2=None
       #   self.coadd=self.id
       #   self.id=None
-
-      print dir(self)
 
       #Generate derived quantities
       if cattype in ['i3','ng']:
@@ -663,7 +660,6 @@ class CatalogMethods(object):
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
       shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecuts['min'],shapecuts['eq'],shapecuts['max'])
-      print 'shapemask1',np.sum(shapemask)
 
     # Dump the requested columns into memory if everything is there
     try:
