@@ -744,9 +744,8 @@ class CatalogMethods(object):
 
     print 'time15',time.time()-t0
 
-    outlist = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)].append([shapearray[col] for col in shapearray.dtype.names if col != 'coadd'])
-    print outlist
-    outnames = [col for col in goldarray.dtype.names].append([col for col in shapearray.dtype.names if col != 'coadd'])
+    outlist = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)]+[shapearray[col] for col in shapearray.dtype.names if col != 'coadd']
+    outnames = [col for col in goldarray.dtype.names]+[col for col in shapearray.dtype.names if col != 'coadd']
     return outnames,outlist,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
 
   @staticmethod
