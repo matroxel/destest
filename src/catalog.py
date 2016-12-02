@@ -747,7 +747,7 @@ class CatalogMethods(object):
     outlist = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)].append([shapearray[col] for col in shapearray.dtype.names if col != 'coadd'])
     print outlist
     outnames = [col for col in goldarray.dtype.names].append([col for col in shapearray.dtype.names if col != 'coadd'])
-    return ,outlist,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
+    return outnames,outlist,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
 
   @staticmethod
   def col_exists(cols,colnames):
