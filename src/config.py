@@ -328,7 +328,7 @@ matched_i3_col_lookup = {
   'radius':'radius',
   'psf1':'psf_e1',
   'psf2':'psf_e2',
-  'psffwhm':'psf_size',
+  'psffwhm':'psf_fwhm',
   'm1':'m1',
   'm2':'m2',
   'c1':'c1',
