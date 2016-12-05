@@ -148,6 +148,7 @@ class CatalogStore(object):
       #   self.coadd=self.id
       #   self.id=None
 
+
       #Generate derived quantities
       if cattype in ['i3','ng']:
         if ('e1' in cols)&('e2' in cols):
@@ -862,6 +863,12 @@ class CatalogMethods(object):
 
   @staticmethod
   def matched_metacal_cut():
+    cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+
+    return cuts
+
+  @staticmethod
+  def matched_i3_cut():
     cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
 
     return cuts

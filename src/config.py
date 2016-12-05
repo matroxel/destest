@@ -331,7 +331,8 @@ matched_i3_col_lookup = {
   'psffwhm':'psf_size',
   'm1':'m1',
   'm2':'m2',
-  'c1':'c2',
+  'c1':'c1',
+  'c2':'c2',
   'w':'weight'
 }
 
