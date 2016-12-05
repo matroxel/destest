@@ -333,7 +333,10 @@ matched_i3_col_lookup = {
   'm2':'m2',
   'c1':'c1',
   'c2':'c2',
-  'w':'weight'
+  'w':'weight',
+  'cov11':'covmat_0_0',
+  'cov22':'covmat_1_1',
+  'cov12':'covmat_0_1'
 }
 
 matched_ng_col_lookup = {  
