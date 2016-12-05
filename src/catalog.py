@@ -662,7 +662,7 @@ class CatalogMethods(object):
     # Generate the selection mask based on the passed cut function
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
-      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],cut['min'],cut['eq'],cut['max'])
+      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
 
     # Dump the requested columns into memory if everything is there
     try:
