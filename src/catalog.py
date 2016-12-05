@@ -631,6 +631,7 @@ class CatalogMethods(object):
     print shapecols,[shapetable.get(x,x) for x in shapecols]
     # Verify that the columns requested exist in the file
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
+    print 'columns '+colist+' do not exist in file: '+shape
     if colex<1:
       for i,x in enumerate(shapecols):
         shapecols[i]=x.lower()
