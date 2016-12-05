@@ -645,6 +645,7 @@ class CatalogMethods(object):
         raise ColError('columns '+colist+' do not exist in file: '+gold)
 
     cutcols=shapecuts['col']
+    print shapecuts
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in cutcols],shapefits[hdu].get_colnames())
     if colex<1:
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
@@ -661,7 +662,7 @@ class CatalogMethods(object):
     # Generate the selection mask based on the passed cut function
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
-      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],shapecuts['min'],shapecuts['eq'],shapecuts['max'])
+      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,cutcols[icut],cut['min'],cut['eq'],cut['max'])
 
     # Dump the requested columns into memory if everything is there
     try:
@@ -751,7 +752,7 @@ class CatalogMethods(object):
     return np.ndarray(array.shape, dtype2, array, 0, array.strides)
 
   @staticmethod
-  def add_cut(cuts,col,min,eq,max):
+  def add_cut(cuts,col,cmin,ceq,cmax):
     """
     Helper function to format catalog cuts.
     """    
@@ -759,15 +760,15 @@ class CatalogMethods(object):
     if cuts.size==0:
       cuts=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
       cuts[0]['col']=col
-      cuts[0]['min']=min
-      cuts[0]['eq']=eq
-      cuts[0]['max']=max
+      cuts[0]['min']=cmin
+      cuts[0]['eq']=ceq
+      cuts[0]['max']=cmax
     else:
       cuts0=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
       cuts0[0]['col']=col
-      cuts0[0]['min']=min
-      cuts0[0]['eq']=eq
-      cuts0[0]['max']=max
+      cuts0[0]['min']=cmin
+      cuts0[0]['eq']=ceq
+      cuts0[0]['max']=cmax
       cuts=np.append(cuts,cuts0,axis=0)
 
     return cuts
