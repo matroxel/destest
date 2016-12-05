@@ -319,7 +319,7 @@ matched_gold_col_lookup = {
 
 matched_i3_col_lookup = {  
 
-  'coadd':'coadd_objects_id',
+  'coadd':'COADD_OBJECTS_ID',
   'e1':'e1',
   'e2':'e2',
   'flags':'flags',
