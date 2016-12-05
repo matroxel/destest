@@ -726,6 +726,8 @@ class CatalogMethods(object):
     if mask.size==0:
       mask=np.ones((len(array[col])), dtype=bool)
 
+    print valmin,valmax,noval
+
     if (valmin==noval) & (valmax==noval):
       if valeq==noval:
         print 'warning, no range or equality set in cut on column '+col
