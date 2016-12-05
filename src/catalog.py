@@ -88,6 +88,7 @@ class CatalogStore(object):
         goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
 
         cols1=[table.get(x,x) for x in cols]
+        print cols
         cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
 
         for i,x in enumerate(catcols):
@@ -623,9 +624,11 @@ class CatalogMethods(object):
       print 'error loading fits file: ',shape
       raise
 
+
     tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
 
+    print shapecols,[shapetable.get(x,x) for x in shapecols]
     # Verify that the columns requested exist in the file
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
     if colex<1:
