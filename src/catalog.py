@@ -557,6 +557,7 @@ class CatalogMethods(object):
 
       colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
       if colex<1:
+        print cutcols,[table.get(x,None) for x in cuts['col']]
         cutcols=[table.get(x,None).lower() for x in cuts['col']]
         colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
         if colex<1:
@@ -645,7 +646,6 @@ class CatalogMethods(object):
         raise ColError('columns '+colist+' do not exist in file: '+gold)
 
     cutcols=shapecuts['col']
-    print shapecuts
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in cutcols],shapefits[hdu].get_colnames())
     if colex<1:
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
@@ -726,8 +726,6 @@ class CatalogMethods(object):
 
     if mask.size==0:
       mask=np.ones((len(array[col])), dtype=bool)
-
-    print valmin,valmax,noval
 
     if (valmin==noval) & (valmax==noval):
       if valeq==noval:
