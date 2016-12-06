@@ -337,9 +337,7 @@ class field(object):
       rapos=[1024,0,2048,0,2048]
       decpos=[2048,0,4096,0,4096]
       tbmask=tb['ccd']==image['ccdnum'][i]
-      print np.sum(tbmask),tb[tbmask]
       for j in range(6):
-        print rapos,decpos
         decpos.append(int((tb[tbmask]['t'][j]+tb[tbmask]['b'][j])/2))
         rapos.append(int((tb[tbmask]['l'][j]+tb[tbmask]['r'][j])/2))
       radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
