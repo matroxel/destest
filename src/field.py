@@ -345,7 +345,7 @@ class field(object):
       radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
       # if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
       for j in range(11):
-        line+=str(radec[0][i])+' '+str(radec[1][i])+' '
+        line+=str(radec[0][j])+' '+str(radec[1][j])+' '
 
       with open('y1a1_special_points_'+str(chunk)+'.txt','a') as f:
         f.write(line+'\n')
