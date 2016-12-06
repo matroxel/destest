@@ -338,8 +338,8 @@ class field(object):
       decpos=[2048,0,4096,0,4096]
       tbmask=tb['ccd']==image['ccdnum'][i]
       for j in range(6):
-        decpos.append(int((tb[tbmask]['t']+tb[tbmask]['b'])/2))
-        rapos.append(int((tb[tbmask]['l']+tb[tbmask]['r'])/2))
+        decpos.append(((tb[tbmask]['t']+tb[tbmask]['b'])/2).astype(int))
+        rapos.append(((tb[tbmask]['l']+tb[tbmask]['r'])/2).astype(int))
       radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
       # if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
       for j in range(11):
