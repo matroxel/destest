@@ -337,6 +337,7 @@ class field(object):
       rapos=[1024,0,2048,0,2048]
       decpos=[2048,0,4096,0,4096]
       tbmask=tb['ccd']==image['ccdnum'][i]
+      print np.sum(tbmask)
       for j in range(6):
         print rapos,decpos
         decpos.append(int((tb[tbmask][j]['t']+tb[j][tbmask]['b'])/2))
