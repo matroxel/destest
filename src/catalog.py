@@ -195,6 +195,7 @@ class CatalogStore(object):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
       #Make footprint contiguous across ra=0
+      print catcols
       if ('ra' in catcols):
         ra=self.ra
         ra[self.ra>180]=self.ra[self.ra>180]-360
