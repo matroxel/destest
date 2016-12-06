@@ -338,6 +338,7 @@ class field(object):
       decpos=[2048,0,4096,0,4096]
       tbmask=tb['ccd']==image['ccdnum'][i]
       for j in range(6):
+        print rapos,decpos
         decpos.append(((tb[tbmask]['t']+tb[tbmask]['b'])/2).astype(int))
         rapos.append(((tb[tbmask]['l']+tb[tbmask]['r'])/2).astype(int))
       radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
