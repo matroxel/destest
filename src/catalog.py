@@ -195,7 +195,7 @@ class CatalogStore(object):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
       #Make footprint contiguous across ra=0
-      if ('ra' in cols):
+      if ('ra' in catcols):
         ra=self.ra
         ra[self.ra>180]=self.ra[self.ra>180]-360
         self.ra=ra
@@ -557,7 +557,6 @@ class CatalogMethods(object):
 
       colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
       if colex<1:
-        print cutcols,[table.get(x,None) for x in cuts['col']]
         cutcols=[table.get(x,None).lower() for x in cuts['col']]
         colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
         if colex<1:
@@ -866,6 +865,7 @@ class CatalogMethods(object):
   @staticmethod
   def matched_metacal_cut():
     cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'snr',10,noval,noval)
 
     return cuts
 
