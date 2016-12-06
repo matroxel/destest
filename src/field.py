@@ -326,7 +326,7 @@ class field(object):
     image['naxis1']=np.ones(len(image))*2048
     image['naxis2']=np.ones(len(image))*4096
 
-    tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'])
+    tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'],delimiter=',')
 
     for i in range(ib-ia):
       if image['expnum'][i] in blexp:
