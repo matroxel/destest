@@ -26,6 +26,8 @@ i3_main_nersc_dir = '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v1
 # Cosmosis source command
 cosmosissource = 'source my-source'
 
+nchunk = 64
+
 # Tests to compute
 
 tests = ['all']

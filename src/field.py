@@ -260,50 +260,33 @@ class field(object):
 
   @staticmethod
   def loop_submit_sp():
-    from popen2 import popen2
-    import subprocess as sp
-    import time
 
-    for i in range(40):
-      if i<20:
-        node='compute-0-17.local'
-      else:
-        node='compute-0-19.local'
-
-      p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True)
-      output,input = p.stdout, p.stdin
-
-      job_string = """#!/bin/bash
-      #PBS -l nodes=%s:ppn=1
-      #PBS -l walltime=48:00:00
-      #PBS -N sp_%s
-      #PBS -o sp_%s.log
-      #PBS -j oe
-      #PBS -m abe 
-      #PBS -M michael.troxel@manchester.ac.uk
-      module use /home/zuntz/modules/module-files
-      module load python
-      module use /etc/modulefiles/
-      cd $PBS_O_WORKDIR
-      python testsuite.py 3 %s""" % (node,str(i),str(i),str(i))    
-
-      output,outputerr=p.communicate(input=job_string)
-
-      time.sleep(0.1)
+    from mpi_pool import MPIPool
+    pool = MPIPool(comm=self.comm,debug=True)
+    
+    if pool.is_master():
+        sys.stdout.flush()
+        print
+        print
+    else:
+        commands = None
+    self.comm.Barrier()
+    pool.map(field.field.build_special_points, range(config.nchunk))
+    pool.close()
+    self.comm.Barrier()
 
     return
 
 
   @staticmethod
-  def build_special_points(chunk,nchunk):
+  def build_special_points(chunk):
     """
     Used to build parts of catalog of special points.
     """
 
     import re
-    import time
 
-    dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/nchunk
+    dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/config.nchunk
     ia=dchunk*chunk
     print ia
     ib=dchunk*(chunk+1)
@@ -329,14 +312,11 @@ class field(object):
 
     tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'],delimiter=',')
 
-    t0=time.time()
     for i in range(ib-ia):
       if image['expnum'][i] in blexp:
         if image['ccdnum'][i] in blccd[blexp==image['expnum'][i]]:
           continue
-      print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
-      if i>1000:
-        print time.time()-t0
+      # print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
       line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
       rapos=[1024,0,2048,0,2048]
       decpos=[2048,0,4096,0,4096]
