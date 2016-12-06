@@ -261,8 +261,10 @@ class field(object):
   @staticmethod
   def loop_submit_sp():
 
+    import mpi4py.MPI
     from mpi_pool import MPIPool
-    pool = MPIPool(comm=self.comm,debug=True)
+    comm = mpi4py.MPI.COMM_WORLD
+    pool = MPIPool(comm=comm,debug=True)
     
     if pool.is_master():
         sys.stdout.flush()
@@ -270,10 +272,10 @@ class field(object):
         print
     else:
         commands = None
-    self.comm.Barrier()
+    comm.Barrier()
     pool.map(field.field.build_special_points, range(config.nchunk))
     pool.close()
-    self.comm.Barrier()
+    comm.Barrier()
 
     return
 
