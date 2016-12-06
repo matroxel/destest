@@ -301,6 +301,7 @@ class field(object):
     """
 
     import re
+    import time
 
     dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/nchunk
     ia=dchunk*chunk
@@ -328,11 +329,14 @@ class field(object):
 
     tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'],delimiter=',')
 
+    t0=time.time()
     for i in range(ib-ia):
       if image['expnum'][i] in blexp:
         if image['ccdnum'][i] in blccd[blexp==image['expnum'][i]]:
           continue
       print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
+      if i>1000:
+        print time.time()-t0
       line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
       rapos=[1024,0,2048,0,2048]
       decpos=[2048,0,4096,0,4096]
