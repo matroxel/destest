@@ -8,8 +8,8 @@ pzdir = '/share/des/disc2/y1/photo_z/'
 pztestdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
 cosmosiscosmodir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
 cosmosisrootdir = '/home/troxel/cosmosis/'
-wcsfile = '/share/des/disc2/y1/wcs/y1a1_wcs.fits.gz'
-spointsfile = 'y1a1_special_field_points.fits'
+wcsfile = '/global/cscratch1/sd/troxel/y1a1_wcs.fits.gz'
+spointsfile = '/global/cscratch1/sd/troxel/y1a1_special_field_points.fits'
 y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
 svsysmapdir = '/share/des/sv/systematics_maps/'
 redmagicdir = '/share/des/disc2/y1/redmagicv6.4.11/'
@@ -346,6 +346,7 @@ matched_ng_col_lookup = {
   'e2':'e2',
   'flags':'flags',
   'snr':'snr',
+  'size':'size',
   'psf1':'psf_e1',
   'psf2':'psf_e2',
   'psffwhm':'psf_size',

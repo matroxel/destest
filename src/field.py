@@ -11,244 +11,118 @@ import corr
 class field(object):
 
   @staticmethod
-  def loop_epoch_stuff(loop,maxloop=64,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/complete/epoch/',catname='i3epoch',mask=None,label='',plot=False):
+  def loop_epoch(nbc,val='e',key='e',scale=0.01,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/complete/epoch/',catname='i3',cattype='i3epoch'):
     """
     """
     import glob
 
     # whisker store
-    y0=[]
-    x0=[]
-    m0=[]
-    e0=[]
-    w0=[]
-    e10=[]
-    e20=[]
-    psf10=[]
-    psf20=[]
-    psf0=[]
-    # whisker2 store
-    y1=[]
-    x1=[]
-    m1=[]
-    w1=[]
-    e11=[]
-    e21=[]
+    y=[]
+    x=[]
+    mw=[]
+    e=[]
     e1=[]
-    psf11=[]
-    psf21=[]
-    psf1=[]
+    e2=[]
 
-    coadd=np.load('coadd.npy')
-    nbc0=np.load('/home/troxel/destest/i3nbcv1.npy')
     for ii in range(len(glob.glob(catdir))):
-      print maxloop,loop,ii%maxloop
-      if ii%maxloop!=loop-1:
-        break
-      print ii
-      i3epoch=catalog.CatalogStore('y1_i3_r_epoch_v1',cutfunc=None,cattype=catname,cols=None,catdir=catdir,release='y1',maxrows=1000000,maxiter=50,exiter=ii)
-      i3epoch.wt=True
-      i3epoch.bs=True
-      x=np.in1d(i3epoch.coadd,coadd,assume_unique=False)
-      catalog.CatalogMethods.match_cat(i3epoch,x)
-      nbc=nbc0
-      a=np.argsort(nbc[:,0])
-      mask=np.diff(nbc[a,0])
-      mask=mask==0
-      mask=~mask
-      mask=a[mask]
-      nbc=nbc[mask]
-      x=np.in1d(nbc[:,0],np.unique(i3epoch.coadd),assume_unique=False)
+
+      epoch=catalog.CatalogStore(catname,cutfunc=None,cattype=cattype,cols=['coadd','e1','e2','ccd','col','row','psf1','psf2'],catdir=catdir,release='y1',maxrows=10000000,maxiter=50,exiter=ii)
+      epoch.wt=True
+      epoch.bs=True
+      x=np.in1d(epoch.coadd,nbc[:,0],assume_unique=False)
+      catalog.CatalogMethods.match_cat(epoch,x)
+      mask=np.argsort(epoch.coadd)
+      catalog.CatalogMethods.match_cat(epoch,mask)
+      x=np.in1d(nbc[:,0],np.unique(epoch.coadd),assume_unique=False)
       nbc=nbc[x,:]
-      epocharg=np.argsort(i3epoch.coadd)
-      nbcarg=np.argsort(nbc[:,0])
-      nbc=nbc[nbcarg,:]
-      catalog.CatalogMethods.match_cat(i3epoch,epocharg)
-      diff=np.diff(i3epoch.coadd)
+      diff=np.diff(epoch.coadd)
       diff=np.where(diff!=0)[0]+1
       diff=np.append([0],diff)
       diff=np.append(diff,[None])
 
-      i3epoch.m=np.zeros(len(i3epoch.coadd))
-      i3epoch.c1=np.zeros(len(i3epoch.coadd))
-      i3epoch.c2=np.zeros(len(i3epoch.coadd))
-      i3epoch.w=np.zeros(len(i3epoch.coadd))
+      epoch.m=np.zeros(len(epoch.coadd))
+      epoch.c1=np.zeros(len(epoch.coadd))
+      epoch.c2=np.zeros(len(epoch.coadd))
+      epoch.w=np.zeros(len(epoch.coadd))
       for i in range(len(diff)-1):
-        if i%1000==0:
-          print i
-        i3epoch.m[diff[i]:diff[i+1]]=nbc[i,1]
-        i3epoch.c1[diff[i]:diff[i+1]]=nbc[i,2]
-        i3epoch.c2[diff[i]:diff[i+1]]=nbc[i,3]
-        i3epoch.w[diff[i]:diff[i+1]]=nbc[i,4]
+        # if i%1000==0:
+        #   print i
+        epoch.m1[diff[i]:diff[i+1]]=nbc[i,1]
+        epoch.m2[diff[i]:diff[i+1]]=nbc[i,2]
+        epoch.c1[diff[i]:diff[i+1]]=nbc[i,3]
+        epoch.c2[diff[i]:diff[i+1]]=nbc[i,4]
+        epoch.w[diff[i]:diff[i+1]]=nbc[i,5]
 
-      tmp=[y0,x0,m0,w0,e10,e20,e0,psf10,psf20,psf0]
-      for i,x in enumerate(field.whisker_loop(i3epoch)):
+      tmp=[y,x,mw,e1,e2,e]
+      for i,x in enumerate(field.whisker_loop(epoch,tmp)):
         print 'nums',len(tmp[i]),x,tmp[i],x
         if ii==0:
           tmp[i]=x
         else:
-          tmp[i]=np.mean(np.vstack((tmp[i],x)).T,axis=1)
-      tmp2=[y1,x1,m1,w1,e11,e21,e1,psf11,psf21,psf1]
-      for i,x in enumerate(field.whisker_loopb(i3epoch)):
-        if ii==0:
-          tmp2[i]=x
-        else:
-          tmp2[i]=np.mean(np.vstack((tmp2[i],x)).T,axis=1)
-  
-    np.save('epoch_loop_'+str(loop-1)+'.npy',np.vstack((tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],tmp[6],tmp[7],tmp[8],tmp[9])).T)
-    np.save('epoch_loopb_'+str(loop-1)+'.npy',np.vstack((tmp2[0],tmp2[1],tmp2[2],tmp2[3],tmp2[4],tmp2[5],tmp2[6],tmp2[7],tmp2[8],tmp2[9])).T)
+          tmp[i]+=x
+
+    field.loop_epoch_finalise(cat,val,key,scale,[x for x in tmp])
 
     return 
 
   @staticmethod
-  def loop_epoch_stuff_finalise(label='',plot=False):
+  def loop_epoch_finalise(cat,val,key,scale,y,x,mw,e1,e2,e0):
     """
     """
 
-    pos0=0.5*np.arctan2(e20/m0,e10/m0)
-    psfpos0=0.5*np.arctan2(psf20/w0,psf10/w0)
-    e0/=m0
-    psf0/=w0
-    fig.plot_methods.plot_whisker(y0,x0,np.sin(pos0)*e0,np.cos(pos0)*e0,name=i3epoch.name,label='shear'+label,scale=.01,key=r'$\langle e\rangle$')
-    fig.plot_methods.plot_whisker(y0,x0,np.sin(psfpos0)*psf0,np.cos(psfpos0)*psf0,name=i3epoch.name,label='psf'+label,scale=.01,key=r'$\langle$ PSF $e\rangle$')
+    pos0=0.5*np.arctan2(e2/mw,e1/mw)
+    e0/=mw
+    for i in range(len(x)):
+      x[i,:,:]=field_methods.ccd_centres()[i,1]-field_methods.ccdx/2.
+      y[i,:,:]=field_methods.ccd_centres()[i,0]-field_methods.ccdy/2.
+    fig.plot_methods.plot_whisker(y,x,np.sin(pos0)*e0,np.cos(pos0)*e0,name=cat.name,label=val,scale=scale,key=r'$\langle '+key+'\rangle$')
 
     return
 
   @staticmethod
-  def whisker_loop(cat,mask=None,label='',plot=False):
+  def whisker_loop(cat,nx=8,ny=4,label='',plot=False):
     """
     Calculate whisker plot for e and psf e over field of view.
     """
-
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-
-    if not hasattr(cat, 'ra'):
-      cat.ra,cat.dec=field_methods.get_field_pos(cat)
-
-    #x,y=field_methods.get_field_pos(cat)
 
     cx=field_methods.ccd_centres()[:,1]
     cy=field_methods.ccd_centres()[:,0]
 
     dc=2048./4.
 
-    x0=[]
-    y0=[]
-    pos0=[]
-    psfpos0=[]
-    e0=[]
-    m0=[]
-    psf0=[]
-    pos1=[]
-    psfpos1=[]
-    e1=[]
-    psf1=[]
+    x=np.zeros((len(cx),nx,ny))
+    y=np.zeros_like(x)
+    e0=np.zeros_like(x)
+    mw=np.zeros_like(x)
+    e1=np.zeros_like(x)
+    e2=np.zeros_like(x)
     for i in range(len(cx)):
       if (i==1)|(i==30)|(i==60):
         continue
       print 'chip',i
       #pos1=2.*(cat.pos[mask&(cat.ccd==i)]-np.pi/2.)
-      mask0=mask&(cat.ccd==i)
-      e1=cat.e1[mask0]
-      e2=cat.e2[mask0]
+      mask=(cat.ccd==i)
+      e1=cat.e1[mask]
+      e2=cat.e2[mask]
       if cat.bs:
-        e1-=cat.c1[mask0]
-        e2-=cat.c2[mask0]
-        m=cat.m[mask0]
+        e1-=cat.c1[mask]
+        e2-=cat.c2[mask]
+        m=cat.m[mask]
+      else:
+        m=np.ones(np.sum(mask))
       if cat.wt:
         w=cat.w[mask0]
       else:
-        w=np.ones(np.sum(mask0))
-      psf1=cat.psf1[mask0]
-      psf2=cat.psf2[mask0]
-      x1=cat.row[mask0]
-      y1=cat.col[mask0]
-      for j in xrange(4):
-        for k in xrange(8):
-          x0=np.append(x0,cx[i]-field_methods.ccdx/2.+(j+.5)*field_methods.ccdx/8.)
-          y0=np.append(y0,cy[i]-field_methods.ccdy/2.+(k+.5)*field_methods.ccdy/4.)
-          mask1=(x1>k*dc)&(x1<=(k+1.)*dc)&(y1>j*dc)&(y1<=(j+1.)*dc)
-          e10=np.sum(e1[mask1]*w[mask1])
-          e20=np.sum(e2[mask1]*w[mask1])
-          psf10=np.sum(psf1[mask1]*w[mask1])
-          psf20=np.sum(psf2[mask1]*w[mask1])
-          w0=np.sum(w[mask1])
-          e0=np.sum(np.sqrt(e1[mask1]**2.+e2[mask1]**2.)*w[mask1])
-          if cat.bs:
-            m0=np.sum((1.+m[mask1])*w[mask1])
-          else:
-            m0=1.
-          psf0=np.sum(np.sqrt(psf1[mask1]**2.+psf2[mask1]**2.)*w[mask1])
+        w=np.ones(np.sum(mask))
+      e1,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e1*w)
+      e2,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e2*w)
+      e0,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
+      mw,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=m*w)
 
-    return y0,x0,m0,w0,e10,e20,e0,psf10,psf20,psf0
+      x[i,:,:]=(x0[1:]+x0[:-1])/2
+      y[i,:,:]=(y0[1:]+y0[:-1])/2
 
-  @staticmethod
-  def whisker_loopb(cat,mask=None,label='',plot=False):
-    """
-    Calculate whisker plot for e and psf e over field of view.
-    """
-
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-
-    if not hasattr(cat, 'ra'):
-      cat.ra,cat.dec=field_methods.get_field_pos(cat)
-
-    #x,y=field_methods.get_field_pos(cat)
-
-    cx=field_methods.ccd_centres()[:,1]
-    cy=field_methods.ccd_centres()[:,0]
-
-    dc=2048./4.
-
-    x0=[]
-    y0=[]
-    pos0=[]
-    psfpos0=[]
-    e0=[]
-    m0=[]
-    psf0=[]
-    pos1=[]
-    psfpos1=[]
-    e1=[]
-    psf1=[]
-    for i in range(len(cx)):
-      if (i==1)|(i==30)|(i==60):
-        continue
-      print 'chip',i
-      #pos1=2.*(cat.pos[mask&(cat.ccd==i)]-np.pi/2.)
-      mask0=mask&(cat.ccd==i)
-      e1=cat.e1[mask0]
-      e2=cat.e2[mask0]
-      if cat.bs:
-        e1-=cat.c1[mask0]
-        e2-=cat.c2[mask0]
-        m=cat.m[mask0]
-      if cat.wt:
-        w=cat.w[mask0]
-      else:
-        w=np.ones(np.sum(mask0))
-      psf1=cat.psf1[mask0]
-      psf2=cat.psf2[mask0]
-      x1=cat.row[mask0]
-      y1=cat.col[mask0]
-      for j in xrange(40):
-        for k in xrange(80):
-          x0=np.append(x0,cx[i]-field_methods.ccdx/2.+(j+.5)*field_methods.ccdx/8.)
-          y0=np.append(y0,cy[i]-field_methods.ccdy/2.+(k+.5)*field_methods.ccdy/4.)
-          mask1=(x1>k*dc)&(x1<=(k+1.)*dc)&(y1>j*dc)&(y1<=(j+1.)*dc)
-          e10=np.sum(e1[mask1]*w[mask1])
-          e20=np.sum(e2[mask1]*w[mask1])
-          psf10=np.sum(psf1[mask1]*w[mask1])
-          psf20=np.sum(psf2[mask1]*w[mask1])
-          w0=np.sum(w[mask1])
-          e0=np.sum(np.sqrt(e1[mask1]**2.+e2[mask1]**2.)*w[mask1])
-          if cat.bs:
-            m0=np.sum((1.+m[mask1])*w[mask1])
-          else:
-            m0=1.
-          psf0=np.sum(np.sqrt(psf1[mask1]**2.+psf2[mask1]**2.)*w[mask1])
-
-    return y0,x0,m0,w0,e10,e20,e0,psf10,psf20,psf0
+    return y,x,mw,e1,e2,e
 
   @staticmethod
   def whisker(cat,mask=None,label='',plot=False):
@@ -421,22 +295,20 @@ class field(object):
 
 
   @staticmethod
-  def build_special_points(chunk):
+  def build_special_points(chunk,nchunk):
     """
     Used to build parts of catalog of special points.
     """
 
     import re
 
-    dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/40
+    dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/nchunk
     ia=dchunk*chunk
     print ia
     ib=dchunk*(chunk+1)
     if chunk==39:
-      ib=int(fio.FITS(config.wcsfile)[-1].get_nrows()) 
+      ib=int(fio.FITS(config.wcsfile)[-1].get_nrows())
     print ib
-
-    tmp=fio.FITS(config.wcsfile)[-1][ia:ib]
 
     with open(config.y1blacklist) as f:
       lines = f.readlines()
@@ -446,6 +318,7 @@ class field(object):
       blexp=np.append(blexp,int(re.compile('\w+').findall(line)[1][6:]))
       blccd=np.append(blccd,int(re.compile('\w+').findall(line)[2]))
 
+    tmp=fio.FITS(config.wcsfile)[-1][ia:ib]
     image=np.empty(tmp.shape, dtype=tmp.dtype.descr + [('naxis1',int)]+[('naxis2',int)])
     for name in tmp.dtype.names:
       image[name]=tmp[name]
@@ -453,16 +326,23 @@ class field(object):
     image['naxis1']=np.ones(len(image))*2048
     image['naxis2']=np.ones(len(image))*4096
 
+    tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'])
+
     for i in range(ib-ia):
       if image['expnum'][i] in blexp:
         if image['ccdnum'][i] in blccd[blexp==image['expnum'][i]]:
           continue
-      print i
-      print str(image['expnum'][i])+' '+str(image['ccdnum'][i])
+      print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
       line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
-      radec=field_methods.translate_to_wcs([[1024,0,2048,0,2048],[2048,0,4096,0,4096]],image[i])
+      rapos=[1024,0,2048,0,2048]
+      decpos=[2048,0,4096,0,4096]
+      tbmask=tb['ccd']==image['ccdnum'][i]
+      for j in range(6):
+        decpos.append(int((tb[tbmask]['t']+tb[tbmask]['b'])/2))
+        rapos.append(int((tb[tbmask]['l']+tb[tbmask]['r'])/2))
+      radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
       # if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
-      for i in range(5):
+      for j in range(11):
         line+=str(radec[0][i])+' '+str(radec[1][i])+' '
 
       with open('y1a1_special_points_'+str(chunk)+'.txt','a') as f:
