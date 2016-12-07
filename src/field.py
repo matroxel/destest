@@ -291,7 +291,7 @@ class field(object):
     import fitsio as fio
 
     name=['center','ll','ul','lr','ur','tb1','tb2','tb3','tb4','tb5','tb6']
-    tiles=fio.FITS(config.coaddtiles)[-1].read()
+    #tiles=fio.FITS(config.coaddtiles)[-1].read()
     wcs=fio.FITS(config.wcsfile)[-1].read()
     a=np.sort(np.unique(wcs['expnum']))
     b=np.sort(np.unique(wcs['ccdnum']))-1
