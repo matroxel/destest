@@ -263,17 +263,19 @@ class field(object):
 
     import mpi4py.MPI
     from mpi_pool import MPIPool
+    import sys
     comm = mpi4py.MPI.COMM_WORLD
     pool = MPIPool(comm=comm,debug=True)
     
     if pool.is_master():
+        commands = range(config.nchunk)
         sys.stdout.flush()
         print
         print
     else:
         commands = None
     comm.Barrier()
-    pool.map(field.field.build_special_points, range(config.nchunk))
+    pool.map(field.field.build_special_points, commands)
     pool.close()
     comm.Barrier()
 
