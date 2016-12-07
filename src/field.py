@@ -290,7 +290,7 @@ class field(object):
 
     import fitsio as fio
 
-    name=['center','ll','ul','lr','ur']
+    name=['center','ll','ul','lr','ur','tb1','tb2','tb3','tb4','tb5','tb6']
     tiles=fio.FITS(config.coaddtiles)[-1].read()
     wcs=fio.FITS(config.wcsfile)[-1].read()
     a=np.sort(np.unique(wcs['expnum']))
@@ -303,9 +303,9 @@ class field(object):
     #     store['ccd'][i*len(b)+j]=b[j]
 
     if sp is None:
-      for i in range(40):
+      for i in range(config.nchunk):
         print i
-        tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',names=['index','exposure','ccd','racenter','deccenter','rall','decll','raul','decul','ralr','declr','raur','decur'])
+        tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',names=['index','exposure','ccd','racenter','deccenter','rall','decll','raul','decul','ralr','declr','raur','decur','ratb1','dectb1','ratb2','dectb2','ratb3','dectb3','ratb4','dectb4','ratb5','dectb5','ratb6','dectb6'])
         if i==0:
           sp=tmp
         else:
