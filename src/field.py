@@ -641,7 +641,7 @@ def build_special_points(chunk):
       if image['ccdnum'][i] in blccd[blexp==image['expnum'][i]]:
         continue
     # print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
-    line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
+    line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '+str(image['band'][i])+' '
     rapos=[1024,0,2048,0,2048]
     decpos=[2048,0,4096,0,4096]
     tbmask=tb['ccd']==image['ccdnum'][i]
