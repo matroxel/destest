@@ -315,6 +315,8 @@ class field(object):
 
     ind0=-1
     for i in range(len(sp)):
+      if i%10000==0:
+        print i
       if i>0:
         if (sp['ccd'][i]==sp['ccd'][i-1])&(sp['exposure'][i]==sp['exposure'][i-1]):
           continue
@@ -338,8 +340,10 @@ class field(object):
         store['ra'][ind0]=np.mean(sp['ra'+name[k]][i:i+j+1])
         store['dec'][ind0]=np.mean(sp['dec'+name[k]][i:i+j+1])
 
+    print 'before fov'
     # FOV centers from two center chips
     store=store[np.argsort(store,order=('exposure','ccd'))]
+    print 'after sort'
     mask = ((store['ccd']==28)|(store['cdd']==33))&(store['type']==0)
     ra=store['ra'][mask]
     dec=store['dec'][mask]
@@ -364,6 +368,8 @@ class field(object):
     #   mask=(store['exposure']==store['exposure'][len(a)*len(b)+i])&(store['type']==0)&((store['ccd']==27)|(store['ccd']==34))
     #   store['ra'][len(a)*len(b)+i]=np.mean(store['ra'][mask])
     #   store['dec'][len(a)*len(b)+i]=np.mean(store['dec'][mask])
+
+    print 'before fits'
 
     fio.write(config.spointsfile,store,clobber=True)
 
