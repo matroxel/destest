@@ -283,62 +283,6 @@ class field(object):
 
 
   @staticmethod
-  def build_special_points(chunk):
-    """
-    Used to build parts of catalog of special points.
-    """
-
-    import re
-
-    dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/config.nchunk
-    ia=dchunk*chunk
-    print ia
-    ib=dchunk*(chunk+1)
-    if chunk==39:
-      ib=int(fio.FITS(config.wcsfile)[-1].get_nrows())
-    print ib
-
-    with open(config.y1blacklist) as f:
-      lines = f.readlines()
-    blexp=[]
-    blccd=[]
-    for line in lines:
-      blexp=np.append(blexp,int(re.compile('\w+').findall(line)[1][6:]))
-      blccd=np.append(blccd,int(re.compile('\w+').findall(line)[2]))
-
-    tmp=fio.FITS(config.wcsfile)[-1][ia:ib]
-    image=np.empty(tmp.shape, dtype=tmp.dtype.descr + [('naxis1',int)]+[('naxis2',int)])
-    for name in tmp.dtype.names:
-      image[name]=tmp[name]
-
-    image['naxis1']=np.ones(len(image))*2048
-    image['naxis2']=np.ones(len(image))*4096
-
-    tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'],delimiter=',')
-
-    for i in range(ib-ia):
-      if image['expnum'][i] in blexp:
-        if image['ccdnum'][i] in blccd[blexp==image['expnum'][i]]:
-          continue
-      # print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
-      line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
-      rapos=[1024,0,2048,0,2048]
-      decpos=[2048,0,4096,0,4096]
-      tbmask=tb['ccd']==image['ccdnum'][i]
-      for j in range(6):
-        decpos.append(int((tb[tbmask]['t'][j]+tb[tbmask]['b'][j])/2))
-        rapos.append(int((tb[tbmask]['l'][j]+tb[tbmask]['r'][j])/2))
-      radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
-      # if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
-      for j in range(11):
-        line+=str(radec[0][j])+' '+str(radec[1][j])+' '
-
-      with open('y1a1_special_points_'+str(chunk)+'.txt','a') as f:
-        f.write(line+'\n')
-
-    return
-
-  @staticmethod
   def build_special_points_fits(sp=None): 
     """
     Combines parts of special points catalog into single fits catalog.
@@ -657,3 +601,60 @@ class field_methods(object):
       mask=np.in1d(np.core.defchararray.strip(tiles['TILENAME']),tiles0,assume_unique=False)
 
     return tiles,np.vstack(((tiles['URAUR'][mask]+tiles['URALL'][mask])/2.,(tiles['UDECUR'][mask]+tiles['UDECLL'][mask])/2.)).T
+
+
+@staticmethod
+def build_special_points(chunk):
+  """
+  Used to build parts of catalog of special points.
+  """
+
+  import re
+
+  dchunk=int(fio.FITS(config.wcsfile)[-1].get_nrows())/config.nchunk
+  ia=dchunk*chunk
+  print ia
+  ib=dchunk*(chunk+1)
+  if chunk==39:
+    ib=int(fio.FITS(config.wcsfile)[-1].get_nrows())
+  print ib
+
+  with open(config.y1blacklist) as f:
+    lines = f.readlines()
+  blexp=[]
+  blccd=[]
+  for line in lines:
+    blexp=np.append(blexp,int(re.compile('\w+').findall(line)[1][6:]))
+    blccd=np.append(blccd,int(re.compile('\w+').findall(line)[2]))
+
+  tmp=fio.FITS(config.wcsfile)[-1][ia:ib]
+  image=np.empty(tmp.shape, dtype=tmp.dtype.descr + [('naxis1',int)]+[('naxis2',int)])
+  for name in tmp.dtype.names:
+    image[name]=tmp[name]
+
+  image['naxis1']=np.ones(len(image))*2048
+  image['naxis2']=np.ones(len(image))*4096
+
+  tb = np.genfromtxt('../tape_bumps.txt',names=['ccd','t','l','b','r'],delimiter=',')
+
+  for i in range(ib-ia):
+    if image['expnum'][i] in blexp:
+      if image['ccdnum'][i] in blccd[blexp==image['expnum'][i]]:
+        continue
+    # print i,str(image['expnum'][i])+' '+str(image['ccdnum'][i])
+    line=str(i)+' '+str(image['expnum'][i])+' '+str(image['ccdnum'][i])+' '
+    rapos=[1024,0,2048,0,2048]
+    decpos=[2048,0,4096,0,4096]
+    tbmask=tb['ccd']==image['ccdnum'][i]
+    for j in range(6):
+      decpos.append(int((tb[tbmask]['t'][j]+tb[tbmask]['b'][j])/2))
+      rapos.append(int((tb[tbmask]['l'][j]+tb[tbmask]['r'][j])/2))
+    radec=field_methods.translate_to_wcs([rapos,decpos],image[i])
+    # if field_methods.get_coadd_tile(radec[0],radec[1],tiles=tiles) in image['tilename'][i]:
+    for j in range(11):
+      line+=str(radec[0][j])+' '+str(radec[1][j])+' '
+
+    with open('y1a1_special_points_'+str(chunk)+'.txt','a') as f:
+      f.write(line+'\n')
+
+  return
