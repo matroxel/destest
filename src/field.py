@@ -615,7 +615,7 @@ def build_special_points(chunk):
   ia=dchunk*chunk
   print ia
   ib=dchunk*(chunk+1)
-  if chunk==39:
+  if chunk==config.nchunk-1:
     ib=int(fio.FITS(config.wcsfile)[-1].get_nrows())
   print ib
 
