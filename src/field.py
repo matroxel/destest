@@ -295,7 +295,7 @@ class field(object):
     wcs=fio.FITS(config.wcsfile)[-1].read()
     a=np.sort(np.unique(wcs['expnum']))
     b=np.sort(np.unique(wcs['ccdnum']))-1
-    store=np.empty((len(a)*len(b)*11),dtype=[('exposure',int)]+[('ccd',int)]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
+    store=np.empty((len(a)*len(b)*11),dtype=[('exposure',int)]+[('ccd',int)]+[('band','S1')]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
     print len(store)
     # for i in range(len(a)):
     #   store['exposure'][i*len(b):(i+1)*len(b)]=a[i]
@@ -305,7 +305,7 @@ class field(object):
     if sp is None:
       for i in range(config.nchunk):
         print i
-        tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',names=['index','exposure','ccd','racenter','deccenter','rall','decll','raul','decul','ralr','declr','raur','decur','ratb1','dectb1','ratb2','dectb2','ratb3','dectb3','ratb4','dectb4','ratb5','dectb5','ratb6','dectb6'])
+        tmp=np.genfromtxt('y1a1_special_points_'+str(i)+'.txt',names=['index','exposure','ccd','band','racenter','deccenter','rall','decll','raul','decul','ralr','declr','raur','decur','ratb1','dectb1','ratb2','dectb2','ratb3','dectb3','ratb4','dectb4','ratb5','dectb5','ratb6','dectb6'],dtype=None)
         if i==0:
           sp=tmp
         else:
@@ -333,6 +333,7 @@ class field(object):
           break
         store['exposure'][ind0]=sp['exposure'][i]
         store['ccd'][ind0]=sp['ccd'][i]
+        store['band'][ind0]=sp['band'][i]
         store['type'][ind0]=k
         store['ra'][ind0]=np.mean(sp['ra'+name[k]][i:i+j+1])
         store['dec'][ind0]=np.mean(sp['dec'+name[k]][i:i+j+1])
