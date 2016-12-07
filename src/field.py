@@ -295,7 +295,7 @@ class field(object):
     wcs=fio.FITS(config.wcsfile)[-1].read()
     a=np.sort(np.unique(wcs['expnum']))
     b=np.sort(np.unique(wcs['ccdnum']))-1
-    store=np.empty((len(a)*len(b)*11),dtype=[('exposure',int)]+[('ccd',int)]+[('band','S1')]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
+    store=np.empty((len(a)*len(b)*12),dtype=[('exposure',int)]+[('ccd',int)]+[('band','S1')]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
     print len(store)
     # for i in range(len(a)):
     #   store['exposure'][i*len(b):(i+1)*len(b)]=a[i]
@@ -338,6 +338,18 @@ class field(object):
         store['ra'][ind0]=np.mean(sp['ra'+name[k]][i:i+j+1])
         store['dec'][ind0]=np.mean(sp['dec'+name[k]][i:i+j+1])
 
+    # FOV centers from two center chips
+    store=store[np.argsort(store,order=('exposure','ccd'))]
+    mask = ((store['ccd']==28)|(store['cdd']==33))&(store['type']==0)
+    ra=store['ra'][mask]
+    dec=store['dec'][mask]
+    store['exposure'][-len(a)*len(b):]=(store['exposure'][mask])[::2]
+    store['ccd'][-len(a)*len(b):]=(store['ccd'][mask])[::2]
+    store['band'][-len(a)*len(b):]=(store['band'][mask])[::2]
+    store['type'][-len(a)*len(b):]=-1
+    store['ra'][-len(a)*len(b):]=(ra[::2]+ra[1::2])/2
+    store['dec'][-len(a)*len(b):]=(dec[::2]+dec[1::2])/2
+
     # for i in range(len(a)):
     #   if i%1000==0:
     #     print i
@@ -352,8 +364,6 @@ class field(object):
     #   mask=(store['exposure']==store['exposure'][len(a)*len(b)+i])&(store['type']==0)&((store['ccd']==27)|(store['ccd']==34))
     #   store['ra'][len(a)*len(b)+i]=np.mean(store['ra'][mask])
     #   store['dec'][len(a)*len(b)+i]=np.mean(store['dec'][mask])
-
-    store=store[:ind0]
 
     fio.write(config.spointsfile,store,clobber=True)
 
