@@ -603,7 +603,6 @@ class field_methods(object):
     return tiles,np.vstack(((tiles['URAUR'][mask]+tiles['URALL'][mask])/2.,(tiles['UDECUR'][mask]+tiles['UDECLL'][mask])/2.)).T
 
 
-@staticmethod
 def build_special_points(chunk):
   """
   Used to build parts of catalog of special points.
