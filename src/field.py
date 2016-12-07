@@ -291,11 +291,11 @@ class field(object):
     import fitsio as fio
 
     name=['center','ll','ul','lr','ur','tb1','tb2','tb3','tb4','tb5','tb6']
-    tiles=fio.FITS(config.coaddtiles)[-1].read()
+    #tiles=fio.FITS(config.coaddtiles)[-1].read()
     wcs=fio.FITS(config.wcsfile)[-1].read()
     a=np.sort(np.unique(wcs['expnum']))
     b=np.sort(np.unique(wcs['ccdnum']))-1
-    store=np.empty((len(a)*len(b)*5),dtype=[('exposure',int)]+[('ccd',int)]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
+    store=np.empty((len(a)*len(b)*11),dtype=[('exposure',int)]+[('ccd',int)]+[('type',int)]+[('ra','f8')]+[('dec','f8')])
     print len(store)
     # for i in range(len(a)):
     #   store['exposure'][i*len(b):(i+1)*len(b)]=a[i]
@@ -326,7 +326,7 @@ class field(object):
           ind.append(j)
         else:
           break
-      for k in range(5):
+      for k in range(11):
         ind0+=1
         if ind0==len(store):
           print i,len(sp)
