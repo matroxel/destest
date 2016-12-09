@@ -627,12 +627,12 @@ class CatalogMethods(object):
       print 'error loading fits file: ',shape
       raise
 
-    print 'fits load',t0-time.time()
+    print 'fits load',time.time()-t0
 
     tmparray = goldfits[hdu].read(columns=['flags_gold','flags_badregion'])
     goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxrows)
 
-    print 'gold mask',t0-time.time()
+    print 'gold mask',time.time()-t0
 
     # Verify that the columns requested exist in the file
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
@@ -659,7 +659,7 @@ class CatalogMethods(object):
       if colex<1:
         raise ColError('cut columns '+colist+' do not exist in file: '+shape)
 
-    print 'cols exist',t0-time.time()
+    print 'cols exist',time.time()-t0
 
     # Dump the columns needed for masking into memory if everything is there
     try:
@@ -667,26 +667,27 @@ class CatalogMethods(object):
     except IOError:
       print 'error loading fits file: ',shape
 
-    print 'shape cuts',t0-time.time()
+    print 'shape cuts',time.time()-t0
 
     # Generate the selection mask based on the passed cut function
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
       shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
 
-    print 'shape cuts done',t0-time.time()
+    print 'shape cuts done',time.time()-t0
 
     # Dump the requested columns into memory if everything is there
     try:
       goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
     except IOError:
       print 'error loading fits file: ',gold
+    print 'read gold file',time.time()-t0
     try:
       shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
     except IOError:
       print 'error loading fits file: ',shape
 
-    print 'read files',t0-time.time()
+    print 'read shape file',time.time()-t0
 
     if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
       i=np.argsort(goldarray[goldtable.get('coadd')])
@@ -697,7 +698,7 @@ class CatalogMethods(object):
       shapearray=shapearray[i]
       shapemask=shapemask[i]
 
-    print 'order',t0-time.time()
+    print 'order',time.time()-t0
 
     if np.any(np.diff(goldarray[goldtable.get('coadd')])==0):
       print 'non-unique ids in file: ',gold
@@ -707,17 +708,17 @@ class CatalogMethods(object):
       print 'non-unique ids in file: ',shape
       raise
 
-    print 'unique check',t0-time.time()
+    print 'unique check',time.time()-t0
 
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
 
-    print 'cuts',t0-time.time()
+    print 'cuts',time.time()-t0
 
     goldarray = nlr.rename_fields(goldarray,{v: k for k, v in goldtable.iteritems()})
     shapearray = nlr.rename_fields(shapearray,{v: k for k, v in shapetable.iteritems()})
 
-    print 'rename',t0-time.time()
+    print 'rename',time.time()-t0
 
     goldfits.close()
     shapefits.close()
@@ -725,7 +726,7 @@ class CatalogMethods(object):
     outcols = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)]+[shapearray[col] for col in shapearray.dtype.names if col != 'coadd']
     outnames = [col for col in goldarray.dtype.names]+[col for col in shapearray.dtype.names if col != 'coadd']
 
-    print 'done',t0-time.time()
+    print 'done',time.time()-t0
     return outnames,outcols,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
 
   @staticmethod
