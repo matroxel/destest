@@ -866,6 +866,7 @@ class CatalogMethods(object):
   @staticmethod
   def matched_metacal_cut():
     cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'coadd',0,noval,noval)
     cuts=CatalogMethods.add_cut(cuts,'snr',10,noval,noval)
 
     return cuts
@@ -873,6 +874,7 @@ class CatalogMethods(object):
   @staticmethod
   def matched_i3_cut():
     cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'coadd',0,noval,noval)
     cuts=CatalogMethods.add_cut(cuts,'snr',12,noval,200)
     cuts=CatalogMethods.add_cut(cuts,'rgp',1.13,noval,3.0)
 
