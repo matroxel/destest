@@ -37,7 +37,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,goldcols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
 
     if setup:
       # Populate catalog on object creation
@@ -85,7 +85,8 @@ class CatalogStore(object):
       if goldfile is not None:
         if (catfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
-        goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
+        if goldcols is None:
+          goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
 
         cols1=[table.get(x,x) for x in cols]
         cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
@@ -624,8 +625,8 @@ class CatalogMethods(object):
       raise
 
 
-    tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
-    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
+    tmparray = goldfits[hdu].read(columns=['flags_gold','flags_badregion'])
+    goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxrows)
 
     # Verify that the columns requested exist in the file
     colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
