@@ -1,3 +1,4 @@
+import os
 import matplotlib
 matplotlib.use ('agg')
 import matplotlib.pyplot as plt
@@ -64,7 +65,7 @@ class y1_plots(object):
         plt.figure(1)
 
         y1_plots.subplot(cat1,0,'rgp')
-        y1_plots.subplot(cat2,1,'radius')
+        y1_plots.subplot(cat2,1,'size')
 
         plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_radius.pdf', bbox_inches='tight')
