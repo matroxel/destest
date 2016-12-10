@@ -689,6 +689,9 @@ class CatalogMethods(object):
 
     print 'read shape file',time.time()-t0
 
+    print 'FIX TEMPORARY PATCH FOR MATCHED FILES - DROPPING GOLD COADDS INTO SHAPE ARRAY'
+    shapearray[shapetable.get('coadd')]=goldarray[goldtable.get('coadd')]
+
     if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
       i=np.argsort(goldarray[goldtable.get('coadd')])
       goldarray=goldarray[i]
