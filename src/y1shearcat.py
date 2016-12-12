@@ -65,7 +65,7 @@ class y1_plots(object):
         array=getattr(cat,val)
         name=fig0.plot_methods.get_filename_str(cat)
         if isinstance(cat,catalog.CatalogStore):
-          mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
+            mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
         tmp,tmp,arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base([cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w],val,array,mask,name,log=config.log_val.get(val,False),plot=False)
 
         plt.figure(fig)
@@ -78,8 +78,13 @@ class y1_plots(object):
         plt.ylabel(r'$\langle e \rangle$')
         # plt.axhline(.004,color='k')
         # plt.axhline(-.004,color='k')
+        plt.ylim((-0.002,0.002))
         plt.xlabel(config.lbl.get(val,val.replace('_','-')))
-        plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
+        if n==1:
+            plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
+        if n==0:
+            ax.set_xticklabels([])
+
 
         return
 
@@ -91,7 +96,7 @@ class y1_plots(object):
         y1_plots.mean_e_subplot(cat1,0,'snr',1)
         y1_plots.mean_e_subplot(cat2,1,'snr',1)
 
-        plt.subplots_adjust(hspace=0,wspace=0)
+        # plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_snr.pdf', bbox_inches='tight')
         plt.close(1)
 
@@ -105,7 +110,7 @@ class y1_plots(object):
         y1_plots.mean_e_subplot(cat1,0,'rgp',2)
         y1_plots.mean_e_subplot(cat2,1,'size',2)
 
-        plt.subplots_adjust(hspace=0,wspace=0)
+        # plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_radius.pdf', bbox_inches='tight')
         plt.close(2)
 
@@ -119,7 +124,7 @@ class y1_plots(object):
         y1_plots.mean_e_subplot(cat1,0,'psf1',3)
         y1_plots.mean_e_subplot(cat2,1,'psf1',3)
 
-        plt.subplots_adjust(hspace=0,wspace=0)
+        # plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psf1.pdf', bbox_inches='tight')
         plt.close(3)
 
@@ -133,7 +138,7 @@ class y1_plots(object):
         y1_plots.mean_e_subplot(cat1,0,'psf2',4)
         y1_plots.mean_e_subplot(cat2,1,'psf2',4)
 
-        plt.subplots_adjust(hspace=0,wspace=0)
+        # plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psf2.pdf', bbox_inches='tight')
         plt.close(4)
 
@@ -147,7 +152,7 @@ class y1_plots(object):
         y1_plots.mean_e_subplot(cat1,0,'psffwhm',5)
         y1_plots.mean_e_subplot(cat2,1,'psffwhm',5)
 
-        plt.subplots_adjust(hspace=0,wspace=0)
+        # plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
         plt.close(5)
 
@@ -165,7 +170,7 @@ class y1_plots(object):
         y1_plots.whiskerplot(cat2,'psf',6)
         y1_plots.whiskerplot(cat2,'dpsf',6)
 
-        plt.subplots_adjust(hspace=0,wspace=0)
+        # plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
         plt.close(6)
 
