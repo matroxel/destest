@@ -66,6 +66,19 @@ class field(object):
     return 
 
   @staticmethod
+  def whisker_calc(cat,col='e'):
+
+    st=[[],[],[],[],[],[]]
+    for i,x in enumerate(field.whisker_loop(cat,col=col)):
+      print 'nums',len(st[i]),x,st[i],x
+      if ii==0:
+        st[i]=x
+      else:
+        st[i]+=x
+
+    return tmp
+
+  @staticmethod
   def loop_epoch_finalise(cat,val,key,scale,y,x,mw,e1,e2,e0):
     """
     """
@@ -73,14 +86,14 @@ class field(object):
     pos0=0.5*np.arctan2(e2/mw,e1/mw)
     e0/=mw
     for i in range(len(x)):
-      x[i,:,:]=field_methods.ccd_centres()[i,1]-field_methods.ccdx/2.
-      y[i,:,:]=field_methods.ccd_centres()[i,0]-field_methods.ccdy/2.
+      x[i,:,:]+=field_methods.ccd_centres()[i,1]-field_methods.ccdx/2.
+      y[i,:,:]+=field_methods.ccd_centres()[i,0]-field_methods.ccdy/2.
     fig.plot_methods.plot_whisker(y,x,np.sin(pos0)*e0,np.cos(pos0)*e0,name=cat.name,label=val,scale=scale,key=r'$\langle '+key+'\rangle$')
 
     return
 
   @staticmethod
-  def whisker_loop(cat,nx=8,ny=4,label='',plot=False):
+  def whisker_loop(cat,col='e',nx=8,ny=4,label='',plot=False):
     """
     Calculate whisker plot for e and psf e over field of view.
     """
@@ -102,8 +115,8 @@ class field(object):
       print 'chip',i
       #pos1=2.*(cat.pos[mask&(cat.ccd==i)]-np.pi/2.)
       mask=(cat.ccd==i)
-      e1=cat.e1[mask]
-      e2=cat.e2[mask]
+      e1=getattr(cat,col+'1')[mask]
+      e2=getattr(cat,col+'2')[mask]
       if cat.bs:
         e1-=cat.c1[mask]
         e2-=cat.c2[mask]
@@ -340,36 +353,18 @@ class field(object):
         store['ra'][ind0]=np.mean(sp['ra'+name[k]][i:i+j+1])
         store['dec'][ind0]=np.mean(sp['dec'+name[k]][i:i+j+1])
 
-    print 'before fov'
     # FOV centers from two center chips
-    store=store[np.argsort(store,order=('exposure','ccd'))]
-    print 'after sort'
-    mask = ((store['ccd']==28)|(store['cdd']==33))&(store['type']==0)
+    mask = ((store['ccd']==28)|(store['ccd']==33))&(store['type']==0)
     ra=store['ra'][mask]
     dec=store['dec'][mask]
-    store['exposure'][-len(a)*len(b):]=(store['exposure'][mask])[::2]
-    store['ccd'][-len(a)*len(b):]=(store['ccd'][mask])[::2]
-    store['band'][-len(a)*len(b):]=(store['band'][mask])[::2]
-    store['type'][-len(a)*len(b):]=-1
-    store['ra'][-len(a)*len(b):]=(ra[::2]+ra[1::2])/2
-    store['dec'][-len(a)*len(b):]=(dec[::2]+dec[1::2])/2
+    store['exposure'][ind0+1:ind0+1+len(ra)/2]=(store['exposure'][mask])[::2]
+    store['ccd'][ind0+1:ind0+1+len(ra)/2]=-1
+    store['band'][ind0+1:ind0+1+len(ra)/2]=(store['band'][mask])[::2]
+    store['type'][ind0+1:ind0+1+len(ra)/2]=-1
+    store['ra'][ind0+1:ind0+1+len(ra)/2]=(ra[::2]+ra[1::2])/2
+    store['dec'][ind0+1:ind0+1+len(ra)/2]=(dec[::2]+dec[1::2])/2
 
-    # for i in range(len(a)):
-    #   if i%1000==0:
-    #     print i
-    #     store['exposure'][ind0]=sp['exposure'][i]
-    #     store['ccd'][ind0]=-1
-    #     store['type'][ind0]=-1
-    #     store['ra'][ind0]=np.mean(sp['ra'+name[k]][i:i+j+1])
-    #     store['dec'][ind0]=np.mean(sp['dec'+name[k]][i:i+j+1])
-    #   store['exposure'][len(a)*len(b)+i]=a[i]
-    #   store['ccd'][len(a)*len(b)+i]=-1
-    #   store['type'][len(a)*len(b)+i]=-1
-    #   mask=(store['exposure']==store['exposure'][len(a)*len(b)+i])&(store['type']==0)&((store['ccd']==27)|(store['ccd']==34))
-    #   store['ra'][len(a)*len(b)+i]=np.mean(store['ra'][mask])
-    #   store['dec'][len(a)*len(b)+i]=np.mean(store['dec'][mask])
-
-    print 'before fits'
+    store=store[:ind0+1+len(ra)/2]
 
     fio.write(config.spointsfile,store,clobber=True)
 

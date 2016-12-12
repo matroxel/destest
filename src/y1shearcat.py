@@ -204,7 +204,7 @@ class y1_plots(object):
 
         scale=0.01
 
-        y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col)
+        y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col=col)
         pos0=0.5*np.arctan2(e2/mw,e1/mw)
         e0/=mw
         for i in range(len(x)):
