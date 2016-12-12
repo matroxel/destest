@@ -13,10 +13,37 @@ import pylab
 import src.sys_split as sys_split
 import src.config as config
 
+class y1(object):
+
+    @staticmethod
+    def load_data(i3file,mcalfile,goldfile):
+
+        mcal = catalog.CatalogStore('matched_metacal',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cattype='ng',catfile=mcalfile,goldfile=goldfile)
+
+        mask = mcal.size/mcal.psffwhm>0.5
+        catalog.CatalogMethods.match_cat(mcal,mask)
+
+        mcal.bs    = True
+        mcal.wt    = True
+        mcal.lbins = 20
+
+        #np.save('mcal_coadds.npy',np.vstack((mcal.coadd,np.ones(len(mcal.coadd)),np.ones(len(mcal.coadd)),np.zeros(len(mcal.coadd)),np.zeros(len(mcal.coadd)),mcal.w)).T)
+
+        i3 = catalog.CatalogStore('matched_i3',cutfunc=catalog.CatalogMethods.matched_i3_cut(),cattype='i3',catfile=i3file,goldfile=goldfile)
+
+        i3.bs    = True
+        i3.wt    = True
+        i3.lbins = 20
+        i3.w     = 1./(2*0.22**2+i3.cov11+i3.cov22)
+
+        #np.save('i3_coadds.npy',np.vstack((i3.coadd,i3.m1,i3.m2,i3.c1,i3.c2,i3.w)).T)
+
+        return i3,mcal
 
 class y1_plots(object):
 
-    def mean_e_plots(cat1,cat2):
+    @staticmethod
+    def mean_e(cat1,cat2):
 
         txt.write_methods.heading('Linear Splits',cat,label='y1_paper',create=False)
 
@@ -28,11 +55,13 @@ class y1_plots(object):
 
         return
 
-    def subplot(cat,n,val):
+    @staticmethod
+    def mean_e_subplot(cat,n,val,fig):
 
         array=getattr(cat,val)
         tmp,tmp,arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=split_gals_lin_along_base([cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w],val,array,mask,name,log=config.log_val.get(val,False),plot=False)
 
+        plt.figure(fig)
         ax=plt.subplot(2,1,n)
         plt.errorbar(arr1,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
         plt.errorbar(arr1,m1*arr1+b1,marker='',linestyle='-',color='r')
@@ -47,12 +76,13 @@ class y1_plots(object):
 
         return
 
+    @staticmethod
     def evssnr(cat1,cat2):
 
         plt.figure(1)
 
-        y1_plots.subplot(cat1,0,'snr')
-        y1_plots.subplot(cat2,1,'snr')
+        y1_plots.mean_e_subplot(cat1,0,'snr',1)
+        y1_plots.mean_e_subplot(cat2,1,'snr',1)
 
         plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_snr.pdf', bbox_inches='tight')
@@ -60,58 +90,79 @@ class y1_plots(object):
 
         return
 
+    @staticmethod
     def evsradius(cat1,cat2):
 
-        plt.figure(1)
+        plt.figure(2)
 
-        y1_plots.subplot(cat1,0,'rgp')
-        y1_plots.subplot(cat2,1,'size')
+        y1_plots.mean_e_subplot(cat1,0,'rgp',2)
+        y1_plots.mean_e_subplot(cat2,1,'size',2)
 
         plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_radius.pdf', bbox_inches='tight')
-        plt.close(1)
+        plt.close(2)
 
         return
 
+    @staticmethod
     def evspsf1(cat1,cat2):
 
-        plt.figure(1)
+        plt.figure(3)
 
-        y1_plots.subplot(cat1,0,'psf1')
-        y1_plots.subplot(cat2,1,'psf1')
+        y1_plots.mean_e_subplot(cat1,0,'psf1',3)
+        y1_plots.mean_e_subplot(cat2,1,'psf1',3)
 
         plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psf1.pdf', bbox_inches='tight')
-        plt.close(1)
+        plt.close(3)
 
         return
 
+    @staticmethod
     def evspsf2(cat1,cat2):
 
-        plt.figure(1)
+        plt.figure(4)
 
-        y1_plots.subplot(cat1,0,'psf2')
-        y1_plots.subplot(cat2,1,'psf2')
+        y1_plots.mean_e_subplot(cat1,0,'psf2',4)
+        y1_plots.mean_e_subplot(cat2,1,'psf2',4)
 
         plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psf2.pdf', bbox_inches='tight')
-        plt.close(1)
+        plt.close(4)
 
         return
 
+    @staticmethod
     def evspsfsize(cat1,cat2):
 
-        plt.figure(1)
+        plt.figure(5)
 
-        y1_plots.subplot(cat1,0,'psffwhm')
-        y1_plots.subplot(cat2,1,'psffwhm')
+        y1_plots.mean_e_subplot(cat1,0,'psffwhm',5)
+        y1_plots.mean_e_subplot(cat2,1,'psffwhm',5)
 
         plt.subplots_adjust(hspace=0,wspace=0)
         plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
-        plt.close(1)
+        plt.close(5)
 
         return
 
+    @staticmethod
+    def whisker(psfdir,cat1,cat2):
+
+        cols = ['ra','dec','e1','e2','ccd','col','row','psf_e1','psf_e2','mag']
+        psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cols=cols,cattype='psf',catdir=psfdir)
+
+        plt.figure(6)
+
+        y1_plots.whiskerplot(cat1,'e',6)
+        y1_plots.whiskerplot(cat2,'psf',6)
+        y1_plots.whiskerplot(cat2,'dpsf',6)
+
+        plt.subplots_adjust(hspace=0,wspace=0)
+        plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
+        plt.close(6)
+
+        return
 
 #   @staticmethod
 #   def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,name,val,log=False,label='',e=True,val2=None,trend=True):
