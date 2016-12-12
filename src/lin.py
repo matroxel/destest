@@ -190,7 +190,9 @@ class linear_methods(object):
     For an array x, returns the boundaries of nbins equal (possibly weighted by w) bins.
     """
 
-    print np.shape(x),nbins,x,w,np.shape(w)
+    if len(np.shape(x))>1:
+      print 'reformatting array for finding bin edges to be 1d'
+      x=np.reshape(x,len(x[0,:]))
 
     if w is None:
       xs=np.sort(x)
@@ -241,8 +243,6 @@ class linear_methods(object):
 
     r[0]=x[i[0]]
     r[-1]=x[i[-1]]
-
-    print np.shape(r),r
 
     return r
 
