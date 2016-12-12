@@ -13,6 +13,7 @@ import pylab
 import src.sys_split as sys_split
 import src.config as config
 import src.catalog as catalog
+import src.txt as txt
 
 class y1(object):
 
