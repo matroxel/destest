@@ -375,6 +375,8 @@ def split_gals_lin_along_base(cat,val,array,mask,name,mock=False,log=False,log2=
   if log:
     array=np.log10(array)
 
+  print np.shape(array),val
+
   if e:
     arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,w=None,mask=mask,mock=mock,log=log)
   else:
