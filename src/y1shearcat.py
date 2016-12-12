@@ -14,6 +14,7 @@ import src.sys_split as sys_split
 import src.config as config
 import src.catalog as catalog
 import src.txt as txt
+import src.fig as fig
 
 class y1(object):
 
@@ -61,6 +62,7 @@ class y1_plots(object):
     def mean_e_subplot(cat,n,val,fig):
 
         array=getattr(cat,val)
+        name=fig.plot_methods.get_filename_str(cat)
         tmp,tmp,arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base([cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w],val,array,None,name,log=config.log_val.get(val,False),plot=False)
 
         plt.figure(fig)
