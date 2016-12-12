@@ -103,12 +103,12 @@ class field(object):
 
     dc=2048./4.
 
-    x=np.zeros((len(cx),nx,ny))
-    y=np.zeros_like(x)
-    e0=np.zeros_like(x)
-    mw=np.zeros_like(x)
-    e10=np.zeros_like(x)
-    e20=np.zeros_like(x)
+    x=np.zeros(nx)
+    y=np.zeros_like(ny)
+    e0=np.zeros((len(cx),nx,ny))
+    mw=np.zeros_like(e0)
+    e10=np.zeros_like(e0)
+    e20=np.zeros_like(e0)
     for i in range(len(cx)):
       if (i==1)|(i==30)|(i==60):
         continue
@@ -127,10 +127,10 @@ class field(object):
         w=cat.w[mask0]
       else:
         w=np.ones(np.sum(mask))
-      e10,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e1*w)
-      e20,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e2*w)
-      e0,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
-      mw,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=m*w)
+      e10,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=e1*w)
+      e20,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=e2*w)
+      e0,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+!],weights=np.sqrt(e1**2+e2**2)*w)
+      mw,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=m*w)
 
       print x[i,:,:], x0[1:], x0[:-1] 
       x[i,:,:]=(x0[1:]+x0[:-1])/2
