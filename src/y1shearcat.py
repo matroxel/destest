@@ -16,6 +16,7 @@ import src.config as config
 import src.catalog as catalog
 import src.txt as txt
 import src.fig as fig0
+import src.field as field
 
 class y1(object):
 
