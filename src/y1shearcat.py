@@ -160,22 +160,85 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def whisker(psfdir,cat1,cat2):
+    def psf_whisker(psfdir):
 
-        cols = ['ra','dec','e1','e2','ccd','col','row','psf_e1','psf_e2','mag']
-        psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cols=cols,cattype='psf',catdir=psfdir)
+        cols = ['e1','e2','ccd','col','row','psf1','psf2','mag']
+        psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
 
-        plt.figure(6)
+        psf.dpsf1 = psf.psf_e1-e1
+        psf.dpsf2 = psf.psf_e1-e1
 
-        y1_plots.whiskerplot(cat1,'e',6)
-        y1_plots.whiskerplot(cat2,'psf',6)
-        y1_plots.whiskerplot(cat2,'dpsf',6)
-
-        # plt.subplots_adjust(hspace=0,wspace=0)
-        plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
-        plt.close(6)
+        y1_plots.whiskerplot(psf,'psf',6)
+        y1_plots.whiskerplot(psf,'dpsf',7)
 
         return
+
+    @staticmethod
+    def e_whisker(cat1dir,cat1,cat2dir,cat2):
+
+        cols=['coadd','expnum','ccd','row','col']
+        epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
+        y1_plots.whiskerplot(epoch1,'e',8)
+
+        cols=['coadd','expnum','ccd','row','col']
+        epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
+        y1_plots.whiskerplot(epoch2,'e',9)
+
+        return
+
+    @staticmethod
+    def whiskerplot(cat,col,fig):
+
+        if col == 'psf':
+            key = r'e_{PSF}'
+        if col == 'e':
+            key = r'e'
+        if col == 'dpsf':
+            key = r'\Delta e_{PSF}'
+
+        scale=0.01
+
+        y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col)
+        pos0=0.5*np.arctan2(e2/mw,e1/mw)
+        e0/=mw
+        for i in range(len(x)):
+            x[i,:,:]+=field_methods.ccd_centres()[i,1]-field_methods.ccdx/2.
+            y[i,:,:]+=field_methods.ccd_centres()[i,0]-field_methods.ccdy/2.
+
+        plt.figure(fig)
+        Q = plt.quiver(x,y,e1,e2,units='width',pivot='middle',headwidth=0,width=.0005)
+        plt.quiverkey(Q,0.2,0.2,,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
+        plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
+        plt.close(fig)
+
+        return
+
+  @staticmethod
+  def loop_epoch(nbc,val='e',key='e',scale=0.01,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/complete/epoch/',catname='i3',cattype='i3epoch'):
+    """
+    """
+    import glob
+
+    # whisker store
+    y=[]
+    x=[]
+    mw=[]
+    e=[]
+    e1=[]
+    e2=[]
+
+  tmp=[y,x,mw,e1,e2,e]
+  for i,x in enumerate(field.whisker_loop(epoch,tmp)):
+    print 'nums',len(tmp[i]),x,tmp[i],x
+    if ii==0:
+      tmp[i]=x
+    else:
+      tmp[i]+=x
+
+    field.loop_epoch_finalise(cat,val,key,scale,[x for x in tmp])
+
+    return 
+
 
 #   @staticmethod
 #   def plot_lin_split(x,e1,e2,e1err,e2err,m1,m2,b1,b2,name,val,log=False,label='',e=True,val2=None,trend=True):
