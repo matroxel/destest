@@ -213,31 +213,31 @@ class y1_plots(object):
 
         return
 
-  @staticmethod
-  def loop_epoch(nbc,val='e',key='e',scale=0.01,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/complete/epoch/',catname='i3',cattype='i3epoch'):
-    """
-    """
-    import glob
+# @staticmethod
+# def loop_epoch(nbc,val='e',key='e',scale=0.01,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/complete/epoch/',catname='i3',cattype='i3epoch'):
+#   """
+#   """
+#   import glob
 
-    # whisker store
-    y=[]
-    x=[]
-    mw=[]
-    e=[]
-    e1=[]
-    e2=[]
+#   # whisker store
+#   y=[]
+#   x=[]
+#   mw=[]
+#   e=[]
+#   e1=[]
+#   e2=[]
 
-  tmp=[y,x,mw,e1,e2,e]
-  for i,x in enumerate(field.whisker_loop(epoch,tmp)):
-    print 'nums',len(tmp[i]),x,tmp[i],x
-    if ii==0:
-      tmp[i]=x
-    else:
-      tmp[i]+=x
+# tmp=[y,x,mw,e1,e2,e]
+# for i,x in enumerate(field.whisker_loop(epoch,tmp)):
+#   print 'nums',len(tmp[i]),x,tmp[i],x
+#   if ii==0:
+#     tmp[i]=x
+#   else:
+#     tmp[i]+=x
 
-    field.loop_epoch_finalise(cat,val,key,scale,[x for x in tmp])
+#   field.loop_epoch_finalise(cat,val,key,scale,[x for x in tmp])
 
-    return 
+#   return 
 
 
 #   @staticmethod
