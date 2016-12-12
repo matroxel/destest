@@ -47,7 +47,7 @@ class y1_plots(object):
     @staticmethod
     def mean_e(cat1,cat2):
 
-        txt.write_methods.heading('Linear Splits',cat,label='y1_paper',create=False)
+        txt.write_methods.heading('Linear Splits',cat1,label='y1_paper',create=False)
 
         y1_plots.evssnr(cat1,cat2)
         y1_plots.evsradius(cat1,cat2)
