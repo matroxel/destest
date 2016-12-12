@@ -44,6 +44,14 @@ class y1(object):
 
         return i3,mcal
 
+    @staticmethod
+    def load_psf_data(psfdir):
+
+        cols = ['e1','e2','ccd','col','row','psf1','psf2','mag']
+        psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
+
+        return psf
+
 class y1_plots(object):
 
     @staticmethod
@@ -160,13 +168,10 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def psf_whisker(psfdir):
+    def psf_whisker(psf):
 
-        cols = ['e1','e2','ccd','col','row','psf1','psf2','mag']
-        psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
-
-        psf.dpsf1 = psf.psf_e1-e1
-        psf.dpsf2 = psf.psf_e1-e1
+        psf.dpsf1 = psf.psf1-e1
+        psf.dpsf2 = psf.psf2-e2
 
         y1_plots.whiskerplot(psf,'psf',6)
         y1_plots.whiskerplot(psf,'dpsf',7)
