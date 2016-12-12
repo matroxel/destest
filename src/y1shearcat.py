@@ -12,6 +12,7 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import pylab
 import src.sys_split as sys_split
 import src.config as config
+import src.catalog as catalog
 
 class y1(object):
 
