@@ -207,7 +207,7 @@ class y1_plots(object):
 
         plt.figure(fig)
         Q = plt.quiver(x,y,e1,e2,units='width',pivot='middle',headwidth=0,width=.0005)
-        plt.quiverkey(Q,0.2,0.2,,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
+        plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
         plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
         plt.close(fig)
 
