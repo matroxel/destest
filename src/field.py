@@ -107,8 +107,8 @@ class field(object):
     y=np.zeros_like(x)
     e0=np.zeros_like(x)
     mw=np.zeros_like(x)
-    e1=np.zeros_like(x)
-    e2=np.zeros_like(x)
+    e10=np.zeros_like(x)
+    e20=np.zeros_like(x)
     for i in range(len(cx)):
       if (i==1)|(i==30)|(i==60):
         continue
@@ -127,8 +127,8 @@ class field(object):
         w=cat.w[mask0]
       else:
         w=np.ones(np.sum(mask))
-      e1,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e1*w)
-      e2,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e2*w)
+      e10,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e1*w)
+      e20,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e2*w)
       print e1,e2,w,np.sqrt(e1**2+e2**2)
       e0,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
       mw,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=m*w)
@@ -136,7 +136,7 @@ class field(object):
       x[i,:,:]=(x0[1:]+x0[:-1])/2
       y[i,:,:]=(y0[1:]+y0[:-1])/2
 
-    return y,x,mw,e1,e2,e
+    return y,x,mw,e10,e20,e
 
   @staticmethod
   def whisker(cat,mask=None,label='',plot=False):
