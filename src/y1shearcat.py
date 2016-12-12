@@ -170,8 +170,8 @@ class y1_plots(object):
     @staticmethod
     def psf_whisker(psf):
 
-        psf.dpsf1 = psf.psf1-e1
-        psf.dpsf2 = psf.psf2-e2
+        psf.dpsf1 = psf.psf1-psf.e1
+        psf.dpsf2 = psf.psf2-psf.e2
 
         y1_plots.whiskerplot(psf,'psf',6)
         y1_plots.whiskerplot(psf,'dpsf',7)
