@@ -127,10 +127,10 @@ class field(object):
         w=cat.w[mask0]
       else:
         w=np.ones(np.sum(mask))
-      e10,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=e1*w)
-      e20,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=e2*w)
-      e0,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=np.sqrt(e1**2+e2**2)*w)
-      mw,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx+1,ny+1],weights=m*w)
+      e10,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e1*w)
+      e20,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e2*w)
+      e0,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
+      mw,x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=m*w)
 
       x[i,:]=(x0[1:]+x0[:-1])/2
       y[i,:]=(y0[1:]+y0[:-1])/2
