@@ -83,9 +83,9 @@ class y1_plots(object):
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
         plt.errorbar(arr1,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
-        plt.errorbar(np.log10(arr1),m1*arr1+b1,marker='',linestyle='-',color='r')
+        plt.errorbar(arr1,m1*np.log10(arr1)+b1,marker='',linestyle='-',color='r')
         plt.errorbar(arr1+(arr1[1]-arr1[0])/5.,e2,yerr=e2err,marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
-        plt.errorbar(np.log10(arr1),m2*arr1+b2,marker='',linestyle='-',color='b')
+        plt.errorbar(arr1,m2*np.log10(arr1)+b2,marker='',linestyle='-',color='b')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
