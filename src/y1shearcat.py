@@ -79,6 +79,8 @@ class y1_plots(object):
 
         if config.log_val.get(val,False):
             arr1=10**arr2
+        else:
+            arr1=arr2
 
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
