@@ -77,6 +77,9 @@ class y1_plots(object):
             mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
         tmp,tmp,arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base([cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w],val,array,mask,name,log=config.log_val.get(val,False),plot=False)
 
+        if config.log_val.get(val,False):
+            arr1=10**arr1
+
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
         plt.errorbar(arr1,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
@@ -85,6 +88,8 @@ class y1_plots(object):
         plt.errorbar(arr1,m2*arr1+b2,marker='',linestyle='-',color='b')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
+        if config.log_val.get(val,False):
+            plt.yscale('log')
         # plt.axhline(.004,color='k')
         # plt.axhline(-.004,color='k')
         plt.ylim((-0.002,0.002))
