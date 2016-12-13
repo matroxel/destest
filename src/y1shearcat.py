@@ -89,7 +89,7 @@ class y1_plots(object):
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
-            plt.yscale('log')
+            plt.xscale('log')
         # plt.axhline(.004,color='k')
         # plt.axhline(-.004,color='k')
         plt.ylim((-0.002,0.002))
