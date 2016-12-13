@@ -88,13 +88,9 @@ class y1_plots(object):
         # plt.axhline(.004,color='k')
         # plt.axhline(-.004,color='k')
         plt.ylim((-0.002,0.002))
+        plt.xlabel(config.lbl.get(val,val.replace('_','-')))
         if n==1:
             plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
-            ax.set_xticklabels([])
-        else:
-            plt.xlabel(config.lbl.get(val,val.replace('_','-')))
-
-
 
         return
 
