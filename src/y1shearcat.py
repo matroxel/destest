@@ -102,7 +102,7 @@ class y1_plots(object):
         y1_plots.mean_e_subplot(cat1,0,'snr',1)
         y1_plots.mean_e_subplot(cat2,1,'snr',1)
 
-        # plt.subplots_adjust(hspace=0,wspace=0)
+        plt.tight_layout()
         plt.savefig('plots/y1/lin_split_snr.pdf', bbox_inches='tight')
         plt.close(1)
 
