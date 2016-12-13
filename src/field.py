@@ -74,7 +74,7 @@ class field(object):
       # if i==0:
       #   st[i]=x
       # else:
-      st[i]+=x
+      st[i]=x
 
     return tmp
 
