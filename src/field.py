@@ -135,7 +135,7 @@ class field(object):
       x[i,:]=(x0[1:]+x0[:-1])/2
       y[i,:]=(y0[1:]+y0[:-1])/2
 
-    return y,x,mw,e10,e20,e
+    return y,x,mw,e10,e20,e0
 
   @staticmethod
   def whisker(cat,mask=None,label='',plot=False):
