@@ -71,7 +71,7 @@ class field(object):
     st=[[],[],[],[],[],[]]
     for i,x in enumerate(field.whisker_loop(cat,col=col)):
       print 'nums',len(st[i]),x,st[i],x
-      if ii==0:
+      if i==0:
         st[i]=x
       else:
         st[i]+=x
