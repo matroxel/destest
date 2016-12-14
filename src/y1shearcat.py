@@ -211,8 +211,8 @@ class y1_plots(object):
         pos0=0.5*np.arctan2(e2/mw,e1/mw)
         e/=mw
         for i in range(len(x)):
-            x[i,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdy/2.
-            y[i,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdx/2.
+            x[i,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdy/2.
+            y[i,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdx/2.
 
         plt.figure(fig)
         print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
