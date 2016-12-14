@@ -76,7 +76,7 @@ class field(object):
       # else:
       st[i]=x
 
-    return tmp
+    return st
 
   @staticmethod
   def loop_epoch_finalise(cat,val,key,scale,y,x,mw,e1,e2,e0):
