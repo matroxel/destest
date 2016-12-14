@@ -214,8 +214,8 @@ class y1_plots(object):
         y0=np.ravel(y)
         for i in range(len(x)):
             y[i,:,:],x[i,:,:]=field.field_methods.ccd_to_field(i,y[i,:,:],x[i,:,:])
-            x[i,:,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdy/2.
-            y[i,:,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdx/2.
+            x[i,:,:]-=1024
+            y[i,:,:]-=2048
 
         plt.figure(fig)
         print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
