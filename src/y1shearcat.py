@@ -213,7 +213,7 @@ class y1_plots(object):
         for i in range(len(x)):
             y[i,:,:],x[i,:,:]=field.field_methods.ccd_to_field(i,y[i,:,:]-2048,x[i,:,:]-1024)
 
-        print y,x
+        print 'y,x',y[i,:,:],x[i,:,:]
 
         plt.figure(fig)
         print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)

@@ -138,7 +138,7 @@ class field(object):
     x/=len(cx)-3
     y/=len(cx)-3
 
-    print x,y
+    print 'x,y',x[i,:,:],y[i,:,:]
 
     return y,x,mw,e10,e20,e0
 
