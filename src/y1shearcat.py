@@ -217,7 +217,7 @@ class y1_plots(object):
 
         plt.figure(fig)
         print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
-        Q = plt.quiver(np.ravel(x),np.ravel(y),np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
+        Q = plt.quiver(np.ravel(y),np.ravel(x),np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
         plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
         plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
         plt.close(fig)
