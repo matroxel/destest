@@ -211,8 +211,8 @@ class y1_plots(object):
         pos0=0.5*np.arctan2(e2/mw,e1/mw)
         e/=mw
         for i in range(len(x)):
-            x[i,:]+=field_methods.ccd_centres()[i,1]-field_methods.ccdx/2.
-            y[i,:]+=field_methods.ccd_centres()[i,0]-field_methods.ccdy/2.
+            x[i,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdx/2.
+            y[i,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdy/2.
 
         plt.figure(fig)
         Q = plt.quiver(x,y,np.sin(pos0)*e,np.cos(pos0)*e,units='width',pivot='middle',headwidth=0,width=.0005)
