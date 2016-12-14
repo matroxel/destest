@@ -135,6 +135,8 @@ class field(object):
       for j in range(nx):
         y[i,j,:]+=(y0[1:]+y0[:-1])/2
 
+    print 'x,y 0',x[i,:,:],y[i,:,:]
+
     x/=len(cx)-3
     y/=len(cx)-3
 
