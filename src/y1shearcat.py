@@ -210,13 +210,16 @@ class y1_plots(object):
         y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col=col)
         pos0=0.5*np.arctan2(e2/mw,e1/mw)
         e/=mw
+        x0=np.ravel(x)
+        y0=np.ravel(y)
         for i in range(len(x)):
-            x[i,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdy/2.
-            y[i,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdx/2.
+            x[i,:,:],y[i,:,:]=field.field_methods.ccd_to_field(i,x[i,:,:],y[i,:,:])
+            x[i,:,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdy/2.
+            y[i,:,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdx/2.
 
         plt.figure(fig)
         print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
-        Q = plt.quiver(np.ravel(x),np.ravel(y),np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
+        Q = plt.quiver(x0,y0,np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
         plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
         plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
         plt.close(fig)
