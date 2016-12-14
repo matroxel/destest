@@ -215,6 +215,7 @@ class y1_plots(object):
             y[i,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdy/2.
 
         plt.figure(fig)
+        print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
         Q = plt.quiver(x,y,np.sin(pos0)*e,np.cos(pos0)*e,units='width',pivot='middle',headwidth=0,width=.0005)
         plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
         plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
