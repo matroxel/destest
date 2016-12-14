@@ -130,15 +130,12 @@ class field(object):
       e0[i,:,:],x0,y0=np.histogram2d(cat.col[mask],cat.row[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
       mw[i,:,:],x0,y0=np.histogram2d(cat.col[mask],cat.row[mask],bins=[nx,ny],weights=m*w)
 
+      print x0,y0
+
       for j in range(ny):
-        x[i,:,j]+=(x0[1:]+x0[:-1])/2
+        x[i,:,j]=(x0[1:]+x0[:-1])/2
       for j in range(nx):
-        y[i,j,:]+=(y0[1:]+y0[:-1])/2
-
-    print 'x,y 0',x[i,:,:],y[i,:,:]
-
-    x/=len(cx)-3
-    y/=len(cx)-3
+        y[i,j,:]=(y0[1:]+y0[:-1])/2
 
     print 'x,y',x[i,:,:],y[i,:,:]
 
