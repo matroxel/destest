@@ -103,8 +103,8 @@ class field(object):
 
     dc=2048./4.
 
-    x=np.zeros((len(cx),nx))
-    y=np.zeros((len(cx),ny))
+    x=np.zeros((len(cx),nx,ny))
+    y=np.zeros((len(cx),nx,ny))
     e0=np.zeros((len(cx),nx,ny))
     mw=np.zeros_like(e0)
     e10=np.zeros_like(e0)
@@ -132,8 +132,10 @@ class field(object):
       e0[i,:,:],x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
       mw[i,:,:],x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=m*w)
 
-      x[i,:]+=(x0[1:]+x0[:-1])/2
-      y[i,:]+=(y0[1:]+y0[:-1])/2
+      for j in range(ny):
+        x[i,:,j]+=(x0[1:]+x0[:-1])/2
+      for j in range(nx):
+        y[i,j,:]+=(y0[1:]+y0[:-1])/2
 
     x/=len(cx)-3
     y/=len(cx)-3
