@@ -103,8 +103,8 @@ class field(object):
 
     dc=2048./4.
 
-    x=np.zeros((len(cx),nx))
-    y=np.zeros((len(cx),ny))
+    x0=np.zeros((len(cx),nx))
+    y0=np.zeros((len(cx),ny))
     e0=np.zeros((len(cx),nx,ny))
     mw=np.zeros_like(e0)
     e10=np.zeros_like(e0)
