@@ -55,7 +55,6 @@ class field(object):
 
       tmp=[y,x,mw,e1,e2,e]
       for i,x in enumerate(field.whisker_loop(epoch,tmp)):
-        print 'nums',len(tmp[i]),x,tmp[i],x
         if ii==0:
           tmp[i]=x
         else:
@@ -70,7 +69,6 @@ class field(object):
 
     st=[[],[],[],[],[],[]]
     for i,x in enumerate(field.whisker_loop(cat,col=col)):
-      print 'nums',len(st[i]),x,st[i],x
       # if i==0:
       #   st[i]=x
       # else:
@@ -127,10 +125,10 @@ class field(object):
         w=cat.w[mask0]
       else:
         w=np.ones(np.sum(mask))
-      e10[i,:,:],x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e1*w)
-      e20[i,:,:],x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=e2*w)
-      e0[i,:,:],x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
-      mw[i,:,:],x0,y0=np.histogram2d(cat.row[mask],cat.col[mask],bins=[nx,ny],weights=m*w)
+      e10[i,:,:],x0,y0=np.histogram2d(cat.col[mask],cat.row[mask],bins=[nx,ny],weights=e1*w)
+      e20[i,:,:],x0,y0=np.histogram2d(cat.col[mask],cat.row[mask],bins=[nx,ny],weights=e2*w)
+      e0[i,:,:],x0,y0=np.histogram2d(cat.col[mask],cat.row[mask],bins=[nx,ny],weights=np.sqrt(e1**2+e2**2)*w)
+      mw[i,:,:],x0,y0=np.histogram2d(cat.col[mask],cat.row[mask],bins=[nx,ny],weights=m*w)
 
       for j in range(ny):
         x[i,:,j]+=(x0[1:]+x0[:-1])/2
