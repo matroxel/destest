@@ -209,13 +209,13 @@ class y1_plots(object):
 
         y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col=col)
         pos0=0.5*np.arctan2(e2/mw,e1/mw)
-        e0/=mw
+        e/=mw
         for i in range(len(x)):
             x[i,:,:]+=field_methods.ccd_centres()[i,1]-field_methods.ccdx/2.
             y[i,:,:]+=field_methods.ccd_centres()[i,0]-field_methods.ccdy/2.
 
         plt.figure(fig)
-        Q = plt.quiver(x,y,e1,e2,units='width',pivot='middle',headwidth=0,width=.0005)
+        Q = plt.quiver(x,y,np.sin(pos0)*e,np.cos(pos0)*e,units='width',pivot='middle',headwidth=0,width=.0005)
         plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
         plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
         plt.close(fig)
