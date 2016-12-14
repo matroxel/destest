@@ -213,6 +213,8 @@ class y1_plots(object):
         for i in range(len(x)):
             y[i,:,:],x[i,:,:]=field.field_methods.ccd_to_field(i,y[i,:,:]-2048,x[i,:,:]-1024)
 
+        print y,x
+
         plt.figure(fig)
         print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
         Q = plt.quiver(np.ravel(x),np.ravel(y),np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
