@@ -213,7 +213,7 @@ class y1_plots(object):
         x0=np.ravel(x)
         y0=np.ravel(y)
         for i in range(len(x)):
-            x[i,:,:],y[i,:,:]=field.field_methods.ccd_to_field(i,x[i,:,:],y[i,:,:])
+            y[i,:,:],x[i,:,:]=field.field_methods.ccd_to_field(i,y[i,:,:],x[i,:,:])
             x[i,:,:]+=field.field_methods.ccd_centres()[i,1]-field.field_methods.ccdy/2.
             y[i,:,:]+=field.field_methods.ccd_centres()[i,0]-field.field_methods.ccdx/2.
 
