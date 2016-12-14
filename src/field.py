@@ -140,7 +140,7 @@ class field(object):
     x/=len(cx)-3
     y/=len(cx)-3
 
-    print np.shape(y),np.shape(x),np.shape(e10),np.shape(e20),np.shape(e0),np.shape(mw)
+    print x,y
 
     return y,x,mw,e10,e20,e0
 
