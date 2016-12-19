@@ -196,7 +196,7 @@ class CatalogStore(object):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
       #Make footprint contiguous across ra=0
-      if ('ra' in cols)|(goldfile is not None):
+      if hasattr(self,'ra'):
         ra=self.ra
         ra[self.ra>180]=self.ra[self.ra>180]-360
         self.ra=ra
