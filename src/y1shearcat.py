@@ -60,10 +60,10 @@ class y1_plots(object):
 
         txt.write_methods.heading('Linear Splits',cat1,label='y1_paper',create=False)
 
-        y1_plots.evssnr(cat1,cat2)
-        y1_plots.evsradius(cat1,cat2)
         y1_plots.evspsf1(cat1,cat2)
         y1_plots.evspsf2(cat1,cat2)
+        y1_plots.evssnr(cat1,cat2)
+        y1_plots.evsradius(cat1,cat2)
         y1_plots.evspsfsize(cat1,cat2)
 
         return
