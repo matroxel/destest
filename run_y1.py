@@ -25,10 +25,12 @@ mcalfile  = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalib
 i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
 mcalepoch = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
 psfdir    = '/global/cscratch1/sd/troxel/psf_cats/'
+special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
 i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile)
 mcal.m1=np.ones(len(mcal.coadd))
 mcal.m2=np.ones(len(mcal.coadd))
+special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
 
 
 i3epoch = catalog.CatalogStore("i3epoch", 

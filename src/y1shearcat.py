@@ -243,3 +243,21 @@ class y1_plots(object):
 
         return
 
+    @staticmethod 
+    def tangential_shear_plot(i3, metacal, centers, centers_mask=None):
+        fig = plt.figure()
+
+        mask = None
+
+        i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt(centers, i3, corr='NG', 
+            maska=centers_mask, maskb=mask)
+
+        mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt(centers, metacal, corr='NG', 
+            maska=centers_mask, maskb=mask)
+
+        print i3_theta, i3_out, i3_err
+        print mc_theta, mc_out, mc_err
+    
+
+
+
