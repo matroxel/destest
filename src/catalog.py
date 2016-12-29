@@ -1264,8 +1264,8 @@ class CatalogMethods(object):
     print "Warning: making proper randoms is hard and this function may not meet your needs."
     ra = cat.ra
     dec = cat.dec
-    hpix = radec_to_hpix(ra, dec)
-    maskpix = np.unique1d(hpix)
+    hpix = CatalogMethods.radec_to_hpix(ra, dec)
+    maskpix = np.unique(hpix)
     return CatalogMethods.create_random_cat(nran, maskpix,label=label,rannside=rannside,masknside=masknside)
 
   @staticmethod
