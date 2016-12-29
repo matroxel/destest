@@ -3,6 +3,7 @@ import fitsio as fio
 import healpy as hp
 import multiprocessing
 import os
+import numpy.random as ran
 
 import catalog
 import config
@@ -245,6 +246,9 @@ class split_methods(object):
           a1[i]=split_methods.amp_shift(out0[i],outa[i]-out0[i],erra[i])
           a2[i]=split_methods.amp_shift(out0[i],outb[i]-out0[i],errb[i])
 
+      if blind:
+        out0*=(ran.rand()*0.1+1.)
+
       if j==0:
         xi=(theta,outa,out0,outb,erra,err0,errb,derra,derr0,derrb,a1,a0,a2)
       else:
@@ -375,7 +379,7 @@ def split_gals_lin_along_base(cat,val,array,mask,name,mock=False,log=False,log2=
   if log:
     array=np.log10(array)
 
-  print np.shape(array),val
+  print 'not passing w to bin_means - fix'
 
   if e:
     arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,w=None,mask=mask,mock=mock,log=log)
