@@ -64,8 +64,24 @@ def add_i3_cal_to_epoch(epoch, i3):
         epoch.w[diff[i]:diff[i+1]]=i3.w[i]
     
 
+def make_randoms(name, cat, rans_per_object):
+    if os.path.exists(name+"_random.fits.gz"):
+        print "Using existing random", name+"_random.fits.gz"
+    else:
+        print "Making new random (one off)"
+        catalog.CatalogMethods.create_random_cat_from_cat(cat, nran=len(cat.e1)*rans_per_object, label=name+"_")
+    f = fitsio.FITS(name+"_random.fits.gz")
+    data = f[1].read_columns(['ra', 'dec'])
+    cat.ran_ra = data['ra']
+    cat.ran_dec = data['dec']
+    f.close()
+
+
+
 add_i3_cal_to_epoch(i3epoch, i3)
 
+add_randoms(i3, 1)
+add_randoms(metacal, 1)
 
 
 txt.write_methods.heading('---------------',mcal,label='y1_paper',create=True)
