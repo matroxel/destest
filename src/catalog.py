@@ -1256,6 +1256,19 @@ class CatalogMethods(object):
     return ra,dec,ran
 
   @staticmethod
+  def create_random_cat_from_cat(cat, nran,label='',rannside=262144,masknside=4096):
+    """
+    Create a random catalogs with the same coverage as another catalog.
+    Depending on the masknside that you choose this may not
+    """
+    print "Warning: making proper randoms is hard and this function may not meet your needs."
+    ra = cat.ra
+    dec = cat.dec
+    hpix = radec_to_hpix(ra, dec)
+    maskpix = np.unique1d(hpix)
+    return CatalogMethods.create_random_cat(nran, maskpix,label=label,rannside=rannside,masknside=masknside)
+
+  @staticmethod
   def create_random_cat(nran,maskpix,label='',rannside=262144,masknside=4096):
     """
     This will create a uniform (currently, will update as needed) random catalog from a mask defined via healpixels (maskpix). Input maskpix should be in nest form. label prepends a label to the output file. masknside is the nside of the mask, rannside is the pixelisation of the random distribution - defaults to about 2/3 arcsecond area pixels.
