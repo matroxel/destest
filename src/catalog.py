@@ -1293,12 +1293,15 @@ class CatalogMethods(object):
       ra,dec,ran=CatalogMethods.select_random_pts(nran,maskpix,rannside=rannside,masknside=masknside)
       print 'after',i,rank,time.time()-t1
 
-      x=np.empty((len(ra)*size))
-      y=np.empty((len(dec)*size))
 
       if mpi:
+        x=np.empty((len(ra)*size))
+        y=np.empty((len(dec)*size))
         comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
         comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+      else:
+        x = ra
+        y = dec
 
       if rank == 0:
         print 'end',i,rank
