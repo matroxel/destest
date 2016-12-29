@@ -316,7 +316,8 @@ matched_gold_col_lookup = {
   'dec':'dec',
   'flags_badregion':'flags_badregion',
   'flags_gold':'flags_gold',
-  'modest_class':'modest_class'
+  'modest_class':'modest_class',
+  'zp':'desdm_zp'
 }
 
 matched_i3_col_lookup = {  

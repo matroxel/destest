@@ -60,10 +60,10 @@ class y1_plots(object):
 
         txt.write_methods.heading('Linear Splits',cat1,label='y1_paper',create=False)
 
-        y1_plots.evssnr(cat1,cat2)
-        y1_plots.evsradius(cat1,cat2)
         y1_plots.evspsf1(cat1,cat2)
         y1_plots.evspsf2(cat1,cat2)
+        y1_plots.evssnr(cat1,cat2)
+        y1_plots.evsradius(cat1,cat2)
         y1_plots.evspsfsize(cat1,cat2)
 
     @staticmethod
@@ -242,4 +242,22 @@ class y1_plots(object):
         plt.close(fig)
 
         return
+
+    @staticmethod 
+    def tangential_shear_plot(i3, metacal, centers, centers_mask=None):
+        fig = plt.figure()
+
+        mask = None
+
+        i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt(centers, i3, corr='NG', 
+            maska=centers_mask, maskb=mask)
+
+        mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt(centers, metacal, corr='NG', 
+            maska=centers_mask, maskb=mask)
+
+        print i3_theta, i3_out, i3_err
+        print mc_theta, mc_out, mc_err
+    
+
+
 
