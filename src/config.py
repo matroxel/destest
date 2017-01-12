@@ -8,15 +8,15 @@ pzdir = '/share/des/disc2/y1/photo_z/'
 pztestdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
 cosmosiscosmodir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
 cosmosisrootdir = '/home/troxel/cosmosis/'
-wcsfile = '/share/des/disc2/y1/wcs/y1a1_wcs.fits.gz'
-spointsfile = 'y1a1_special_field_points.fits'
+wcsfile = '/global/cscratch1/sd/troxel/y1a1_wcs.fits.gz'
+spointsfile = '/global/cscratch1/sd/troxel/y1a1_special_field_points.fits'
 y1sysmapdir = '/share/des/disc2/y1/sysmaps/'
 svsysmapdir = '/share/des/sv/systematics_maps/'
 redmagicdir = '/share/des/disc2/y1/redmagicv6.4.11/'
 redmapperdir = '/share/des/disc2/y1/redmapperv6.4.11/'
 redmagicdirnersc = '/scratch2/scratchdirs/troxel/redmagicv6.4.11/'
 redmapperdirnersc = '/scratch2/scratchdirs/troxel/redmapperv6.4.11/'
-y1blacklist = '/share/des/disc2/y1/blacklist-y1.txt'
+y1blacklist = '/global/cscratch1/sd/troxel/blacklist-y1.txt'
 coaddtiles = '/share/des/coadd_tiles.fits'
 tapebumps = '/home/troxel/destest/tape_bumps.fits'
 e2edir = '/home/troxel/des-shear-pipeline-code/end-to-end/end-to-end_code/'
@@ -25,6 +25,8 @@ i3_main_nersc_dir = '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v1
 
 # Cosmosis source command
 cosmosissource = 'source my-source'
+
+nchunk = 64
 
 # Tests to compute
 
@@ -160,8 +162,8 @@ psf_col_lookup = {
   'ccd':'ccdnum',
   'col':'x',
   'row':'y',
-  'psf_e1':'psfex_e1',
-  'psf_e2':'psfex_e2',
+  'psf1':'psfex_e1',
+  'psf2':'psfex_e2',
   'psf_size':'psfex_size',
   'size':'size',
   'flag':'flag',
@@ -169,7 +171,6 @@ psf_col_lookup = {
   'x_mike':'x',
   'y_mike':'y',
   'mag':'mag',
-  'psfex_size':'psfex_size',
   'erin_e1':'erin_e1',
   'erin_e2':'erin_e2',
   'erin_size':'erin_size',
@@ -308,15 +309,53 @@ truth_col_lookup = {
 }
 
 
-gold_col_lookup = {  
+matched_gold_col_lookup = {  
 
   'coadd':'coadd_objects_id',
   'ra':'ra',
   'dec':'dec',
-  'sm':'spread_model_i',
-  'i':'mag_auto_i'
-
+  'flags_badregion':'flags_badregion',
+  'flags_gold':'flags_gold',
+  'modest_class':'modest_class',
+  'zp':'desdm_zp'
 }
+
+matched_i3_col_lookup = {  
+
+  'coadd':'coadd_objects_id',
+  'e1':'e1',
+  'e2':'e2',
+  'flags':'flags',
+  'snr':'snr',
+  'rgp':'rgpp_rp',
+  'radius':'radius',
+  'psf1':'psf_e1',
+  'psf2':'psf_e2',
+  'psffwhm':'psf_fwhm',
+  'm1':'m1',
+  'm2':'m2',
+  'c1':'c1',
+  'c2':'c2',
+  'w':'weight',
+  'cov11':'covmat_0_0',
+  'cov22':'covmat_1_1',
+  'cov12':'covmat_0_1'
+}
+
+matched_ng_col_lookup = {  
+
+  'coadd':'coadd_objects_id',
+  'e1':'e1',
+  'e2':'e2',
+  'flags':'flags',
+  'snr':'snr',
+  'size':'size',
+  'psf1':'psf_e1',
+  'psf2':'psf_e2',
+  'psffwhm':'psf_size',
+  'w':'weight'
+}
+
 
 buzzard_col_lookup = {
   
@@ -549,7 +588,8 @@ log_val = {
   'psfrec_g_1':False,
   'psfrec_g_2':False,
   'psfrec_T':False,
-  'time_last_fit':True
+  'time_last_fit':True,
+  'size':True
 
 }
 

@@ -55,6 +55,7 @@ class pz_methods(object):
       return
 
     mask0=(pointz>=pzlow)&(pointz<=pzhigh)
+    print pointz,pointw
 
     if nztype=='mean':
       pzdist=pz0.z_mean_full
@@ -73,7 +74,10 @@ class pz_methods(object):
         point=False
         pzdist=None
 
-    pz0.tomo=bins+1
+    if hasattr(bins,'__len__'):
+      pz0.tomo=len(bins)
+    else:
+      pz0.tomo=bins+1
 
     nofz,specnofz=pz_methods.nofz_bins(pz0,pointz,pzdist,mask0,w,pointw,bins=bins,pzmask=pzmask,spec=spec,point=point)
 
@@ -118,17 +122,20 @@ class pz_methods(object):
   @staticmethod
   def nofz_bins(pz0,pointz,pzdist,mask0,w,pointw,bins=3,pzmask=None,spec=False,point=False):
 
-    edge=lin.linear_methods.find_bin_edges(pointz[mask0],bins,pointw[mask0])
-    print edge
-    xbins=np.digitize(pointz,edge)-1
-
-    nofz=np.zeros((bins+1,pz0.bins))
+    if hasattr(bins,'__len__'):
+      xbins=np.digitize(pointz,bins)-1
+      nofz=np.zeros((len(bins),pz0.bins))
+    else:
+      edge=lin.linear_methods.find_bin_edges(pointz[mask0],bins,pointw[mask0])
+      print edge
+      xbins=np.digitize(pointz,edge)-1
+      nofz=np.zeros((bins+1,pz0.bins))
 
     if point:
       nofz[0,:],b=np.histogram(pzdist[pzmask&mask0],bins=np.append(pz0.binlow,pz0.binhigh[-1]),weights=w[pzmask&mask0])
       nofz[0,:]/=np.sum(nofz[0,:])*(pz0.bin[1]-pz0.bin[0])
 
-      for i in xrange(bins):
+      for i in xrange(pz0.tomo-1):
         mask=(xbins==i)
         nofz[i+1,:],b=np.histogram(pzdist[pzmask&mask0&mask],bins=np.append(pz0.binlow,pz0.binhigh[-1]),weights=w[pzmask&mask&mask0])
         nofz[i+1,:]/=np.sum(nofz[i+1,:])*(pz0.bin[1]-pz0.bin[0])
@@ -138,12 +145,12 @@ class pz_methods(object):
       nofz[0,:]=np.sum((pz0.pz_full[pzmask&mask0].T*w[pzmask&mask0]).T,axis=0)
       nofz[0,:]/=np.sum(nofz[0,:])*(pz0.bin[1]-pz0.bin[0])
 
-      for i in xrange(bins):
+      for i in xrange(pz0.tomo-1):
         mask=(xbins==i)
         nofz[i+1,:]=np.sum((pz0.pz_full[pzmask&mask0&mask].T*w[pzmask&mask&mask0]).T,axis=0)
         nofz[i+1,:]/=np.sum(nofz[i+1,:])*(pz0.bin[1]-pz0.bin[0])
 
-    specnofz=np.zeros((bins+1,pz0.bins))
+    specnofz=np.zeros((pz0.tomo,pz0.bins))
 
     if spec:
       from weighted_kde import gaussian_kde
@@ -151,7 +158,7 @@ class pz_methods(object):
       specnofz[0,:]=tmp(pz0.bin)
       specnofz[0,:]/=np.sum(specnofz[0,:])*(pz0.bin[1]-pz0.bin[0])
 
-      for i in xrange(bins):
+      for i in xrange(pz0.tomo-1):
         mask=(xbins==i)
         tmp=gaussian_kde(pz0.spec_full[pzmask&mask0&mask],weights=w[pzmask&mask0&mask],bw_method='scott')
         specnofz[i+1,:]=tmp(pz0.bin)

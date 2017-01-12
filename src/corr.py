@@ -7,7 +7,10 @@ except:
 
 import os
 if "NERSC_HOST" not in os.environ:
-  from mpi4py import MPI
+  try:
+    from mpi4py import MPI
+  except ImportError:
+    print 'No mpi4py'
 else:
   print 'No mpi4py'
 
@@ -348,8 +351,91 @@ class xi_2pt(object):
   @staticmethod
   def calc_alpha(gp,pp,e1,e2,psf1,psf2):
 
-    return (gp-e1*psf1-e2*psf2)/(pp-psf1**2-psf2**2)    
+    return (gp-e1*psf1-e2*psf2)/(pp-psf1**2-psf2**2)
 
+  @staticmethod
+  def rho1(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='de',gb='de',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho2(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='e',gb='de',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho3(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='edt',gb='edt',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho4(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='de',gb='edt',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def rho5(cat):
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,ga='psf_e',gb='edt',corr='GG')
+
+    return out[0]
+
+  @staticmethod
+  def calc_psf_dxi(cat,psfcat):
+
+    dpsfsize = np.mean((psfcat.psf_size-psfcat.size)/psfcat.psf_size)
+    psfsize = np.average(1./(cat.rgp**2-1.),weights=cat.w) # see Mike/Daniel slack
+
+    psfcat.edt1=dpsfsize*psfcat.psf_e1
+    psfcat.edt2=dpsfsize*psfcat.psf_e2
+
+    psfcat.de1=psfcat.psf_e1-psfcat.e1
+    psfcat.de2=psfcat.psf_e2-psfcat.e2
+
+    psfcat.tbins=10
+    psfcat.sep=np.array([0.1,500])
+    psfcat.slop=0.1
+    psfcat.m1=np.zeros(len(psfcat.ra))
+    psfcat.m2=np.zeros(len(psfcat.ra))
+    psfcat.c1=np.zeros(len(psfcat.ra))
+    psfcat.c2=np.zeros(len(psfcat.ra))
+    psfcat.w=np.ones(len(psfcat.ra))
+
+    cat.tbins=10
+    cat.sep=np.array([0.1,500])
+    cat.slop=0.1
+
+    theta,out,err,chi2=xi_2pt.xi_2pt(cat,corr='GG')
+    xip=out[0]
+
+    theta,gpout,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,corr='GG',ga='psf',gb='e')
+    theta,ppout,err,chi2=xi_2pt.xi_2pt(cat,catb=cat,corr='GG',ga='psf',gb='psf')
+    me1,me2=lin.linear_methods.calc_mean_stdev_rms_e(cat,full=False)
+    mpsf1=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psf1,full=False)
+    mpsf2=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psf2,full=False)
+    mpsf=lin.linear_methods.calc_mean_stdev_rms(cat,cat.psfe,full=False)
+    alpha=(gpout[0]-me1*mpsf1-me2*mpsf2)/(ppout[0]-mpsf1**2.-mpsf2**2.)
+    alpha0=-0.05
+
+    rho1=xi_2pt.rho1(psfcat)
+    rho2=xi_2pt.rho2(psfcat)
+    rho3=xi_2pt.rho3(psfcat)
+    rho4=xi_2pt.rho4(psfcat)
+    rho5=xi_2pt.rho5(psfcat)
+
+    dxip=2.*dpsfsize*psfsize*xip + psfsize**2*(rho1+rho3+rho4) - alpha*psfsize*(rho2+rho5)
+    dxip0=2.*dpsfsize*psfsize*xip + psfsize**2*(rho1+rho3+rho4) - alpha0*psfsize*(rho2+rho5)
+    np.savetxt('/scratch2/scratchdirs/troxel/destest/psfout.npy',np.vstack((theta,xip,dxip,dxip0,alpha,gpout[0],ppout[0])))
+
+    return theta,dxip,xip
 
   @staticmethod
   def create_shear_rm_cat(cat,cat2):
@@ -364,8 +450,6 @@ class xi_2pt(object):
     rm10s.coadd=(cat.coadd[m1])[s1]
 
     return rm10s
-
-
 
   @staticmethod
   def ia_estimatora(cat,cat2,dlos=100.,rbins=5,rmin=.1,rmax=200.,logr=True,usempi=False,comm=None):

@@ -145,8 +145,7 @@ class linear_methods(object):
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     e1,e2,w,ms=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)
-
-    wms=np.sum(w*ms)
+    wms=np.sum(w*ms) 
     ww=np.sum(w**2)
     mean1=np.sum(w*e1)/wms
     mean2=np.sum(w*e2)/wms
@@ -189,6 +188,10 @@ class linear_methods(object):
     """
     For an array x, returns the boundaries of nbins equal (possibly weighted by w) bins.
     """
+
+    if len(np.shape(x))>1:
+      print 'reformatting array for finding bin edges to be 1d'
+      x=np.reshape(x,len(x[0,:]))
 
     if w is None:
       xs=np.sort(x)
@@ -295,6 +298,7 @@ class linear_methods(object):
     else:
       edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10))
 
+    print np.shape(x),np.shape(edge)
     xbin=np.digitize(x,edge)-1
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)

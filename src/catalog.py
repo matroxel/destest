@@ -37,18 +37,24 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
+  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,goldcols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
 
     if setup:
       # Populate catalog on object creation
 
       # Select column name lookup dict
       if cattype=='i3':
-        table=config.i3_col_lookup
+        if goldfile is not None:
+          table=config.matched_i3_col_lookup
+        else:
+          table=config.i3_col_lookup
       elif cattype=='i3epoch':
         table=config.i3_epoch_col_lookup
       elif cattype=='ng':
-        table=config.ng_col_lookup
+        if goldfile is not None:
+          table=config.matched_ng_col_lookup
+        else:
+          table=config.ng_col_lookup
       elif cattype=='gal':
         table=config.gal_col_lookup
       elif cattype=='redmapper':
@@ -77,13 +83,16 @@ class CatalogStore(object):
         cols1=None
 
       if goldfile is not None:
-        print 'not ready to use matched catalog format in this version'
-        if (i3file is None)|(ngfile is None):
+        if (catfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
+        if goldcols is None:
+          goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
 
         cols1=[table.get(x,x) for x in cols]
-        for i,x in enumerate(CatalogMethods.get_cat_cols_matched(catdir,goldfile,catfile,cols1,table,cuts,full=full,ext=ext)):
-          setattr(self,cols[i],x)
+        cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
+
+        for i,x in enumerate(catcols):
+          setattr(self,cols2[i],x)
 
       elif (catfile!=None)|(catdir!=None):
         if (catfile!=None)&(catdir!=None):
@@ -128,17 +137,18 @@ class CatalogStore(object):
       if 'coadd' not in cols:
         self.coadd=self.add_shared_array(len(filenames),np.arange(len(filenames)),p)
 
-      if cattype=='ng':
-        self.e1=self.mcal_g_1
-        self.mcal_g_1=None
-        self.e2=self.mcal_g_2
-        self.mcal_g_2=None
-        self.psf1=self.psfrec_g_1
-        self.psfrec_g_1=None
-        self.psf2=self.psfrec_g_2
-        self.psfrec_g_2=None
-        self.coadd=self.id
-        self.id=None
+      # if cattype=='ng':
+      #   self.e1=self.mcal_g_1
+      #   self.mcal_g_1=None
+      #   self.e2=self.mcal_g_2
+      #   self.mcal_g_2=None
+      #   self.psf1=self.psfrec_g_1
+      #   self.psfrec_g_1=None
+      #   self.psf2=self.psfrec_g_2
+      #   self.psfrec_g_2=None
+      #   self.coadd=self.id
+      #   self.id=None
+
 
       #Generate derived quantities
       if cattype in ['i3','ng']:
@@ -186,7 +196,7 @@ class CatalogStore(object):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
       #Make footprint contiguous across ra=0
-      if ('ra' in cols):
+      if hasattr(self,'ra'):
         ra=self.ra
         ra[self.ra>180]=self.ra[self.ra>180]-360
         self.ra=ra
@@ -592,6 +602,135 @@ class CatalogMethods(object):
 
     return cols,[array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
 
+  @staticmethod
+  def get_matched_cat_cols(gold,shape,goldcols,shapecols,goldtable,shapetable,shapecuts,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=1):
+    """
+    Work function for CatalogStore to parse and read in catalog informaiton from one or more fits files.
+    """
+
+    import fitsio as fio
+    import numpy.lib.recfunctions as nlr
+    import time
+
+    t0=time.time()
+
+    lenst=0
+    # File format may not be readable
+    try:
+      goldfits=fio.FITS(gold)
+    except IOError:
+      print 'error loading fits file: ',gold
+      raise
+    try:
+      shapefits=fio.FITS(shape)
+    except IOError:
+      print 'error loading fits file: ',shape
+      raise
+
+    print 'fits load',time.time()-t0
+
+    tmparray = goldfits[hdu].read(columns=['flags_gold','flags_badregion'])
+    goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxrows)
+
+    print 'gold mask',time.time()-t0
+
+    # Verify that the columns requested exist in the file
+    colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
+    if colex<1:
+      for i,x in enumerate(shapecols):
+        shapecols[i]=x.lower()
+      colex,colist=CatalogMethods.col_exists(shapecols,shapefits[hdu].get_colnames())
+      if colex<1:
+        raise ColError('columns '+colist+' do not exist in file: '+shape)
+
+    colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
+    if colex<1:
+      for i,x in enumerate(goldcols):
+        goldcols[i]=x.lower()
+      colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
+      if colex<1:
+        raise ColError('columns '+colist+' do not exist in file: '+gold)
+
+    cutcols=shapecuts['col']
+    colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in cutcols],shapefits[hdu].get_colnames())
+    if colex<1:
+      cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
+      colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
+      if colex<1:
+        raise ColError('cut columns '+colist+' do not exist in file: '+shape)
+
+    print 'cols exist',time.time()-t0
+
+    # Dump the columns needed for masking into memory if everything is there
+    try:
+      tmparray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in cutcols])
+    except IOError:
+      print 'error loading fits file: ',shape
+
+    print 'shape cuts',time.time()-t0
+
+    # Generate the selection mask based on the passed cut function
+    shapemask=np.array([])
+    for icut,cut in enumerate(shapecuts): 
+      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
+
+    print 'shape cuts done',time.time()-t0
+
+    # Dump the requested columns into memory if everything is there
+    try:
+      goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
+    except IOError:
+      print 'error loading fits file: ',gold
+    print 'read gold file',time.time()-t0
+    try:
+      shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
+    except IOError:
+      print 'error loading fits file: ',shape
+
+    print 'read shape file',time.time()-t0
+
+    print 'FIX TEMPORARY PATCH FOR MATCHED FILES - DROPPING GOLD COADDS INTO SHAPE ARRAY'
+    shapearray[shapetable.get('coadd')]=goldarray[goldtable.get('coadd')]
+
+    if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
+      i=np.argsort(goldarray[goldtable.get('coadd')])
+      goldarray=goldarray[i]
+      goldmask = goldmask[i]
+    if np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
+      i=np.argsort(shapearray[shapetable.get('coadd')])
+      shapearray=shapearray[i]
+      shapemask=shapemask[i]
+
+    print 'order',time.time()-t0
+
+    if np.any(np.diff(goldarray[goldtable.get('coadd')])==0):
+      print 'non-unique ids in file: ',gold
+      raise
+
+    if np.any(np.diff(shapearray[shapetable.get('coadd')])==0):
+      print 'non-unique ids in file: ',shape
+      raise
+
+    print 'unique check',time.time()-t0
+
+    goldarray=goldarray[goldmask&shapemask]
+    shapearray=shapearray[goldmask&shapemask]
+
+    print 'cuts',time.time()-t0
+
+    goldarray = nlr.rename_fields(goldarray,{v: k for k, v in goldtable.iteritems()})
+    shapearray = nlr.rename_fields(shapearray,{v: k for k, v in shapetable.iteritems()})
+
+    print 'rename',time.time()-t0
+
+    goldfits.close()
+    shapefits.close()
+
+    outcols = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)]+[shapearray[col] for col in shapearray.dtype.names if col != 'coadd']
+    outnames = [col for col in goldarray.dtype.names]+[col for col in shapearray.dtype.names if col != 'coadd']
+
+    print 'done',time.time()-t0
+    return outnames,outcols,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
 
   @staticmethod
   def col_exists(cols,colnames):
@@ -639,7 +778,7 @@ class CatalogMethods(object):
     return np.ndarray(array.shape, dtype2, array, 0, array.strides)
 
   @staticmethod
-  def add_cut(cuts,col,min,eq,max):
+  def add_cut(cuts,col,cmin,ceq,cmax):
     """
     Helper function to format catalog cuts.
     """    
@@ -647,15 +786,15 @@ class CatalogMethods(object):
     if cuts.size==0:
       cuts=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
       cuts[0]['col']=col
-      cuts[0]['min']=min
-      cuts[0]['eq']=eq
-      cuts[0]['max']=max
+      cuts[0]['min']=cmin
+      cuts[0]['eq']=ceq
+      cuts[0]['max']=cmax
     else:
       cuts0=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
       cuts0[0]['col']=col
-      cuts0[0]['min']=min
-      cuts0[0]['eq']=eq
-      cuts0[0]['max']=max
+      cuts0[0]['min']=cmin
+      cuts0[0]['eq']=ceq
+      cuts0[0]['max']=cmax
       cuts=np.append(cuts,cuts0,axis=0)
 
     return cuts
@@ -695,6 +834,7 @@ class CatalogMethods(object):
   @staticmethod
   def sort2(x,y):
     """
+    
     Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
     """
 
@@ -726,8 +866,11 @@ class CatalogMethods(object):
     """
     Convenience function to match and add new nbc values from a fits file to a CatalogeStore object. Takes a CatalogStore object to modify.
     """
-
-    fits=fio.FITS(file)
+    try:
+      fits=fio.FITS(file)
+    except IOError:
+      print 'error loading fits file: ',file
+      raise
     tmp=fits[-1].read()
 
     m1,s1,m2,s2=CatalogMethods.sort(cat.coadd,tmp['coadd_objects_id'])
@@ -747,6 +890,23 @@ class CatalogMethods(object):
       cat.w=tmp['w']
 
     return
+
+  @staticmethod
+  def matched_metacal_cut():
+    cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'coadd',0,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'snr',10,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def matched_i3_cut():
+    cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
+    cuts=CatalogMethods.add_cut(cuts,'coadd',0,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'snr',12,noval,200)
+    cuts=CatalogMethods.add_cut(cuts,'rgp',1.13,noval,3.0)
+
+    return cuts
 
   @staticmethod
   def final_null_cuts():
@@ -1076,6 +1236,7 @@ class CatalogMethods(object):
     print ranmap
     hpmin=np.min(hpmap)
     hpmax=np.max(hpmap)
+    print '....',hpmin,hpmax
 
     tmp0=hp.nside2npix(rannside)//hp.nside2npix(masknside)
 
@@ -1083,7 +1244,7 @@ class CatalogMethods(object):
     while len(ran)<nran:
       print nran,len(ran)
 
-      tmp=rand.randint(hpmin*tmp0,high=hpmax*tmp0,size=nran)
+      tmp=rand.randint(hpmin*tmp0,high=(hpmax+1)*tmp0,size=nran)
       mask=np.in1d(tmp//tmp0,hpmap,assume_unique=False)
       ran=np.append(ran,tmp[mask])
 
@@ -1095,19 +1256,36 @@ class CatalogMethods(object):
     return ra,dec,ran
 
   @staticmethod
-  def create_random_cat(nran,maskpix,label='',rannside=262144,masknside=4096):
+  def create_random_cat_from_cat(cat, nran,label='',rannside=262144,masknside=4096):
+    """
+    Create a random catalogs with the same coverage as another catalog.
+    Depending on the masknside that you choose this may not
+    """
+    print "Warning: making proper randoms is hard and this function may not meet your needs."
+    ra = cat.ra
+    dec = cat.dec
+    hpix = CatalogMethods.radec_to_hpix(ra, dec)
+    maskpix = np.unique(hpix)
+    return CatalogMethods.create_random_cat(nran, maskpix,label=label,rannside=rannside,masknside=masknside)
+
+  @staticmethod
+  def create_random_cat(nran,maskpix,label='',rannside=262144,masknside=4096, mpi=False):
     """
     This will create a uniform (currently, will update as needed) random catalog from a mask defined via healpixels (maskpix). Input maskpix should be in nest form. label prepends a label to the output file. masknside is the nside of the mask, rannside is the pixelisation of the random distribution - defaults to about 2/3 arcsecond area pixels.
 
     This will produce a fits file with 'ra','dec' columns that contains nran*100*MPI.size() randoms.
     """
 
-    from mpi4py import MPI
+    if mpi:
+      from mpi4py import MPI
+      comm = MPI.COMM_WORLD
+      rank = comm.Get_rank()
+      size = comm.Get_size()
+    else:
+      rank=0
+      size=1
     import time
 
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
 
     t1=time.time()
     for i in xrange(1):
@@ -1115,11 +1293,15 @@ class CatalogMethods(object):
       ra,dec,ran=CatalogMethods.select_random_pts(nran,maskpix,rannside=rannside,masknside=masknside)
       print 'after',i,rank,time.time()-t1
 
-      x=np.empty((len(ra)*size))
-      y=np.empty((len(dec)*size))
 
-      comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
-      comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+      if mpi:
+        x=np.empty((len(ra)*size))
+        y=np.empty((len(dec)*size))
+        comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
+        comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+      else:
+        x = ra
+        y = dec
 
       if rank == 0:
         print 'end',i,rank
@@ -1261,7 +1443,12 @@ class CatalogMethods(object):
 
       print 'loading '+file0
 
-      tmp=fio.FITS(file0)[-1].read()
+      try:
+        tmp=fio.FITS(file0)[-1].read()
+      except IOError:
+        print 'error loading fits file: ',file0
+        raise
+
       store=np.ones(tmp.shape, dtype=tmp.dtype.descr + [('e1','f8')]+[('e2','f8')]+[('m','f8')]+[('c1','f8')]+[('c2','f8')]+[('weight','f8')])
       for name in tmp.dtype.names:
         store[name]=tmp[name]
@@ -1296,7 +1483,11 @@ class CatalogMethods(object):
 
       return
 
-    spec=fio.FITS(spec0)[-1].read()
+    try:
+      spec=fio.FITS(spec0)[-1].read()
+    except IOError:
+      print 'error loading fits file: ',spec0
+      raise
 
     store_rmd=read_cat(rmd,spec)
     store_rml=read_cat(rml,spec)
@@ -1306,7 +1497,13 @@ class CatalogMethods(object):
 
       for ifile,file0 in enumerate(glob.glob(shape+'*')):
         print ifile,file0
-        tmp2=fio.FITS(file0)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+        try:
+          tmp2=fio.FITS(file0)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+        
+        except IOError:
+          print 'error loading fits file: ',file0
+          raise
+
         mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
         tmp2=tmp2[mask]
 
@@ -1315,8 +1512,13 @@ class CatalogMethods(object):
         store_shape(store_rpm,tmp2)
 
     else:
-      
-      tmp2=fio.FITS(shape)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+      try:      
+        tmp2=fio.FITS(shape)[-1].read(columns=['coadd_objects_id','e1','e2','mean_psf_e1_sky','mean_psf_e2_sky','mean_psf_fwhm','mean_rgpp_rp','snr','m','c1','c2','weight','info_flag'])
+    
+      except IOError:
+        print 'error loading fits file: ',shape
+        raise
+    
       mask=(tmp2['info_flag']==0)&(tmp2['mean_rgpp_rp']>1.13)&(tmp2['snr']>12)&(tmp2['snr']<200)&(tmp2['mean_rgpp_rp']<3)&(~(np.isnan(tmp2['mean_psf_e1_sky'])|np.isnan(tmp2['mean_psf_e2_sky'])|np.isnan(tmp2['snr'])|np.isnan(tmp2['mean_psf_fwhm'])))
       tmp2=tmp2[mask]
 

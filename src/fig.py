@@ -80,11 +80,16 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_2D_hist(x1,y1,bins=config.cfg.get('hbins',500),xname='',yname='',xlabel='',ylabel='',xtile='',ytile=''):
+  def plot_2D_hist(x1,y1,bins=config.cfg.get('hbins',500),
+    xname='',yname='',xlabel='',ylabel='',xtile='',ytile='',
+    do_abs=True, do_save=True
+
+    ):
 
     print 'hist 2D',xlabel,ylabel
 
-    plt.figure()
+    if do_save:
+      plt.figure()
     plt.hist2d(x1,y1,bins=bins)
     s=config.lbl.get(xlabel,'')
     if config.log_val.get(xlabel,False):
@@ -97,37 +102,44 @@ class plot_methods(object):
     plt.minorticks_on()
     if xtile!='':
       xname='tile_'+xtile+'_'+xname
-    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel.replace('_','-')+'_'+ylabel.replace('_','-')+'.png', bbox_inches='tight')
-    plt.close()
+    if do_save:
+      plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel.replace('_','-')+'_'+ylabel.replace('_','-')+'.png', bbox_inches='tight')
+      plt.close()
 
-    plt.figure()
-    plt.hist2d(np.abs(x1),np.abs(y1),bins=bins,norm=LogNorm())
-    s=config.lbl.get(xlabel,'')
-    if config.log_val.get(xlabel,False):
-      s='log '+s
-    plt.xlabel(s+' '+xtile)
-    s=config.lbl.get(ylabel,'')
-    if config.log_val.get(ylabel,False):
-      s='log '+s
-    plt.ylabel(s+' '+ytile)   
-    plt.minorticks_on()
-    plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel.replace('_','-')+'_'+ylabel.replace('_','-')+'_abslog.png', bbox_inches='tight')
-    plt.close()
+    if do_abs:
+      if do_save:
+        plt.figure()
+      plt.hist2d(np.abs(x1),np.abs(y1),bins=bins,norm=LogNorm())
+      s=config.lbl.get(xlabel,'')
+      if config.log_val.get(xlabel,False):
+        s='log '+s
+      plt.xlabel(s+' '+xtile)
+      s=config.lbl.get(ylabel,'')
+      if config.log_val.get(ylabel,False):
+        s='log '+s
+      plt.ylabel(s+' '+ytile)   
+      plt.minorticks_on()
+      if do_save:
+        plt.savefig('plots/hist/hist_2D_'+xname+'_'+yname+'_'+xlabel.replace('_','-')+'_'+ylabel.replace('_','-')+'_abslog.png', bbox_inches='tight')
+        plt.close()
 
-    return
 
   @staticmethod
   def plot_hexbin(x1,ra,dec,bins=config.cfg.get('hexbins',20),name='',label='',tile=''):
 
-    s82=(dec>-10)
-    spta=(~s82)&(ra<0)
-    sptc=(~s82)&(ra>50)
-    sptb=(~s82)&(~spta)&(~sptc)
+    s82=(dec>-10)&(ra<10)&(ra>-50)
+    spta=(~s82)&(ra<0)&(dec<-30)
+    sptc=(~s82)&(ra>50)&(dec<-30)
+    sptb=(~s82)&(~spta)&(~sptc)&(dec<-30)
 
-    plot_methods.plot_hexbin_base(x1,ra[s82],dec[s82],label=label,bins=bins,part='s82',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,ra[spta],dec[spta],label=label,bins=bins,part='spta',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,ra[sptb],dec[sptb],label=label,bins=bins,part='sptb',name=name,tile=tile)
-    plot_methods.plot_hexbin_base(x1,ra[sptc],dec[sptc],label=label,bins=bins,part='sptc',name=name,tile=tile)
+    if np.any(s82):
+      plot_methods.plot_hexbin_base(x1,ra[s82],dec[s82],label=label,bins=bins,part='s82',name=name,tile=tile)
+    if np.any(spta):
+      plot_methods.plot_hexbin_base(x1,ra[spta],dec[spta],label=label,bins=bins,part='spta',name=name,tile=tile)
+    if np.any(sptb):
+      plot_methods.plot_hexbin_base(x1,ra[sptb],dec[sptb],label=label,bins=bins,part='sptb',name=name,tile=tile)
+    if np.any(sptc):
+      plot_methods.plot_hexbin_base(x1,ra[sptc],dec[sptc],label=label,bins=bins,part='sptc',name=name,tile=tile)
 
     return
 
