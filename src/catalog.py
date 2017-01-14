@@ -196,7 +196,7 @@ class CatalogStore(object):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
       #Make footprint contiguous across ra=0
-      if ('ra' in cols)|(goldfile is not None):
+      if hasattr(self,'ra'):
         ra=self.ra
         ra[self.ra>180]=self.ra[self.ra>180]-360
         self.ra=ra
@@ -1256,19 +1256,36 @@ class CatalogMethods(object):
     return ra,dec,ran
 
   @staticmethod
-  def create_random_cat(nran,maskpix,label='',rannside=262144,masknside=4096):
+  def create_random_cat_from_cat(cat, nran,label='',rannside=262144,masknside=4096):
+    """
+    Create a random catalogs with the same coverage as another catalog.
+    Depending on the masknside that you choose this may not
+    """
+    print "Warning: making proper randoms is hard and this function may not meet your needs."
+    ra = cat.ra
+    dec = cat.dec
+    hpix = CatalogMethods.radec_to_hpix(ra, dec)
+    maskpix = np.unique(hpix)
+    return CatalogMethods.create_random_cat(nran, maskpix,label=label,rannside=rannside,masknside=masknside)
+
+  @staticmethod
+  def create_random_cat(nran,maskpix,label='',rannside=262144,masknside=4096, mpi=False):
     """
     This will create a uniform (currently, will update as needed) random catalog from a mask defined via healpixels (maskpix). Input maskpix should be in nest form. label prepends a label to the output file. masknside is the nside of the mask, rannside is the pixelisation of the random distribution - defaults to about 2/3 arcsecond area pixels.
 
     This will produce a fits file with 'ra','dec' columns that contains nran*100*MPI.size() randoms.
     """
 
-    from mpi4py import MPI
+    if mpi:
+      from mpi4py import MPI
+      comm = MPI.COMM_WORLD
+      rank = comm.Get_rank()
+      size = comm.Get_size()
+    else:
+      rank=0
+      size=1
     import time
 
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
 
     t1=time.time()
     for i in xrange(1):
@@ -1276,11 +1293,15 @@ class CatalogMethods(object):
       ra,dec,ran=CatalogMethods.select_random_pts(nran,maskpix,rannside=rannside,masknside=masknside)
       print 'after',i,rank,time.time()-t1
 
-      x=np.empty((len(ra)*size))
-      y=np.empty((len(dec)*size))
 
-      comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
-      comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+      if mpi:
+        x=np.empty((len(ra)*size))
+        y=np.empty((len(dec)*size))
+        comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
+        comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+      else:
+        x = ra
+        y = dec
 
       if rank == 0:
         print 'end',i,rank
