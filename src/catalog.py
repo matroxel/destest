@@ -820,16 +820,16 @@ class CatalogMethods(object):
       if valeq==noval:
         print 'warning, no range or equality set in cut on column '+col
       else:
-        mask=mask & (array[col]==valeq)
+        mask=mask & (array==valeq)
     elif (valmin!=noval) & (valmax!=noval):
       if valeq!=noval:
         print 'cannot have both equality and range cut on column '+col
       else:
-        mask=mask & (valmin<array[col]) & (array[col]<valmax)
+        mask=mask & (valmin<array) & (array<valmax)
     elif (valmin!=noval):
       mask=mask & (valmin<array[col])
     else:
-      mask=mask & (array[col]<valmax)
+      mask=mask & (array<valmax)
     return mask
 
   @staticmethod
