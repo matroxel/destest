@@ -247,7 +247,10 @@ class split_methods(object):
           a2[i]=split_methods.amp_shift(out0[i],outb[i]-out0[i],errb[i])
 
       if blind:
-        out0*=(ran.rand()*0.1+1.)
+        for i in xrange(2):
+          if (j==1)&(i==1):
+            continue
+          out0[i]*=(ran.rand()*0.1+1.)
 
       if j==0:
         xi=(theta,outa,out0,outb,erra,err0,errb,derra,derr0,derrb,a1,a0,a2)
@@ -372,6 +375,10 @@ class split_methods(object):
 
 def split_gals_lin_along_base(cat,val,array,mask,name,mock=False,log=False,log2=False,label='',plot=False,fit=True,e=True,val2=None,array2=None,trend=True):
 
+  if cat.cat=='mcal':
+    if cat.tablesheared.get(val,False):
+      print 'Not registered as sheared value:  ', val
+
   if val2 is not None:
     if log2:
       array2=np.log10(array2)
@@ -382,9 +389,9 @@ def split_gals_lin_along_base(cat,val,array,mask,name,mock=False,log=False,log2=
   print 'not passing w to bin_means - fix'
 
   if e:
-    arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,w=None,mask=mask,mock=mock,log=log)
+    arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,val,cat,w=None,mask=mask,mock=mock,log=log)
   else:
-    arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,cat,w=None,mask=mask,mock=mock,log=log,noe=True,y=array2)
+    arr1,arr1err,e1,e1err,e2,e2err=lin.linear_methods.bin_means(array,val,cat,w=None,mask=mask,mock=mock,log=log,noe=True,y=array2)
 
   if arr1 is None:
     return None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
