@@ -89,6 +89,8 @@ class CatalogStore(object):
         print 'Using all columns from file'
         cols1=None
 
+      print 'shape columns',cols
+
       if goldfile is not None:
         if (catfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
