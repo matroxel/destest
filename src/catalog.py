@@ -657,8 +657,8 @@ class CatalogMethods(object):
 
     print 'fits load',time.time()-t0
 
-    tmparray = goldfits[hdu].read(columns=['flags_gold','flags_badregion'])
-    goldmask = (tmparray['flags_gold']==0)&(tmparray['flags_badregion']==0)&(np.arange(len(tmparray))<maxrows)
+    tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
+    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
 
     print 'gold mask',time.time()-t0
 
@@ -726,8 +726,8 @@ class CatalogMethods(object):
 
     print 'read shape file',time.time()-t0
 
-    print 'FIX TEMPORARY PATCH FOR MATCHED FILES - DROPPING GOLD COADDS INTO SHAPE ARRAY'
-    shapearray[shapetable.get('coadd')]=goldarray[goldtable.get('coadd')]
+    # print 'FIX TEMPORARY PATCH FOR MATCHED FILES - DROPPING GOLD COADDS INTO SHAPE ARRAY'
+    # shapearray[shapetable.get('coadd')]=goldarray[goldtable.get('coadd')]
 
     if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
       i=np.argsort(goldarray[goldtable.get('coadd')])
