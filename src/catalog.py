@@ -205,6 +205,10 @@ class CatalogStore(object):
       if cattype=='mcal':
         if not hasattr(self,'rgp'):
           self.rgp=self.add_shared_array(len(filenames),self.size/self.psfsize,p)
+          self.rgp_1p=self.add_shared_array(len(filenames),self.size_1p/self.psfsize,p)
+          self.rgp_1m=self.add_shared_array(len(filenames),self.size_1m/self.psfsize,p)
+          self.rgp_2p=self.add_shared_array(len(filenames),self.size_2p/self.psfsize,p)
+          self.rgp_2m=self.add_shared_array(len(filenames),self.size_2m/self.psfsize,p)
 
 
       #Make footprint contiguous across ra=0
@@ -716,11 +720,9 @@ class CatalogMethods(object):
     print 'read gold file',time.time()-t0
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
-      print tmpcols
       if shapecutslive is not None:
         cutcols=shapecutslive['col'][shapecutslive['derived']==False]
         tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
-        print tmpcols
       shapearray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
       print 'error loading fits file: ',shape
@@ -788,24 +790,22 @@ class CatalogMethods(object):
   def get_cuts_mask(cat,full=True):
 
     mask=np.array([])
-    for icut,cut in enumerate(cat.livecuts):
-      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
-
     mask_1p=np.array([])
-    for icut,cut in enumerate(cat.livecuts):
-      mask_1p=CatalogMethods.cuts_on_col(mask_1p,getattr(cat,cut['col']+'_1p'),cut['col'],cut['min'],cut['eq'],cut['max'])
-
     mask_1m=np.array([])
-    for icut,cut in enumerate(cat.livecuts):
-      mask_1m=CatalogMethods.cuts_on_col(mask_1m,getattr(cat,cut['col']+'_1m'),cut['col'],cut['min'],cut['eq'],cut['max'])
-
     mask_2p=np.array([])
-    for icut,cut in enumerate(cat.livecuts):
-      mask_2p=CatalogMethods.cuts_on_col(mask_2p,getattr(cat,cut['col']+'_2p'),cut['col'],cut['min'],cut['eq'],cut['max'])
-
     mask_2m=np.array([])
     for icut,cut in enumerate(cat.livecuts):
-      mask_2m=CatalogMethods.cuts_on_col(mask_2m,getattr(cat,cut['col']+'_2m'),cut['col'],cut['min'],cut['eq'],cut['max'])
+      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+      if cat.tablesheared.get(cut['col'],False):
+        mask_1p=CatalogMethods.cuts_on_col(mask_1p,getattr(cat,cut['col']+'_1p'),cut['col'],cut['min'],cut['eq'],cut['max'])
+        mask_1m=CatalogMethods.cuts_on_col(mask_1m,getattr(cat,cut['col']+'_1m'),cut['col'],cut['min'],cut['eq'],cut['max'])
+        mask_2p=CatalogMethods.cuts_on_col(mask_2p,getattr(cat,cut['col']+'_2p'),cut['col'],cut['min'],cut['eq'],cut['max'])
+        mask_2m=CatalogMethods.cuts_on_col(mask_2m,getattr(cat,cut['col']+'_2m'),cut['col'],cut['min'],cut['eq'],cut['max'])
+      else:
+        mask_1p=CatalogMethods.cuts_on_col(mask_1p,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+        mask_1m=CatalogMethods.cuts_on_col(mask_1m,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+        mask_2p=CatalogMethods.cuts_on_col(mask_2p,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+        mask_2m=CatalogMethods.cuts_on_col(mask_2m,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
 
     return mask, mask_1p, mask_1m, mask_2p, mask_2m
 

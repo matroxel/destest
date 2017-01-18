@@ -363,6 +363,7 @@ matched_ng_col_sheared = {
   'e2':True,
   'snr':True,
   'size':True,
+  'rgp':True,
   'w':True
 }
 
