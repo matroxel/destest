@@ -89,8 +89,6 @@ class CatalogStore(object):
         print 'Using all columns from file'
         cols1=None
 
-      print 'shape columns',cols
-
       if goldfile is not None:
         if (catfile is None):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
@@ -663,8 +661,6 @@ class CatalogMethods(object):
 
     print 'gold mask',time.time()-t0
 
-    print 'shapecols in func',shapecols
-
     # Verify that the columns requested exist in the file
     tmpcols=col_list(shapecols,shapetable,shapetablesheared)
     if shapecutslive is not None:
@@ -818,7 +814,7 @@ class CatalogMethods(object):
     """    
 
     if mask.size==0:
-      mask=np.ones((len(array[col])), dtype=bool)
+      mask=np.ones((len(array)), dtype=bool)
 
     if (valmin==noval) & (valmax==noval):
       if valeq==noval:
