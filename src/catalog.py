@@ -663,6 +663,8 @@ class CatalogMethods(object):
 
     print 'gold mask',time.time()-t0
 
+    print 'shapecols in func',shapecols
+
     # Verify that the columns requested exist in the file
     tmpcols=col_list(shapecols,shapetable,shapetablesheared)
     if shapecutslive is not None:
