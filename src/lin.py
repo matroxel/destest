@@ -132,26 +132,38 @@ class linear_methods(object):
 
       wt=False
       print 'no weight in responsivity for mcal'
-      print mask[0],e1
-      w=np.ones(len(e1[mask[0]]))
+      if len(np.shape(mask))>1:
+        mask=mask[0]
+        sels=True
+      else:
+        sels=False
+        print 'assuming no selection effects in responsivity'
+      w=np.ones(len(e1[mask]))
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
-          m1=(cat.e1_1p[mask[0]]-cat.e1_1m[mask[0]])/(2.*config.cfg.get('mcal_dg'))
-          m2=(cat.e2_2p[mask[0]]-cat.e2_2m[mask[0]])/(2.*config.cfg.get('mcal_dg'))
-          sp1=cat.e1[mask[1]]/(2.*config.cfg.get('mcal_dg'))
-          sm1=cat.e1[mask[2]]/(2.*config.cfg.get('mcal_dg'))
-          sp2=cat.e1[mask[3]]/(2.*config.cfg.get('mcal_dg'))
-          sm2=cat.e1[mask[4]]/(2.*config.cfg.get('mcal_dg'))
+          m1=(cat.e1_1p[mask]-cat.e1_1m[mask])/(2.*config.cfg.get('mcal_dg'))
+          m2=(cat.e2_2p[mask]-cat.e2_2m[mask])/(2.*config.cfg.get('mcal_dg'))
           cat.Rg=(m1+m2)/2.
-          cat.Rsp=(sp1+sp2)/2.
-          cat.Rsm=(sm1+sm2)/2.
+          if sels:
+            sp1=cat.e1[mask[1]]/(2.*config.cfg.get('mcal_dg'))
+            sm1=cat.e1[mask[2]]/(2.*config.cfg.get('mcal_dg'))
+            sp2=cat.e1[mask[3]]/(2.*config.cfg.get('mcal_dg'))
+            sm2=cat.e1[mask[4]]/(2.*config.cfg.get('mcal_dg'))
+            cat.Rsp=(sp1+sp2)/2.
+            cat.Rsm=(sm1+sm2)/2.
+          else:
+            cat.Rsp=0.
+            cat.Rsm=0.            
           return e1,e2,w,ms,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
-          m1=np.mean(cat.e1_1p[mask[0]])-np.mean(cat.e1_1m[mask[0]])+np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
+          m1=np.mean(cat.e1_1p[mask])-np.mean(cat.e1_1m[mask])
+          m2=np.mean(cat.e2_2p[mask])-np.mean(cat.e2_2m[mask])
+          if sels:
+            m1+=np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
+            m2+=np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
           m1/=2.*config.cfg.get('mcal_dg')
-          m2=np.mean(cat.e2_2p[mask[0]])-np.mean(cat.e2_2m[mask[0]])+np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
           m2/=2.*config.cfg.get('mcal_dg')
           return e1,e2,w,m1,m2
       else:
