@@ -827,7 +827,7 @@ class CatalogMethods(object):
       else:
         mask=mask & (valmin<array) & (array<valmax)
     elif (valmin!=noval):
-      mask=mask & (valmin<array[col])
+      mask=mask & (valmin<array)
     else:
       mask=mask & (array<valmax)
     return mask
