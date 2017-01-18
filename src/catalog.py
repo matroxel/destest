@@ -633,7 +633,7 @@ class CatalogMethods(object):
           if shapetablesheared.get(x,False):
             for i in ['1','2']:
               for j in ['p','m']:
-                cols2.append(shapetable.get(x,x)+i+j)
+                cols2.append(shapetable.get(x,x)+'_'+i+j)
           else:
             print 'Not registered as sheared column:  ',shapetable.get(x,x)
 
@@ -686,9 +686,11 @@ class CatalogMethods(object):
     cutcols=shapecuts['col']
     tmpcols=col_list(cutcols,shapetable,shapetablesheared)
     colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
+    print colist
     if colex<1:
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
-      colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
+      colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
+      print colist
       if colex<1:
         raise ColError('cut columns '+colist+' do not exist in file: '+shape)
 
