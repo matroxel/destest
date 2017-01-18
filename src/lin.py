@@ -132,6 +132,7 @@ class linear_methods(object):
 
       wt=False
       print 'no weight in responsivity for mcal'
+      print mask[0],e1
       w=np.ones(len(e1[mask[0]]))
       if bs:
         if xi:
@@ -204,7 +205,6 @@ class linear_methods(object):
     if isinstance(cat,catalog.CatalogStore):
       if cat.cat!='mcal':
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-
 
     w=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)[2]
 
