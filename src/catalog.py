@@ -666,6 +666,7 @@ class CatalogMethods(object):
     if shapecutslive is not None:
       cutcols=shapecutslive['col']
       tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
+    print tmpcols,[shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames()
     colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(shapecols):
