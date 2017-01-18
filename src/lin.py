@@ -338,7 +338,7 @@ class linear_methods(object):
     if isinstance(cat,catalog.CatalogStore):
       if cat.cat=='mcal':
         print 'Ignoring any specified masks unless via cat.livecuts due to necessary support of mcal responsivity corrections'
-        mask = CatalogMethods.get_cuts_mask(cat,full=False)
+        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
       else:
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
