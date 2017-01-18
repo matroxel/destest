@@ -312,13 +312,13 @@ truth_col_lookup = {
 
 matched_gold_col_lookup = {  
 
-  'coadd':'coadd_objects_id',
-  'ra':'ra',
-  'dec':'dec',
-  'flags_badregion':'flags_badregion',
-  'flags_gold':'flags_gold',
-  'modest_class':'modest_class',
-  'zp':'desdm_zp'
+  'coadd':'COADD_OBJECTS_ID',
+  'ra':'RA',
+  'dec':'DEC',
+  'flags_badregion':'FLAGS_BADREGION',
+  'flags_gold':'FLAGS_GOLD',
+  'modest_class':'MODEST_CLASS',
+  'zp':'DESDM_ZP'
 }
 
 matched_i3_col_lookup = {  
