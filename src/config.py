@@ -51,7 +51,8 @@ cfg = {
   'wt':False,
   'pzrw':False,
   'proc':16,
-  'tasks':1
+  'tasks':1,
+  'mcal_dg':0.01
 
 }
 
@@ -352,10 +353,18 @@ matched_ng_col_lookup = {
   'size':'size',
   'psf1':'psf_e1',
   'psf2':'psf_e2',
-  'psffwhm':'psf_size',
+  'psfsize':'psf_size',
   'w':'weight'
 }
 
+matched_ng_col_sheared = {
+
+  'e1':True,
+  'e2':True,
+  'snr':True,
+  'size':True,
+  'w':True
+}
 
 buzzard_col_lookup = {
   
@@ -366,7 +375,6 @@ buzzard_col_lookup = {
   'e1':'EPSILON1',
   'e2':'EPSILON2',
   'zp':'ANNZ'
-
 }
 
 gal_col_lookup = {
