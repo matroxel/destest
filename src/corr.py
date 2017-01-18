@@ -102,8 +102,6 @@ class xi_2pt(object):
     if wa is None:
       wa=np.ones(len(cata.coadd))
 
-    e1,e2,w,ms=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska0,w1=wa)
-
     if catb is None:
       if corr not in ['GG','NN','KK']:
         raise UseError('Must supply both cata,catb for NG,NK correlations.')
@@ -117,10 +115,17 @@ class xi_2pt(object):
       gb=ga
     if conj:
       e2=-e2
+    if ga='e':
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska0,w1=wa)
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
-      catma=treecorr.Catalog(k=ms, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+      if cata.cat=='mcal':
+        catRga=treecorr.Catalog(k=cata.Rg, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        catRspa=treecorr.Catalog(k=cata.Rsp, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        catRsma=treecorr.Catalog(k=cata.Rsm, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+      else:
+        catma=treecorr.Catalog(k=ms, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
     elif (corr=='NN')|((catb!=None)&(corr in ['NG','NK'])):
       catxa=treecorr.Catalog(w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
@@ -134,14 +139,23 @@ class xi_2pt(object):
         raise UseError('Unknown k field specified.')
       catxa=treecorr.Catalog(k=getattr(cata, k)[maska0], w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
-    if catb is not None:
+    if catb is None:
+      catxb=catxa
+      if cata.cat=='mcal':
+        catRgb=catRga
+        catRspb=catRspa
+        catRsmb=catRsma
+      else:
+        catmb=catma
+      if (corr=='NN')&ran:
+        catrb=catra
+
+    else:
 
       maskb=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
 
       if wb is None:
         wb=np.ones(len(catb.coadd))
-
-      e1,e2,w,ms=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if gb is not None:
         e1=getattr(catb,gb+'1')[maskb]
@@ -150,10 +164,17 @@ class xi_2pt(object):
         gb='e'
       if conj:
         e2=-e2
+      if gb='e':
+        e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
-        catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
+      if catb.cat=='mcal':
+        catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+        catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+        catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+      else:
+        catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
         catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
         if ran:
@@ -173,19 +194,26 @@ class xi_2pt(object):
     ximerr_im=None
     if corr=='GG':
       gg = treecorr.GGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-      kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-      if catb is None:
-        gg.process(catxa)
-        kk.process(catma)
-      else:
-        gg.process(catxa,catxb)
-        kk.process(catma,catmb)
+      gg.process(catxa,catxb)
 
-      xip = gg.xip/kk.xi
-      xim = gg.xim/kk.xi
+      if cata.cat=='mcal':
+        Rg = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rsp = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rsm = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rg.process(catRga,catRgb)
+        Rsp.process(catRspa,catRspb)
+        Rsm.process(catRsma,catRsmb)
+        norm = Rg.xi+Rsp.xi-Rsm.xi
+      else:
+        kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        kk.process(catma,catmb)
+        norm = kk.xi
+
+      xip = gg.xip/norm
+      xim = gg.xim/norm
       xiperr = ximerr = np.sqrt(gg.varxi)
-      xip_im = gg.xip_im/kk.xi
-      xim_im = gg.xim_im/kk.xi
+      xip_im = gg.xip_im/norm
+      xim_im = gg.xim_im/norm
       theta = np.exp(gg.meanlogr)
 
     elif corr=='NN':
@@ -193,36 +221,23 @@ class xi_2pt(object):
       if ran:
         nr = treecorr.NNCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         rr = treecorr.NNCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-
-      if catb is None:
-        nn.process(catxa)
-        xip=nn.npairs
-        xiperr=np.sqrt(nn.npairs)
-        if ran:
-          nr.process(catxa,catra)
-          rr.process(catra)
-        xip,xiperr=nn.calculateXi(rr,nr)
-        xiperr=np.sqrt(xiperr)
-      else:
         rn = treecorr.NNCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-        nn.process(catxa,catxb)
-        xip=nn.npairs
-        xiperr=np.sqrt(nn.npairs)
-        if ran:
-          nr.process(catxa,catrb)
-          nr.process(catra,catxb)
-          rr.process(catra,catrb)
-        xip,xiperr=nn.calculateXi(rr,nr,rn)
-        xiperr=np.sqrt(xiperr)
+
+      nn.process(catxa,catxb)
+      xip=nn.npairs
+      xiperr=np.sqrt(nn.npairs)
+      if ran:
+        nr.process(catxa,catrb)
+        nr.process(catra,catxb)
+        rr.process(catra,catrb)
+      xip,xiperr=nn.calculateXi(rr,nr,rn)
+      xiperr=np.sqrt(xiperr)
       theta=np.exp(nn.meanlogr)
 
     elif corr=='KK':
 
       kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-      if catb is None:
-        kk.process(catxa)
-      else:
-        kk.process(catxa,catxb)
+      kk.process(catxa,catxb)
       xip=kk.xi
       xiperr=np.sqrt(kk.varxi)
       theta=np.exp(kk.meanlogr)
@@ -230,29 +245,65 @@ class xi_2pt(object):
     elif corr=='KG':
 
       kg = treecorr.KGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-      kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       kg.process(catxa,catxb)
-      kk.process(catxa,catmb)
-      xip=kg.xi/kk.xi
+
+      if cata.cat=='mcal':
+        Rg = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rsp = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rsm = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rg.process(catxa,catRgb)
+        Rsp.process(catxa,catRspb)
+        Rsm.process(catxa,catRsmb)
+        norm = Rg.xi+Rsp.xi-Rsm.xi
+      else:
+        kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        kk.process(catxa,catmb)
+        norm = kk.xi
+
+      xip=kg.xi/norm
       xiperr=np.sqrt(kg.varxi)
-      xip_im=kg.xi_im/kk.xi
+      xip_im=kg.xi_im/norm
       theta=np.exp(kg.meanlogr)
 
     elif corr=='NG':
 
       ng = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-      nk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       ng.process(catxa,catxb)
-      nk.process(catxa,catmb)
-      xip=ng.xi/nk.xi
+
+      if cata.cat=='mcal':
+        Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rsp = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rsm = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        Rg.process(catxa,catRgb)
+        Rsp.process(catxa,catRspb)
+        Rsm.process(catxa,catRsmb)
+        norm = Rg.xi+Rsp.xi-Rsm.xi
+      else:
+        nk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        nk.process(catxa,catmb)
+        norm = nk.xi
+
+      xip=ng.xi/norm
       xiperr=np.sqrt(ng.varxi)
-      xip_im=ng.xi_im/nk.xi
+      xip_im=ng.xi_im/norm
       if ran:
         rg = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-        rk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         rg.process(catra,catxb)
-        rk.process(catra,catmb)
+        if cata.cat=='mcal':
+          Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+          Rsp = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+          Rsm = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+          Rg.process(catra,catRgb)
+          Rsp.process(catra,catRspb)
+          Rsm.process(catra,catRsmb)
+          norm = Rg.xi+Rsp.xi-Rsm.xi
+        else:
+          rk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+          rk.process(catra,catmb)
+          norm = rk.xi
+
         xip,xip_im,xiperr=ng.calculateXi(rg)
+        print 'random subtraction with mcal responsivities not finished - disregard this result' 
         tmpa,tmp=nk.calculateXi(rk)
         if np.sum(tmpa)==0:
           tmpa=np.ones(len(xip))
