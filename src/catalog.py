@@ -636,7 +636,6 @@ class CatalogMethods(object):
                 cols2.append(shapetable.get(x,x)+i+j)
           else:
             print 'Not registered as sheared column:  ',shapetable.get(x,x)
-            raise
 
       return cols2
 
