@@ -721,7 +721,7 @@ class CatalogMethods(object):
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
       if shapecutslive is not None:
-        cutcols=shapecutslive['col']
+        cutcols=shapecutslive['col'][shapecutslive[0]['derived']=derived]
         tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
       shapearray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
@@ -843,7 +843,7 @@ class CatalogMethods(object):
     return np.ndarray(array.shape, dtype2, array, 0, array.strides)
 
   @staticmethod
-  def add_cut_sheared(cat,col,cmin=noval,ceq=noval,cmax=noval,remove=False):
+  def add_cut_sheared(cat,col,cmin=noval,ceq=noval,cmax=noval,derived=False,remove=False):
     """
     Helper function to format catalog cuts.
     """    
@@ -869,23 +869,25 @@ class CatalogMethods(object):
     return cat.livecuts
 
   @staticmethod
-  def add_cut(cuts,col,cmin,ceq,cmax):
+  def add_cut(cuts,col,cmin,ceq,cmax,derived=False):
     """
     Helper function to format catalog cuts.
     """    
     
     if cuts.size==0:
-      cuts=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
+      cuts=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64),('derived',bool)])
       cuts[0]['col']=col
       cuts[0]['min']=cmin
       cuts[0]['eq']=ceq
       cuts[0]['max']=cmax
+      cuts[0]['derived']=derived
     else:
-      cuts0=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64)])
+      cuts0=np.zeros((1), dtype=[('col',np.str,20),('min',np.float64),('eq',np.float64),('max',np.float64),('derived',bool)])
       cuts0[0]['col']=col
       cuts0[0]['min']=cmin
       cuts0[0]['eq']=ceq
       cuts0[0]['max']=cmax
+      cuts0[0]['derived']=derived
       cuts=np.append(cuts,cuts0,axis=0)
 
     return cuts
@@ -994,7 +996,7 @@ class CatalogMethods(object):
   def matched_metacal_cut_live():
 
     cuts=CatalogMethods.add_cut(np.array([]),'snr',10.,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'rgp',0.5,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'rgp',0.5,noval,noval,derived=True)
 
     return cuts
 
