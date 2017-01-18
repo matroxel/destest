@@ -94,7 +94,7 @@ class linear_methods(object):
       else:
         return np.ones(np.sum(mask)), np.ones(np.sum(mask)), np.ones(np.sum(mask)), np.ones(np.sum(mask))
 
-    elif cattype not in ['i3','ng']:
+    elif cattype not in ['i3','ng','mcal']:
 
       print 'Unknown catalog type. Assuming no bias/sensitivity corections.'
       if wt:
@@ -125,6 +125,38 @@ class linear_methods(object):
       else:  
         ms=np.ones(len(e1))
 
+    elif cattype=='mcal':
+
+      if not isinstance(mask,list):
+        print 'mask needs to be a list for mcal responsivities - this is a complicated traceback... (hopefully your name is troxel)' 
+
+      wt=False
+      print 'no weight in responsivity for mcal'
+      w=np.ones(len(e1[mask[0]]))
+      if bs:
+        if xi:
+          # unsheared, 1p, 1m, 2p, 2m
+          m1=(cat.e1_1p[mask[0]]-cat.e1_1m[mask[0]])/(2.*config.cfg.get('mcal_dg'))
+          m2=(cat.e2_2p[mask[0]]-cat.e2_2m[mask[0]])/(2.*config.cfg.get('mcal_dg'))
+          sp1=cat.e1[mask[1]]/(2.*config.cfg.get('mcal_dg'))
+          sm1=cat.e1[mask[2]]/(2.*config.cfg.get('mcal_dg'))
+          sp2=cat.e1[mask[3]]/(2.*config.cfg.get('mcal_dg'))
+          sm2=cat.e1[mask[4]]/(2.*config.cfg.get('mcal_dg'))
+          cat.Rg=(m1+m2)/2.
+          cat.Rsp=(sp1+sp2)/2.
+          cat.Rsm=(sm1+sm2)/2.
+          return e1,e2,w,ms,m1,m2
+        else:
+          # unsheared, 1p, 1m, 2p, 2m
+          m1=np.mean(cat.e1_1p[mask[0]])-np.mean(cat.e1_1m[mask[0]])+np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
+          m1/=2.*config.cfg.get('mcal_dg')
+          m2=np.mean(cat.e2_2p[mask[0]])-np.mean(cat.e2_2m[mask[0]])+np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
+          m2/=2.*config.cfg.get('mcal_dg')
+          return e1,e2,w,m1,m2
+      else:
+        m1=1.
+        m2=1.
+        return e1,e2,w,m1,m2
     if wt:
       w=w
     else:
@@ -133,7 +165,7 @@ class linear_methods(object):
     if w1 is not None:
       w=np.sqrt(w*w1)
 
-    return e1[mask],e2[mask],w[mask],ms[mask]
+    return e1[mask],e2[mask],w[mask],ms[mask],ms[mask]
 
   @staticmethod
   def calc_mean_stdev_rms_e(cat,mask=None,mock=False,full=True):
@@ -142,16 +174,18 @@ class linear_methods(object):
     """
 
     if isinstance(cat,catalog.CatalogStore):
-      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+      if cat.cat!='mcal':
+        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    e1,e2,w,ms=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)
-    wms=np.sum(w*ms) 
+    e1,e2,w,m1,m2=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)
+    wm1s=np.sum(w*m1)
+    wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
-    mean1=np.sum(w*e1)/wms
-    mean2=np.sum(w*e2)/wms
+    mean1=np.sum(w*e1)/wm1s
+    mean2=np.sum(w*e2)/wm2s
     if full:
-      std1=np.sqrt(np.sum(w*(e1-mean1)**2)/wms)
-      std2=np.sqrt(np.sum(w*(e2-mean2)**2)/wms)
+      std1=np.sqrt(np.sum(w*(e1-mean1)**2)/wm1s)
+      std2=np.sqrt(np.sum(w*(e2-mean2)**2)/wm2s)
       rms1=np.sqrt(np.sum((w*e1)**2)/ww)
       rms2=np.sqrt(np.sum((w*e2)**2)/ww)
 
@@ -168,7 +202,9 @@ class linear_methods(object):
     """
 
     if isinstance(cat,catalog.CatalogStore):
-      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+      if cat.cat!='mcal':
+        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+
 
     w=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)[2]
 
@@ -246,10 +282,11 @@ class linear_methods(object):
     return r
 
   @staticmethod
-  def binned_mean_e(bin,cat,mask=None,mock=False):
+  def binned_mean_e(bin,cat,val,mask=None,mock=False,edge=edge):
 
     if isinstance(cat,catalog.CatalogStore):
-      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+      if cat.cat!='mcal':
+        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     y_mean1=[]
     y_err1=[]
@@ -257,7 +294,12 @@ class linear_methods(object):
     y_err2=[]
 
     for i in xrange(config.cfg.get('lbins',10)):
-      mask0=(bin==i)&mask
+      if cat.cat!='mcal':
+        mask0=[(bin==i)&mask]
+      else:
+        CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        mask0 = CatalogMethods.get_cuts_mask(cat)
+        CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       y_mean1=np.append(y_mean1,mean1)
       y_err1=np.append(y_err1,std1/np.sqrt(np.sum(mask0)))
@@ -270,7 +312,10 @@ class linear_methods(object):
   def binned_mean_x(bin,x,cat,mask=None,mock=False):
 
     if isinstance(cat,catalog.CatalogStore):
-      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+      if cat.cat=='mcal':
+        mask = CatalogMethods.get_cuts_mask(cat,full=False)
+      else:
+        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     x_mean=[]
     x_err=[]
@@ -285,13 +330,17 @@ class linear_methods(object):
 
 
   @staticmethod
-  def bin_means(x,cat,w=None,mask=None,mock=False,log=False,noe=False,y=None):
+  def bin_means(x,val,cat,w=None,mask=None,mock=False,log=False,noe=False,y=None):
     """
     For array x in CatalogStore object cat, calculate the means of shear in equal bins of x. Returns errors in both x and y directions.
     """
 
     if isinstance(cat,catalog.CatalogStore):
-      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+      if cat.cat=='mcal':
+        print 'Ignoring any specified masks unless via cat.livecuts due to necessary support of mcal responsivity corrections'
+        mask = CatalogMethods.get_cuts_mask(cat,full=False)
+      else:
+        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     if w is not None:
       edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10),w[mask])
@@ -312,7 +361,7 @@ class linear_methods(object):
         e2_mean=np.zeros(len(e1_mean))
         e2_err=np.zeros(len(e1_mean))
     else:
-      e1_mean,e1_err,e2_mean,e2_err=linear_methods.binned_mean_e(xbin,cat,mask,mock=mock)
+      e1_mean,e1_err,e2_mean,e2_err=linear_methods.binned_mean_e(xbin,cat,val,mask=mask,mock=mock,edge=edge)
 
     return x_mean,x_err,e1_mean,e1_err,e2_mean,e2_err
 

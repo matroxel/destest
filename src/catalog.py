@@ -37,7 +37,7 @@ class CatalogStore(object):
 
   """
 
-  def __init__(self,name,setup=True,cutfunc=None,cattype=None,cols=None,goldcols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
+  def __init__(self,name,setup=True,cutfunc=None,cutfunclive=None,cattype=None,cols=None,goldcols=None,catdir=None,goldfile=None,catfile=None,ranfile=None,jkbuild=False,jkload=False,tiles=None,release='y1',maxrows=150000000,maxiter=999999,exiter=-1,p=None,ext='*fit*',hdu=-1):
 
     if setup:
       # Populate catalog on object creation
@@ -46,6 +46,7 @@ class CatalogStore(object):
       if cattype=='i3':
         if goldfile is not None:
           table=config.matched_i3_col_lookup
+          tablesheared=None
         else:
           table=config.i3_col_lookup
       elif cattype=='i3epoch':
@@ -53,6 +54,12 @@ class CatalogStore(object):
       elif cattype=='ng':
         if goldfile is not None:
           table=config.matched_ng_col_lookup
+        else:
+          table=config.ng_col_lookup
+      elif cattype=='mcal':
+        if goldfile is not None:
+          table=config.matched_ng_col_lookup
+          tablesheared=config.matched_ng_col_sheared
         else:
           table=config.ng_col_lookup
       elif cattype=='gal':
@@ -87,9 +94,10 @@ class CatalogStore(object):
           raise CatValError('Assumed flat catalog style and no im3shape or ngmix file specified.')
         if goldcols is None:
           goldcols=np.array(list(config.matched_gold_col_lookup.keys()))
+        self.livecuts=cutfunclive
+        self.tablesheared=tablesheared
 
-        cols1=[table.get(x,x) for x in cols]
-        cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,cutfunc,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)
+        cols2,catcols,filenames,filenums=CatalogMethods.get_matched_cat_cols(goldfile,catfile,goldcols,cols,config.matched_gold_col_lookup,table,tablesheared,cutfunc,cutfunclive,tiles=tiles,maxrows=maxrows,maxiter=maxiter,exiter=exiter,hdu=hdu)        
 
         for i,x in enumerate(catcols):
           setattr(self,cols2[i],x)
@@ -151,7 +159,7 @@ class CatalogStore(object):
 
 
       #Generate derived quantities
-      if cattype in ['i3','ng']:
+      if cattype in ['i3','ng','mcal']:
         if ('e1' in cols)&('e2' in cols):
           self.pos=self.add_shared_array(len(filenames),0.5*np.arctan2(self.e2,self.e1)+np.pi/2.,p)
           self.e=self.add_shared_array(len(filenames),np.sqrt(self.e1**2.+self.e2**2.),p)
@@ -194,6 +202,10 @@ class CatalogStore(object):
         self.ri=self.add_shared_array(len(filenames),self.r-self.i,p)
       if ('i' in cols)&('z' in cols):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
+      if cattype=='mcal':
+        if not hasattr(self,'rgp'):
+          self.rgp=self.add_shared_array(len(filenames),self.size/self.psfsize,p)
+
 
       #Make footprint contiguous across ra=0
       if hasattr(self,'ra'):
@@ -493,6 +505,7 @@ class MockCatStore(object):
           self.g2=tmparray['g2']
           break
 
+
 class ColError(Exception):
   def __init__(self, value):
     self.value = value
@@ -572,7 +585,7 @@ class CatalogMethods(object):
       # Generate the selection mask based on the passed cut function
       mask=np.array([])
       for icut,cut in enumerate(cuts): 
-        mask=CatalogMethods.cuts_on_col(mask,tmparray,cutcols[icut],cut['min'],cut['eq'],cut['max'])
+        mask=CatalogMethods.cuts_on_col(mask,tmparray[cutcols[icut]],cutcols[icut],cut['min'],cut['eq'],cut['max'])
 
       # Dump the requested columns into memory if everything is there
       try:
@@ -603,7 +616,7 @@ class CatalogMethods(object):
     return cols,[array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
 
   @staticmethod
-  def get_matched_cat_cols(gold,shape,goldcols,shapecols,goldtable,shapetable,shapecuts,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=1):
+  def get_matched_cat_cols(gold,shape,goldcols,shapecols,goldtable,shapetable,shapetablesheared,shapecuts,shapecutslive,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=1):
     """
     Work function for CatalogStore to parse and read in catalog informaiton from one or more fits files.
     """
@@ -611,6 +624,21 @@ class CatalogMethods(object):
     import fitsio as fio
     import numpy.lib.recfunctions as nlr
     import time
+
+    def col_list(cols,shapetable,shapetablesheared,cols2=[]):
+
+      for x in cols:
+        cols2.append(shapetable.get(x,x))
+        if shapetablesheared is not None:
+          if shapetablesheared.get(x,False):
+            for i in ['1','2']:
+              for j in ['p','m']:
+                cols2.append(shapetable.get(x,x)+i+j)
+          else:
+            print 'Not registered as sheared column:  ',shapetable.get(x,x)
+            raise
+
+      return cols2
 
     t0=time.time()
 
@@ -635,7 +663,11 @@ class CatalogMethods(object):
     print 'gold mask',time.time()-t0
 
     # Verify that the columns requested exist in the file
-    colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in shapecols],shapefits[hdu].get_colnames())
+    tmpcols=col_list(shapecols,shapetable,shapetablesheared)
+    if shapecutslive is not None:
+      cutcols=shapecutslive['col']
+      tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
+    colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
     if colex<1:
       for i,x in enumerate(shapecols):
         shapecols[i]=x.lower()
@@ -652,7 +684,8 @@ class CatalogMethods(object):
         raise ColError('columns '+colist+' do not exist in file: '+gold)
 
     cutcols=shapecuts['col']
-    colex,colist=CatalogMethods.col_exists([shapetable.get(x,x) for x in cutcols],shapefits[hdu].get_colnames())
+    tmpcols=col_list(cutcols,shapetable,shapetablesheared)
+    colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
     if colex<1:
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
       colex,colist=CatalogMethods.col_exists(cutcols,shapefits[hdu].get_colnames())
@@ -663,7 +696,7 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      tmparray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in cutcols])
+      tmparray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
       print 'error loading fits file: ',shape
 
@@ -672,7 +705,7 @@ class CatalogMethods(object):
     # Generate the selection mask based on the passed cut function
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
-      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray,shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
+      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray[shapetable.get(cutcols[icut])],shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
 
     print 'shape cuts done',time.time()-t0
 
@@ -683,7 +716,11 @@ class CatalogMethods(object):
       print 'error loading fits file: ',gold
     print 'read gold file',time.time()-t0
     try:
-      shapearray=shapefits[hdu].read(columns=[shapetable.get(x,x) for x in shapecols])
+      tmpcols=col_list(shapecols,shapetable,shapetablesheared)
+      if shapecutslive is not None:
+        cutcols=shapecutslive['col']
+        tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
+      shapearray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
       print 'error loading fits file: ',shape
 
@@ -747,6 +784,31 @@ class CatalogMethods(object):
     return np.sum(exists)/len(cols),colist
 
   @staticmethod
+  def get_cuts_mask(cat,full=True):
+
+    mask=np.array([])
+    for icut,cut in enumerate(cat.livecuts):
+      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+
+    mask_1p=np.array([])
+    for icut,cut in enumerate(cat.livecuts):
+      mask_1p=CatalogMethods.cuts_on_col(mask_1p,getattr(cat,cut['col']+'_1p'),cut['col'],cut['min'],cut['eq'],cut['max'])
+
+    mask_1m=np.array([])
+    for icut,cut in enumerate(cat.livecuts):
+      mask_1m=CatalogMethods.cuts_on_col(mask_1m,getattr(cat,cut['col']+'_1m'),cut['col'],cut['min'],cut['eq'],cut['max'])
+
+    mask_2p=np.array([])
+    for icut,cut in enumerate(cat.livecuts):
+      mask_2p=CatalogMethods.cuts_on_col(mask_2p,getattr(cat,cut['col']+'_2p'),cut['col'],cut['min'],cut['eq'],cut['max'])
+
+    mask_2m=np.array([])
+    for icut,cut in enumerate(cat.livecuts):
+      mask_2m=CatalogMethods.cuts_on_col(mask_2m,getattr(cat,cut['col']+'_2m'),cut['col'],cut['min'],cut['eq'],cut['max'])
+
+    return mask, mask_1p, mask_1m, mask_2p, mask_2m
+
+  @staticmethod
   def cuts_on_col(mask,array,col,valmin,valeq,valmax):
     """
     Build mask for cutting catalogs as columns are read in to get_cat_cols().
@@ -776,6 +838,32 @@ class CatalogMethods(object):
 
     dtype2 = np.dtype({name:array.dtype.fields[name] for name in cols})
     return np.ndarray(array.shape, dtype2, array, 0, array.strides)
+
+  @staticmethod
+  def add_cut_sheared(cat,col,cmin=noval,ceq=noval,cmax=noval,remove=False):
+    """
+    Helper function to format catalog cuts.
+    """    
+
+    if cat.tablesheared.get(col,False):
+
+      if remove:
+        if np.in1d(col,cat.livecuts['col']):
+
+          mask=(cat.livecuts['col']==col)&(cat.livecuts['min']==cmin)&(cat.livecuts['eq']==ceq)&(cat.livecuts['max']==cmax)
+          cat.livecuts=cat.livecuts[cat.livecuts['col']!=col]
+
+        else:
+          print 'Not in masking cuts:  ',col
+      else:
+
+        cat.livecuts=CatalogMethods.add_cut(cat.livecuts,col,cmin,ceq,cmax)
+
+    else:
+      print 'Not registered as sheared column:  ',col
+      raise
+
+    return cat.livecuts
 
   @staticmethod
   def add_cut(cuts,col,cmin,ceq,cmax):
@@ -893,9 +981,17 @@ class CatalogMethods(object):
 
   @staticmethod
   def matched_metacal_cut():
+
     cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
     cuts=CatalogMethods.add_cut(cuts,'coadd',0,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'snr',10,noval,noval)
+
+    return cuts
+
+  @staticmethod
+  def matched_metacal_cut_live():
+
+    cuts=CatalogMethods.add_cut(np.array([]),'snr',10.,noval,noval)
+    cuts=CatalogMethods.add_cut(cuts,'rgp',0.5,noval,noval)
 
     return cuts
 
