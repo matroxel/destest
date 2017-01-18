@@ -1360,8 +1360,8 @@ class CatalogMethods(object):
     print "Warning: making proper randoms is hard and this function may not meet your needs."
     ra = cat.ra
     dec = cat.dec
-    hpix = radec_to_hpix(ra, dec)
-    maskpix = np.unique1d(hpix)
+    hpix = CatalogMethods.radec_to_hpix(ra, dec)
+    maskpix = np.unique(hpix)
     return CatalogMethods.create_random_cat(nran, maskpix,label=label,rannside=rannside,masknside=masknside)
 
   @staticmethod
@@ -1389,12 +1389,15 @@ class CatalogMethods(object):
       ra,dec,ran=CatalogMethods.select_random_pts(nran,maskpix,rannside=rannside,masknside=masknside)
       print 'after',i,rank,time.time()-t1
 
-      x=np.empty((len(ra)*size))
-      y=np.empty((len(dec)*size))
 
       if mpi:
+        x=np.empty((len(ra)*size))
+        y=np.empty((len(dec)*size))
         comm.Allgather([ra, MPI.DOUBLE],[x, MPI.DOUBLE])
         comm.Allgather([dec, MPI.DOUBLE],[y, MPI.DOUBLE])
+      else:
+        x = ra
+        y = dec
 
       if rank == 0:
         print 'end',i,rank

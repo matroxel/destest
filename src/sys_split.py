@@ -246,6 +246,8 @@ class split_methods(object):
           a1[i]=split_methods.amp_shift(out0[i],outa[i]-out0[i],erra[i])
           a2[i]=split_methods.amp_shift(out0[i],outb[i]-out0[i],errb[i])
 
+      #if blind:
+        #out0=out0*(ran.rand()*0.1+1.)
       if blind:
         for i in xrange(2):
           if (j==1)&(i==1):
@@ -320,6 +322,7 @@ class split_methods(object):
     else:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins)
     bins=np.digitize(array[mask],edge)-1
+
 
     if cat.pzrw:
       w=split_methods.pz_weight(nz[mask],bins)

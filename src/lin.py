@@ -178,8 +178,6 @@ class linear_methods(object):
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     e1,e2,w,m1,m2=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)
-    print "JZ: Length = {} in calc_mean_stdev_rms_e".format(len(e1))
-    print "JZ: indices: {}".format(cat.coadd[mask])
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)

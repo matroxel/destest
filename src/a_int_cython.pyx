@@ -26,10 +26,8 @@ cdef double well(double ell, void * params) nogil:
     return gsl_sf_exp(-gsl_sf_pow_int((gsl_sf_log(ell)-gsl_sf_log(lm(j+0.5,params)))/sig,2)/2.)/sig/M_SQRT2/M_SQRTPI
 
 cdef double tint0(double ell, void * params) nogil:
-  cdef double j = (<double_ptr> params)[0]
-  cdef double lmin = (<double_ptr> params)[1]
-  cdef double lmax = (<double_ptr> params)[2]
-  cdef double nell = (<double_ptr> params)[3]
+  cdef double tmin = (<double_ptr> params)[4]
+  cdef double tmax = (<double_ptr> params)[5]
 
   return 2.0*tmax*gsl_sf_bessel_J1(tmax*ell)-tmin*gsl_sf_bessel_J1(tmin*ell)/(tmax*tmax-tmin*tmin)
 
