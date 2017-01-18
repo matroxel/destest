@@ -282,7 +282,7 @@ class linear_methods(object):
     return r
 
   @staticmethod
-  def binned_mean_e(bin,cat,val,mask=None,mock=False,edge=edge):
+  def binned_mean_e(bin,cat,val,mask=None,mock=False,edge=None):
 
     if isinstance(cat,catalog.CatalogStore):
       if cat.cat!='mcal':
