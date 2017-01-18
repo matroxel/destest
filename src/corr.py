@@ -115,7 +115,7 @@ class xi_2pt(object):
       gb=ga
     if conj:
       e2=-e2
-    if ga='e':
+    if ga=='e':
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska0,w1=wa)
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
@@ -164,17 +164,17 @@ class xi_2pt(object):
         gb='e'
       if conj:
         e2=-e2
-      if gb='e':
+      if gb=='e':
         e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
-      if catb.cat=='mcal':
-        catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
-        catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
-        catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
-      else:
-        catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+        if catb.cat=='mcal':
+          catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+          catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+          catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+        else:
+          catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
         catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
         if ran:
