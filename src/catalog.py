@@ -721,7 +721,7 @@ class CatalogMethods(object):
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
       if shapecutslive is not None:
-        cutcols=shapecutslive['col'][shapecutslive[0]['derived']=derived]
+        cutcols=shapecutslive['col'][shapecutslive[0]['derived']==False]
         tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
       shapearray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
