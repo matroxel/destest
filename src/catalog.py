@@ -668,7 +668,7 @@ class CatalogMethods(object):
     # Verify that the columns requested exist in the file
     tmpcols=col_list(shapecols,shapetable,shapetablesheared)
     if shapecutslive is not None:
-      cutcols=shapecutslive['col']
+      cutcols=shapecutslive['col'][shapecutslive['derived']==False]
       tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
     colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
     if colex<1:
@@ -693,7 +693,7 @@ class CatalogMethods(object):
       cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
       colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
       if colex<1:
-        print 'Warning: cut columns '+colist+' do not exist in file: '+shape+' (not crashing)'
+        print 'Warning 2: cut columns '+colist+' do not exist in file: '+shape+' (not crashing)'
 
     print 'cols exist',time.time()-t0
 
