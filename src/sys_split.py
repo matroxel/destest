@@ -379,7 +379,7 @@ class split_methods(object):
 def split_gals_lin_along_base(cat,val,array,mask,name,mock=False,log=False,log2=False,label='',plot=False,fit=True,e=True,val2=None,array2=None,trend=True):
 
   if cat.cat=='mcal':
-    if cat.tablesheared.get(val,False):
+    if not cat.tablesheared.get(val,False):
       print 'Not registered as sheared value:  ', val
 
   if val2 is not None:

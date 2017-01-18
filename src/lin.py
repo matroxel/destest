@@ -297,9 +297,9 @@ class linear_methods(object):
       if cat.cat!='mcal':
         mask0=[(bin==i)&mask]
       else:
-        CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
-        mask0 = CatalogMethods.get_cuts_mask(cat)
-        CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       y_mean1=np.append(y_mean1,mean1)
       y_err1=np.append(y_err1,std1/np.sqrt(np.sum(mask0)))
@@ -313,7 +313,7 @@ class linear_methods(object):
 
     if isinstance(cat,catalog.CatalogStore):
       if cat.cat=='mcal':
-        mask = CatalogMethods.get_cuts_mask(cat,full=False)
+        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
       else:
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
