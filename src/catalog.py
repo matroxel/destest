@@ -716,9 +716,11 @@ class CatalogMethods(object):
     print 'read gold file',time.time()-t0
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
+      print tmpcols
       if shapecutslive is not None:
-        cutcols=shapecutslive['col'][shapecutslive[0]['derived']==False]
+        cutcols=shapecutslive['col'][shapecutslive['derived']==False]
         tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
+        print tmpcols
       shapearray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
       print 'error loading fits file: ',shape
