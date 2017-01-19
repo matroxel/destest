@@ -341,7 +341,7 @@ class split_methods(object):
         bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=False))
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
-      print 'wnz',bins
+      print 'wnz',bins,np.sum(bins[0]),np.sum(bins[1])
 
     if cat.pzrw:
       w=split_methods.pz_weight(cat,nz[mask],bins)
