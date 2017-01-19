@@ -21,6 +21,8 @@ class split(object):
     Loop over array names in cols of CatalogStore cat with optional masking. Calls split_methods.split_gals_lin_along().
     """
 
+    print '!!!!!!!!!!!!!!!!!!!! check if plotting at mean of log(val) or log(mean(val))...'
+
     if p is not None:
       jobs=[]
       p=multiprocessing.Pool(processes=config.cfg.get('proc',32),maxtasksperchild=config.cfg.get('task',None))
@@ -204,7 +206,10 @@ class split_methods(object):
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
 
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    if cat.cat!='mcal':
+      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    else:
+      mask=np.ones(len(cat.coadd)).astype(bool)
 
     array=getattr(cat,val)
 
@@ -217,15 +222,17 @@ class split_methods(object):
 
     bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.zp,mask=mask,label=val,plot=plot)
 
-    for j in xrange(2):
-      if j==0:
-        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(w!=0))
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==0)&(w!=0),wa=w)
-        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==1)&(w!=0),wa=w)
+    theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
+    theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',ran=False)
+    for i in xrange(cat.sbins):
+      if cat.cat!='mcal':
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==i),wa=w)
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==0),wb=w,ran=False)
       else:
-        theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(w!=0),ran=False)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==0)&(w!=0),wb=w,ran=False)
-        theta,outb,errb,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==1)&(w!=0),wb=w,ran=False)
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
+        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',wb=w,ran=False)
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
       # if (jkon)&(cat.use_jk==1):
       #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
@@ -314,18 +321,28 @@ class split_methods(object):
     Calculate splitting and redshift reweighting. 
     """
 
-    mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    if cat.cat!='mcal':
+      mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+    else:
+      mask=np.ones(len(cat.coadd)).astype(bool)
 
     w=np.ones(len(cat.coadd))
     if cat.wt:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
     else:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins)
-    bins=np.digitize(array[mask],edge)-1
 
+    if cat.cat!='mcal':
+      bins=np.digitize(array[mask],edge)-1
+    else:
+      bins=[]
+      for j in xrange(cat.sbins):
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=False))
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
     if cat.pzrw:
-      w=split_methods.pz_weight(nz[mask],bins)
+      w=split_methods.pz_weight(cat,nz[mask],bins)
     else:
       w=np.ones(np.sum([mask]))
 
@@ -335,7 +352,7 @@ class split_methods(object):
     return bins,w,edge
 
   @staticmethod
-  def pz_weight(nz,bins,binnum=100,pdf=False):
+  def pz_weight(cat,nz,bins,binnum=100,pdf=False):
     """
     Reweight portions of galaxy population to match redshift distributions to that of the whole population.
     """
@@ -346,8 +363,11 @@ class split_methods(object):
       return
     else:
       h0,b0=np.histogram(nz,bins=binnum)
-      for j in xrange(np.max(bins)):
-        binmask=(bins==j)
+      for j in xrange(cat.sbins):
+        if cat.cat!='mcal':
+          binmask=(bins==j)
+        else:
+          binmask=bins[j]
         h,b=np.histogram(nz[binmask],bins=b0)
         for k in xrange(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
