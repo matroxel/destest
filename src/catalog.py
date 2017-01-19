@@ -863,9 +863,7 @@ class CatalogMethods(object):
           print 'Not in masking cuts:  ',col
       else:
 
-        print 'in add cut',cat.livecuts
         cat.livecuts=CatalogMethods.add_cut(cat.livecuts,col,cmin,ceq,cmax)
-        print 'in add cut',cat.livecuts
 
     else:
       print 'Not registered as sheared column:  ',col

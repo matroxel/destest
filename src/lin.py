@@ -167,7 +167,6 @@ class linear_methods(object):
       else:
         m1=1.
         m2=1.
-        print 'no bs ',e1,e2,w,m1,m2
         return e1[mask0],e2[mask0],w,m1,m2
     if wt:
       w=w
@@ -193,7 +192,6 @@ class linear_methods(object):
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
-    print 'meanstdrmse',w,e1,len(e1),wm1s
     mean1=np.sum(w*e1)/wm1s
     mean2=np.sum(w*e2)/wm2s
     if full:
@@ -314,8 +312,8 @@ class linear_methods(object):
         print 'masking',i, mask0
         print np.sum(mask0[0]), np.sum(mask0[1]), np.sum(mask0[2]), np.sum(mask0[3]), np.sum(mask0[4])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
-        print 'after removing',cat.livecuts
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
+      print 'e means',i,mean1,mean2,std1/np.sqrt(np.sum(mask0)),std2/np.sqrt(np.sum(mask0))
       y_mean1=np.append(y_mean1,mean1)
       y_err1=np.append(y_err1,std1/np.sqrt(np.sum(mask0)))
       y_mean2=np.append(y_mean2,mean2)
