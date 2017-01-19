@@ -218,7 +218,7 @@ class linear_methods(object):
 
     w=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)[2]
 
-    print 'begin mean x',x[mask],w,np.sum(x[mask]),np.sum(w)
+    print 'begin mean x',np.min(x[mask]),np.max(x[mask])
 
     mean=np.sum(w*x[mask])/np.sum(w)
     if full:
