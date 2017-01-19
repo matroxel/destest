@@ -189,6 +189,7 @@ class linear_methods(object):
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
     e1,e2,w,m1,m2=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)
+    print len(e1),len(e2),len(w),m1,m2
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
