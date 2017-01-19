@@ -135,6 +135,7 @@ class linear_methods(object):
       else:
         sels=False
         print 'assuming no selection effects in responsivity'
+      print e1,mask,len(e1),len(mask)
       w=np.ones(len(e1[mask]))
       if bs:
         if xi:
