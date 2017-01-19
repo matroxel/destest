@@ -857,7 +857,7 @@ class CatalogMethods(object):
         if col in cat.livecuts['col']:
 
           mask=(cat.livecuts['col']==col)&(cat.livecuts['min']==cmin)&(cat.livecuts['eq']==ceq)&(cat.livecuts['max']==cmax)
-          cat.livecuts=cat.livecuts[mask]
+          cat.livecuts=cat.livecuts[~mask]
 
         else:
           print 'Not in masking cuts:  ',col
