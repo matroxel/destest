@@ -311,6 +311,7 @@ class linear_methods(object):
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
+        print i, np.sum(mask[0]), np.sum(mask[1]), np.sum(mask[2]), np.sum(mask[3]), np.sum(mask[4])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       y_mean1=np.append(y_mean1,mean1)
