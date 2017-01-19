@@ -351,6 +351,8 @@ class linear_methods(object):
       else:
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
+    print x,mask,len(x),len(mask)
+
     if w is not None:
       edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10),w[mask])
     else:

@@ -751,7 +751,7 @@ class CatalogMethods(object):
       print 'non-unique ids in file: ',shape
       raise
 
-    print 'unique check',time.time()-t0
+    print 'unique ',time.time()-t0
 
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
@@ -790,12 +790,17 @@ class CatalogMethods(object):
   def get_cuts_mask(cat,full=True):
 
     mask=np.array([])
+    for icut,cut in enumerate(cat.livecuts):
+      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+
+    if not full:
+      return mask
+
     mask_1p=np.array([])
     mask_1m=np.array([])
     mask_2p=np.array([])
     mask_2m=np.array([])
     for icut,cut in enumerate(cat.livecuts):
-      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
       if cat.tablesheared.get(cut['col'],False):
         mask_1p=CatalogMethods.cuts_on_col(mask_1p,getattr(cat,cut['col']+'_1p'),cut['col'],cut['min'],cut['eq'],cut['max'])
         mask_1m=CatalogMethods.cuts_on_col(mask_1m,getattr(cat,cut['col']+'_1m'),cut['col'],cut['min'],cut['eq'],cut['max'])
