@@ -54,6 +54,7 @@ class CatalogStore(object):
       elif cattype=='ng':
         if goldfile is not None:
           table=config.matched_ng_col_lookup
+          tablesheared=None
         else:
           table=config.ng_col_lookup
       elif cattype=='mcal':
@@ -575,7 +576,7 @@ class CatalogMethods(object):
 
       colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
       if colex<1:
-        cutcols=[table.get(x,None).lower() for x in cuts['col']]
+        cutcols=[table.get(x,x).lower() for x in cuts['col']]
         colex,colist=CatalogMethods.col_exists(cutcols,fits[hdu].get_colnames())
         if colex<1:
           raise ColError('cut columns '+colist+' do not exist in file: '+file)
