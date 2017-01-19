@@ -94,10 +94,14 @@ class xi_2pt(object):
 
     """
 
-    maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
-    jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
+    if cat.cat=='mcal':
+      maska = catalog.CatalogMethods.get_cuts_mask(cata)
+      maska0 = maska[0]
+    else:
+      maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
+      jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
+      maska0=maska&jkmask
 
-    maska0=maska&jkmask
 
     if wa is None:
       wa=np.ones(len(cata.coadd))
@@ -107,8 +111,8 @@ class xi_2pt(object):
         raise UseError('Must supply both cata,catb for NG,NK correlations.')
 
     if ga is not None:
-      e1=getattr(cata,ga+'1')[maska]
-      e2=getattr(cata,ga+'2')[maska]
+      e1=getattr(cata,ga+'1')[maska0]
+      e2=getattr(cata,ga+'2')[maska0]
     else:
       ga='e'
     if catb is None:
@@ -116,7 +120,7 @@ class xi_2pt(object):
     if conj:
       e2=-e2
     if ga=='e':
-      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska0,w1=wa)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
@@ -152,14 +156,19 @@ class xi_2pt(object):
 
     else:
 
-      maskb=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
+
+      if cat.cat=='mcal':
+        maskb = catalog.CatalogMethods.get_cuts_mask(catb)
+        maskb0 = maskb[0]
+      else:
+        maskb0=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
 
       if wb is None:
         wb=np.ones(len(catb.coadd))
 
       if gb is not None:
-        e1=getattr(catb,gb+'1')[maskb]
-        e2=getattr(catb,gb+'2')[maskb]
+        e1=getattr(catb,gb+'1')[maskb0]
+        e2=getattr(catb,gb+'2')[maskb0]
       else:
         gb='e'
       if conj:
@@ -168,23 +177,23 @@ class xi_2pt(object):
         e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
-        catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
+        catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if catb.cat=='mcal':
-          catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
-          catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
-          catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+          catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+          catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+          catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         else:
-          catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maska0], dec=catb.dec[maska0], ra_units='deg', dec_units='deg')
+          catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
-        catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
+        catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if ran:
-          catrb=treecorr.Catalog(w=w, ra=catb.ran_ra[maskb], dec=catb.ran_dec[maskb], ra_units='deg', dec_units='deg')
+          catrb=treecorr.Catalog(w=w, ra=catb.ran_ra[maskb0], dec=catb.ran_dec[maskb0], ra_units='deg', dec_units='deg')
       elif corr in ['KK','NK']:
         if k is None:
           raise UseError('Must specify k for KK correlation.')
         if k not in dir(catb):
           raise UseError('Unknown k field specified.')
-        catxb=treecorr.Catalog(k=getattr(catb, k)[maskb], w=w, ra=catb.ra[maskb], dec=catb.dec[maskb], ra_units='deg', dec_units='deg')
+        catxb=treecorr.Catalog(k=getattr(catb, k)[maskb0], w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
 
     xim=None
     xip_im=None
