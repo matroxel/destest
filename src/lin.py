@@ -129,18 +129,19 @@ class linear_methods(object):
 
       print 'no weight in responsivity for mcal'
       if isinstance(mask,tuple):
-        mask=mask[0]
+        mask0=mask[0]
         sels=True
       else:
         sels=False
+        mask0=mask
         print 'assuming no selection effects in responsivity'
       print e1,mask,len(e1),len(mask)
-      w=np.ones(len(e1[mask]))
+      w=np.ones(np.sum(mask0))
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
-          m1=(cat.e1_1p[mask]-cat.e1_1m[mask])/(2.*config.cfg.get('mcal_dg'))
-          m2=(cat.e2_2p[mask]-cat.e2_2m[mask])/(2.*config.cfg.get('mcal_dg'))
+          m1=(cat.e1_1p[mask0]-cat.e1_1m[mask0])/(2.*config.cfg.get('mcal_dg'))
+          m2=(cat.e2_2p[mask0]-cat.e2_2m[mask0])/(2.*config.cfg.get('mcal_dg'))
           cat.Rg=(m1+m2)/2.
           if sels:
             sp1=cat.e1[mask[1]]/(2.*config.cfg.get('mcal_dg'))
@@ -155,8 +156,8 @@ class linear_methods(object):
           return e1,e2,w,ms,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
-          m1=np.mean(cat.e1_1p[mask])-np.mean(cat.e1_1m[mask])
-          m2=np.mean(cat.e2_2p[mask])-np.mean(cat.e2_2m[mask])
+          m1=np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
+          m2=np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
           if sels:
             m1+=np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
             m2+=np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
@@ -191,6 +192,7 @@ class linear_methods(object):
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
+    print w,e1,wm1s,len(w),len(e1),len(wm1s)
     mean1=np.sum(w*e1)/wm1s
     mean2=np.sum(w*e2)/wm2s
     if full:
