@@ -311,8 +311,10 @@ class linear_methods(object):
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
-        print 'masking',i, np.sum(mask0[0]), np.sum(mask0[1]), np.sum(mask0[2]), np.sum(mask0[3]), np.sum(mask0[4])
+        print 'masking',i, mask0
+        print np.sum(mask0[0]), np.sum(mask0[1]), np.sum(mask0[2]), np.sum(mask0[3]), np.sum(mask0[4])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+        print 'after removing',cat.livecuts
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       y_mean1=np.append(y_mean1,mean1)
       y_err1=np.append(y_err1,std1/np.sqrt(np.sum(mask0)))
