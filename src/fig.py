@@ -953,7 +953,7 @@ class plot_methods(object):
 
 
   @staticmethod
-  def plot_pzrw(cat,pz,bins,w,label,edge):
+  def plot_pzrw(cat,pz,mask,bins,w,label,edge):
 
     plt.figure(0,figsize=(10,5))
     ax=plt.subplot(1,2,1)
@@ -961,8 +961,12 @@ class plot_methods(object):
     col=['r','b','g']
     plt.hist(pz,bins=100,color='k',linestyle=('solid'),linewidth=1.,label='Full sample',histtype='step',normed=True)
     for i in range(cat.sbins):
-      plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i],normed=True)
-      plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
+      if cat.cat!='mcal':
+        plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i],normed=True)
+        plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
+      else:
+        plt.hist(pz[bins[i]],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i],normed=True)
+        plt.hist(pz[bins[i]],bins=100,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)        
     plt.legend(loc='upper right')
     #plt.ylim((0,2.5))
     plt.xlabel('z')
@@ -972,7 +976,10 @@ class plot_methods(object):
 
     plt.axvline(x=1)
     for i in range(cat.sbins):
-      plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
+      if cat.cat!='mcal':
+        plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
+      else:
+        plt.hist(w[bins[i]],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
     plt.legend(loc='upper right')
     #plt.xlim((-1,4))
     plt.xlabel('w')
