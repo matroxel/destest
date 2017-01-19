@@ -135,7 +135,7 @@ class linear_methods(object):
         sels=False
         mask0=mask
         print 'assuming no selection effects in responsivity'
-      print e1,mask,len(e1),len(mask)
+      # print e1,mask,len(e1),len(mask)
       w=np.ones(np.sum(mask0))
       if bs:
         if xi:
@@ -152,7 +152,7 @@ class linear_methods(object):
             cat.Rsm=(sm1+sm2)/2.
           else:
             cat.Rsp=0.
-            cat.Rsm=0.            
+            cat.Rsm=0.
           return e1,e2,w,ms,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
@@ -193,7 +193,7 @@ class linear_methods(object):
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
-    print w,e1,wm1s,len(w),len(e1)
+    print 'meanstdrmse',w,e1,len(w),len(e1),wm1s
     mean1=np.sum(w*e1)/wm1s
     mean2=np.sum(w*e2)/wm2s
     if full:
@@ -311,7 +311,7 @@ class linear_methods(object):
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
-        print i, np.sum(mask[0]), np.sum(mask[1]), np.sum(mask[2]), np.sum(mask[3]), np.sum(mask[4])
+        print 'masking',i, np.sum(mask[0]), np.sum(mask[1]), np.sum(mask[2]), np.sum(mask[3]), np.sum(mask[4])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       y_mean1=np.append(y_mean1,mean1)
@@ -355,8 +355,6 @@ class linear_methods(object):
       else:
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    print x,mask,len(x),len(mask)
-
     if w is not None:
       edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10),w[mask])
     else:
@@ -368,6 +366,7 @@ class linear_methods(object):
     xbin=np.digitize(x,edge)-1
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
+    print 'x values',x_mean,x_err
     if np.sum(np.isnan(x_mean))>0:
       return None,None,None,None,None,None
     if noe:
