@@ -102,7 +102,6 @@ class xi_2pt(object):
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
       maska0=maska&jkmask
 
-
     if wa is None:
       wa=np.ones(len(cata.coadd))
 
