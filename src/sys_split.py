@@ -324,7 +324,7 @@ class split_methods(object):
     if cat.cat!='mcal':
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     else:
-      mask=np.ones(len(cat.coadd)).astype(bool)
+      mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
 
     w=np.ones(len(cat.coadd))
     if cat.wt:
@@ -341,7 +341,7 @@ class split_methods(object):
         bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=False))
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
-      print 'wnz',bins,np.sum(bins[0]),np.sum(bins[1])
+      print 'wnz',edge,bins,np.sum(bins[0]),np.sum(bins[1])
 
     if cat.pzrw:
       w=split_methods.pz_weight(cat,nz[mask],bins)
