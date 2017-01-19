@@ -362,6 +362,8 @@ class linear_methods(object):
     else:
       edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10))
 
+    print 'edge',edge
+
     print np.shape(x),np.shape(edge)
     xbin=np.digitize(x,edge)-1
 
