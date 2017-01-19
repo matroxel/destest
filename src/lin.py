@@ -167,6 +167,7 @@ class linear_methods(object):
       else:
         m1=1.
         m2=1.
+        print 'no bs ',e1,e2,w,m1,m2
         return e1,e2,w,m1,m2
     if wt:
       w=w
