@@ -336,7 +336,7 @@ class split_methods(object):
       bins=np.digitize(array[mask],edge)-1
     else:
       bins=[]
-      for j in xrange(cat.sbins):
+      for i in xrange(cat.sbins):
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=False))
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
