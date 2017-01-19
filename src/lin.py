@@ -193,7 +193,7 @@ class linear_methods(object):
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
-    print 'meanstdrmse',w,e1,len(w),len(e1),wm1s
+    print 'meanstdrmse',w,e1,len(e1),wm1s
     mean1=np.sum(w*e1)/wm1s
     mean2=np.sum(w*e2)/wm2s
     if full:
@@ -364,7 +364,7 @@ class linear_methods(object):
 
     print 'edge',edge
 
-    print np.shape(x),np.shape(edge)
+    print x,np.shape(x),np.shape(edge)
     xbin=np.digitize(x,edge)-1
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
