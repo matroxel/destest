@@ -127,12 +127,9 @@ class linear_methods(object):
 
     elif cattype=='mcal':
 
-      if not isinstance(mask,list):
-        print 'mask needs to be a list for mcal responsivities - this is a complicated traceback... (hopefully your name is troxel)' 
-
       wt=False
       print 'no weight in responsivity for mcal'
-      if len(np.shape(mask))>1:
+      if isinstance(mask,list):
         mask=mask[0]
         sels=True
       else:
