@@ -348,7 +348,7 @@ class linear_methods(object):
     For array x in CatalogStore object cat, calculate the means of shear in equal bins of x. Returns errors in both x and y directions.
     """
 
-    if isinstance(cat,catalog.CatalogStore):
+    if hasattribute(cat,'cat'):
       if cat.cat=='mcal':
         print 'Ignoring any specified masks unless via cat.livecuts due to necessary support of mcal responsivity corrections'
         mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
