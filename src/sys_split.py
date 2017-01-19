@@ -344,20 +344,23 @@ class split_methods(object):
       print 'wnz',edge,bins,np.sum(bins[0]),np.sum(bins[1])
 
     if cat.pzrw:
-      w=split_methods.pz_weight(cat,nz[mask],bins)
+      w=split_methods.pz_weight(cat,nz,mask,bins)
     else:
       w=np.ones(np.sum([mask]))
 
     if plot:
-      fig.plot_methods.plot_pzrw(cat,nz,bins,w,label,edge)
+      fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
     return bins,w,edge
 
   @staticmethod
-  def pz_weight(cat,nz,bins,binnum=100,pdf=False):
+  def pz_weight(cat,nz,mask,bins,binnum=100,pdf=False):
     """
     Reweight portions of galaxy population to match redshift distributions to that of the whole population.
     """
+
+    if cat.cat!='mcal':
+      nz=nz[mask]
 
     w=np.ones(len(nz))
     if pdf:
