@@ -127,9 +127,8 @@ class linear_methods(object):
 
     elif cattype=='mcal':
 
-      wt=False
       print 'no weight in responsivity for mcal'
-      if isinstance(mask,list):
+      if isinstance(mask,tuple):
         mask=mask[0]
         sels=True
       else:
