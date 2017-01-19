@@ -220,7 +220,7 @@ class split_methods(object):
     if config.log_val.get(val,False):
       s='log '+s
 
-    bins,w,edge=split_methods.get_mask_wnz(cat,array,cat.zp,mask=mask,label=val,plot=plot)
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
 
     theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',ran=False)
@@ -316,7 +316,7 @@ class split_methods(object):
     return array
 
   @staticmethod
-  def get_mask_wnz(cat,array,nz,mask=None,label='',plot=False):
+  def get_mask_wnz(cat,array,val,nz,mask=None,label='',plot=False):
     """
     Calculate splitting and redshift reweighting. 
     """
