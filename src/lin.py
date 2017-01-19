@@ -379,6 +379,8 @@ class linear_methods(object):
         e2_mean=np.zeros(len(e1_mean))
         e2_err=np.zeros(len(e1_mean))
     else:
+      if config.log_val.get(val,False):
+        edge=10**edge
       e1_mean,e1_err,e2_mean,e2_err=linear_methods.binned_mean_e(xbin,cat,val,mask=mask,mock=mock,edge=edge)
 
     return x_mean,x_err,e1_mean,e1_err,e2_mean,e2_err
