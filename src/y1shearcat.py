@@ -280,3 +280,36 @@ class y1_plots(object):
         plt.savefig('plots/y1/special_gammax.pdf', dpi=500, bbox_inches='tight')
         plt.close()
 
+    @staticmethod
+    def b_mode_plot(i3, metacal):
+        bp = corr.bandpowers()
+
+        #We might want to move this as we may need it more than once
+        i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt.xi_2pt(i3)
+        i3_xip = i3_out[0]
+        i3_xim = i3_out[1]
+        i3_xiperr = i3_err[0]
+        i3_ximerr = i3_err[1]
+        i3_E,i3_B,i3_E_err,i3_B_err = bp.bandpowersEB(i3_xip,i3_xim,i3_xiperrm,i3_ximerr)
+
+                #We might want to move this as we may need it more than once
+        mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt.xi_2pt(metacal)
+        mc_xip = mc_out[0]
+        mc_xim = mc_out[1]
+        mc_xiperr = mc_err[0]
+        mc_ximerr = mc_err[1]
+        mc_E,mc_B,mc_E_err,mc_B_err = bp.bandpowersEB(mc_xip,mc_xim,mc_xiperrm,mc_ximerr)
+
+        ell = [bp.lm(i) for i in xrange(bp.nell)]
+
+        plt.figure()
+        plt.errorbar(ell, i3_B, i3_B_err, fmt='r.', label='Im3shape')
+        plt.errorbar(ell, mc_B, mc_B_err, fmt='b.', label='Metacal')
+        plt.savefig('plots/y1/b_modes.pdf', dpi=500, bbox_inches='tight')
+        plt.close()
+
+
+
+
+
+
