@@ -193,7 +193,7 @@ class linear_methods(object):
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
     ww=np.sum(w**2)
-    print w,e1,wm1s,len(w),len(e1),len(wm1s)
+    print w,e1,wm1s,len(w),len(e1)
     mean1=np.sum(w*e1)/wm1s
     mean2=np.sum(w*e2)/wm2s
     if full:
