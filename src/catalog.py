@@ -854,10 +854,10 @@ class CatalogMethods(object):
     if cat.tablesheared.get(col,False):
 
       if remove:
-        if np.in1d(col,cat.livecuts['col']):
+        if col in cat.livecuts['col']:
 
           mask=(cat.livecuts['col']==col)&(cat.livecuts['min']==cmin)&(cat.livecuts['eq']==ceq)&(cat.livecuts['max']==cmax)
-          cat.livecuts=cat.livecuts[cat.livecuts['col']!=col]
+          cat.livecuts=cat.livecuts[mask]
 
         else:
           print 'Not in masking cuts:  ',col
