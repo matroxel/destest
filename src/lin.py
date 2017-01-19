@@ -136,7 +136,7 @@ class linear_methods(object):
         mask0=mask
         print 'assuming no selection effects in responsivity'
       # print e1,mask,len(e1),len(mask)
-      w=np.ones(np.sum(mask0))
+      w=1.#np.ones(np.sum(mask0))
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
@@ -168,7 +168,7 @@ class linear_methods(object):
         m1=1.
         m2=1.
         print 'no bs ',e1,e2,w,m1,m2
-        return e1,e2,w,m1,m2
+        return e1[mask0],e2[mask0],w,m1,m2
     if wt:
       w=w
     else:
