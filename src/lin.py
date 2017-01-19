@@ -218,6 +218,8 @@ class linear_methods(object):
 
     w=linear_methods.get_lin_e_w_ms(cat,mock=mock,mask=mask)[2]
 
+    print 'begin mean x',x[mask],w,np.sum(x[mask]),np.sum(w)
+
     mean=np.sum(w*x[mask])/np.sum(w)
     if full:
       std=np.sqrt(np.sum(w*(x[mask]-mean)**2)/np.sum(w))
@@ -324,7 +326,7 @@ class linear_methods(object):
   @staticmethod
   def binned_mean_x(bin,x,cat,mask=None,mock=False):
 
-    if isinstance(cat,catalog.CatalogStore):
+    if hasattr(cat,'cat'):
       if cat.cat=='mcal':
         mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
       else:
@@ -336,6 +338,7 @@ class linear_methods(object):
     for i in xrange(config.cfg.get('lbins',10)):
       mask0=(bin==i)&mask
       mean,std,rms=linear_methods.calc_mean_stdev_rms(cat,x,mask0,mock=mock)
+      print 'end mean x',mean,std/np.sqrt(np.sum(mask0))
       x_mean=np.append(x_mean,mean)
       x_err=np.append(x_err,std/np.sqrt(np.sum(mask0)))
 
