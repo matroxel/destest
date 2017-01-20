@@ -185,6 +185,8 @@ class xi_2pt(object):
           catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+        elif catb.cat=='mcal':
+          pass
         else:
           catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
