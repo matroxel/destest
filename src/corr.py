@@ -271,6 +271,7 @@ class xi_2pt(object):
         Rsm.process(catxa,catRsmb)
         norm = Rg.xi+Rsp.xi-Rsm.xi
       elif cata.cat=='mcal':
+        norm=1.
       else:
         kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         kk.process(catxa,catmb)
