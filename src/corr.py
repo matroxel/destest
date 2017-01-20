@@ -94,7 +94,7 @@ class xi_2pt(object):
 
     """
 
-    if cat.cat=='mcal':
+    if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
       maska0 = maska[0]
     else:
@@ -156,7 +156,7 @@ class xi_2pt(object):
     else:
 
 
-      if cat.cat=='mcal':
+      if catb.cat=='mcal':
         maskb = catalog.CatalogMethods.get_cuts_mask(catb)
         maskb0 = maskb[0]
       else:
