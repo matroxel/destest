@@ -208,9 +208,6 @@ class xi_2pt(object):
           raise UseError('Unknown k field specified.')
         catxb=treecorr.Catalog(k=getattr(catb, k)[maskb0], w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
 
-
-    print 'debugging with no treecorr'
-    return
     xim=None
     xip_im=None
     xim_im=None

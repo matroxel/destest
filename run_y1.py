@@ -17,17 +17,17 @@ import src.txt as txt
 #400 seconds to read mcal
 #250 seconds to read i3
 
-
-
-goldfile  = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_wide_match_3.fits'
+goldfile  = '/global/cscratch1/sd/troxel/Y1A1_GOLD_tilename_1_0_3_match_v3.fits'
 i3file    = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_im3shape_3_psfex_2_nbc_2_match_2.fits'
-mcalfile  = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
+mcalfile  = '/global/cscratch1/sd/troxel/DES-y1a1-main-001-blind-v3-matched.fits'
 i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
 mcalepoch = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
+rmfile    = '/global/cscratch1/sd/troxel/redmagicv6.4.11/y1a1_gold_1.0.2c-full_redmapper_v6.4.11_redmagic_combined_troxel.fit'
 psfdir    = '/global/cscratch1/sd/troxel/psf_cats/'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
 i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile)
+rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
 mcal.m1=np.ones(len(mcal.coadd))
 mcal.m2=np.ones(len(mcal.coadd))
 special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())

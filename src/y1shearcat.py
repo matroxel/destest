@@ -24,8 +24,7 @@ class y1(object):
     @staticmethod
     def load_data(i3file,mcalfile,goldfile):
 
-        mcal = catalog.CatalogStore('matched_metacal',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cattype='ng',catfile=mcalfile,goldfile=goldfile)
-
+        mcal = catalog.CatalogStore('matched_metacal',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cutfunclive=catalog.CatalogMethods.matched_metacal_cut_live(),cattype='mcal',catfile=mcalfile,goldfile=goldfile)
         mask = mcal.size/mcal.psffwhm>0.5
         catalog.CatalogMethods.match_cat(mcal,mask)
 
