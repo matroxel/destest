@@ -124,6 +124,7 @@ class xi_2pt(object):
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       if (cata.cat=='mcal')&(cata.bs):
+        print 'test'
         catRga=treecorr.Catalog(k=cata.Rg, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRspa=treecorr.Catalog(k=cata.Rsp, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRsma=treecorr.Catalog(k=cata.Rsm, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
