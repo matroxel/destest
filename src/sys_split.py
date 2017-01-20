@@ -346,7 +346,10 @@ class split_methods(object):
     if cat.pzrw:
       w=split_methods.pz_weight(cat,nz,mask,bins)
     else:
-      w=np.ones(np.sum([mask]))
+      if cat.cat!='mcal':
+        w=np.ones(np.sum([mask]))
+      else:
+        w=np.ones(len(nz))
 
     print 'before fig',len(nz),len(w),len(bins),len(bins[0]),len(bins[1])
 
