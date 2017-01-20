@@ -348,6 +348,8 @@ class split_methods(object):
     else:
       w=np.ones(np.sum([mask]))
 
+    print 'before fig',len(nz),len(w),len(bins),len(bins[0]),len(bins[1])
+
     if plot:
       fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
