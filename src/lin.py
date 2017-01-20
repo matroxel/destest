@@ -130,9 +130,7 @@ class linear_methods(object):
       print 'no weight in responsivity for mcal'
       if isinstance(mask,tuple):
         mask0=mask[0]
-        sels=True
       else:
-        sels=False
         mask0=mask
         print 'assuming no selection effects in responsivity'
       # print e1,mask,len(e1),len(mask)
@@ -143,16 +141,6 @@ class linear_methods(object):
           m1=(cat.e1_1p[mask0]-cat.e1_1m[mask0])/(2.*config.cfg.get('mcal_dg'))
           m2=(cat.e2_2p[mask0]-cat.e2_2m[mask0])/(2.*config.cfg.get('mcal_dg'))
           cat.Rg=(m1+m2)/2.
-          if sels:
-            sp1=cat.e1[mask[1]]/(2.*config.cfg.get('mcal_dg'))
-            sm1=cat.e1[mask[2]]/(2.*config.cfg.get('mcal_dg'))
-            sp2=cat.e1[mask[3]]/(2.*config.cfg.get('mcal_dg'))
-            sm2=cat.e1[mask[4]]/(2.*config.cfg.get('mcal_dg'))
-            cat.Rsp=(sp1+sp2)/2.
-            cat.Rsm=(sm1+sm2)/2.
-          else:
-            cat.Rsp=0.
-            cat.Rsm=0.
           return e1[mask0],e2[mask0],w,ms,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
