@@ -362,9 +362,11 @@ class split_methods(object):
     """
 
     if cat.cat!='mcal':
+      print 'am i stupid?'
       nz=nz[mask]
 
     w=np.ones(len(nz))
+    print 'w0',len(w)
     if pdf:
       print 'transfer pdf support'
       return
