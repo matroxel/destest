@@ -123,7 +123,8 @@ class xi_2pt(object):
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
-      if cata.cat=='mcal':
+      if (cata.cat=='mcal')&(cata.bs):
+        print 'test'
         catRga=treecorr.Catalog(k=cata.Rg, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRspa=treecorr.Catalog(k=cata.Rsp, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRsma=treecorr.Catalog(k=cata.Rsm, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
@@ -143,8 +144,9 @@ class xi_2pt(object):
       catxa=treecorr.Catalog(k=getattr(cata, k)[maska0], w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
     if catb is None:
+      catb=cata
       catxb=catxa
-      if cata.cat=='mcal':
+      if (cata.cat=='mcal')&(cata.bs):
         catRgb=catRga
         catRspb=catRspa
         catRsmb=catRsma
@@ -177,7 +179,7 @@ class xi_2pt(object):
 
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
-        if catb.cat=='mcal':
+        if (catb.cat=='mcal')&(catb.bs):
           catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catRspb=treecorr.Catalog(k=catb.Rsp, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catRsmb=treecorr.Catalog(k=catb.Rsm, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
@@ -207,7 +209,7 @@ class xi_2pt(object):
       gg = treecorr.GGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       gg.process(catxa,catxb)
 
-      if cata.cat=='mcal':
+      if (catb.cat=='mcal')&(cata.bs):
         Rg = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         Rsp = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         Rsm = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
@@ -215,6 +217,8 @@ class xi_2pt(object):
         Rsp.process(catRspa,catRspb)
         Rsm.process(catRsma,catRsmb)
         norm = Rg.xi+Rsp.xi-Rsm.xi
+      elif catb.cat=='mcal':
+        norm=1.
       else:
         kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         kk.process(catma,catmb)
@@ -258,7 +262,7 @@ class xi_2pt(object):
       kg = treecorr.KGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       kg.process(catxa,catxb)
 
-      if cata.cat=='mcal':
+      if (catb.cat=='mcal')&(cata.bs):
         Rg = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         Rsp = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         Rsm = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
@@ -266,6 +270,7 @@ class xi_2pt(object):
         Rsp.process(catxa,catRspb)
         Rsm.process(catxa,catRsmb)
         norm = Rg.xi+Rsp.xi-Rsm.xi
+      elif cata.cat=='mcal':
       else:
         kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         kk.process(catxa,catmb)
