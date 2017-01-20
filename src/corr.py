@@ -128,6 +128,7 @@ class xi_2pt(object):
         catRga=treecorr.Catalog(k=cata.Rg, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRspa=treecorr.Catalog(k=cata.Rsp, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRsma=treecorr.Catalog(k=cata.Rsm, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+      elif cata.cat=='mcal':
       else:
         catma=treecorr.Catalog(k=ms, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
