@@ -152,6 +152,8 @@ class xi_2pt(object):
         catRgb=catRga
         catRspb=catRspa
         catRsmb=catRsma
+      elif cata.cat=='mcal':
+        pass
       else:
         catmb=catma
       if (corr=='NN')&ran:
