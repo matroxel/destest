@@ -125,7 +125,7 @@ class xi_2pt(object):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       if (cata.cat=='mcal')&(cata.bs):
         print 'test'
-        catRga=treecorr.Catalog(k=cata.Rg, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        catRga=treecorr.Catalog(k=(m1+m2)/2., w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catRS1pa=treecorr.Catalog(g1=cata.e1[maska[1]], g2=cata.e2[maska[1]], ra=cata.ra[maska[1]], dec=cata.dec[maska[1]], ra_units='deg', dec_units='deg')
         catRS1ma=treecorr.Catalog(g1=cata.e1[maska[2]], g2=cata.e2[maska[2]], ra=cata.ra[maska[2]], dec=cata.dec[maska[2]], ra_units='deg', dec_units='deg')
         catRS2pa=treecorr.Catalog(g1=cata.e1[maska[3]], g2=cata.e2[maska[3]], ra=cata.ra[maska[3]], dec=cata.dec[maska[3]], ra_units='deg', dec_units='deg')
@@ -188,7 +188,7 @@ class xi_2pt(object):
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if (catb.cat=='mcal')&(catb.bs):
-          catRgb=treecorr.Catalog(k=catb.Rg, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+          catRgb=treecorr.Catalog(k=(m1+m2)/2., w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catRS1pb=treecorr.Catalog(g1=catb.e1[maskb[1]], g2=catb.e2[maskb[1]], ra=catb.ra[maskb[1]], dec=catb.dec[maskb[1]], ra_units='deg', dec_units='deg')
           catRS1mb=treecorr.Catalog(g1=catb.e1[maskb[2]], g2=catb.e2[maskb[2]], ra=catb.ra[maskb[2]], dec=catb.dec[maskb[2]], ra_units='deg', dec_units='deg')
           catRS2pb=treecorr.Catalog(g1=catb.e1[maskb[3]], g2=catb.e2[maskb[3]], ra=catb.ra[maskb[3]], dec=catb.dec[maskb[3]], ra_units='deg', dec_units='deg')

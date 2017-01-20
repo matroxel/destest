@@ -140,8 +140,7 @@ class linear_methods(object):
           # unsheared, 1p, 1m, 2p, 2m
           m1=(cat.e1_1p[mask0]-cat.e1_1m[mask0])/(2.*config.cfg.get('mcal_dg'))
           m2=(cat.e2_2p[mask0]-cat.e2_2m[mask0])/(2.*config.cfg.get('mcal_dg'))
-          cat.Rg=(m1+m2)/2.
-          return e1[mask0],e2[mask0],w,ms,m1,m2
+          return e1[mask0],e2[mask0],w,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
           m1=np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
