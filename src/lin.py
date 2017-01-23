@@ -145,9 +145,10 @@ class linear_methods(object):
           # unsheared, 1p, 1m, 2p, 2m
           m1=np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
           m2=np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
-          if sels:
-            m1+=np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
-            m2+=np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
+          print 'resp g',m1/(2.*config.cfg.get('mcal_dg')),m2/(2.*config.cfg.get('mcal_dg'))
+          m1+=np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
+          m2+=np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
+          print 'resp S',(np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]]))/(2.*config.cfg.get('mcal_dg')),(np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]]))/(2.*config.cfg.get('mcal_dg'))
           m1/=2.*config.cfg.get('mcal_dg')
           m2/=2.*config.cfg.get('mcal_dg')
           return e1[mask0],e2[mask0],w,m1,m2
