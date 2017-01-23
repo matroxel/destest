@@ -118,7 +118,7 @@ class xi_2pt(object):
       gb=ga
     if conj:
       e2=-e2
-    if ga=='e':
+    if (ga=='e')&(corr=='GG'):
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
