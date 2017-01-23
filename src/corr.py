@@ -118,8 +118,7 @@ class xi_2pt(object):
       gb=ga
     if conj:
       e2=-e2
-    if (ga=='e')&(corr=='GG'):
-      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
+    e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
@@ -182,8 +181,7 @@ class xi_2pt(object):
         gb='e'
       if conj:
         e2=-e2
-      if gb=='e':
-        e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
