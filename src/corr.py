@@ -220,10 +220,10 @@ class xi_2pt(object):
 
       if (catb.cat=='mcal')&(catb.bs):
         Rg = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS1p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS1m = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS2p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS2m = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         Rg.process(catxa,catRgb)
         RS1p.process(catxa,catRS1pb)
         RS1m.process(catxa,catRS1mb)
@@ -333,7 +333,7 @@ class xi_2pt(object):
         rg = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         rg.process(catra,catxb)
         if cata.cat=='mcal':
-          Rgr = treecorr.KKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+          Rgr = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
