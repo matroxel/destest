@@ -84,7 +84,7 @@ class linear_methods(object):
       if wt:
         return None, None, w[mask], None
       else:
-        return None, None, np.ones(np.sum(mask)), None
+        return None, None, np.ones(np.sum(mask)), None, None
 
     elif cattype==None:
 
