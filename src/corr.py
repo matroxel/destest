@@ -220,15 +220,15 @@ class xi_2pt(object):
 
       if (catb.cat=='mcal')&(catb.bs):
         Rg = treecorr.KKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS1p = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS1m = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS2p = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS2m = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        Rg.process(catRga,catRgb)
-        RS1p.process(catRS1pa,catRS1pb)
-        RS1m.process(catRS1ma,catRS1mb)
-        RS2p.process(catRS2pa,catRS2pb)
-        RS2m.process(catRS2ma,catRS2mb)
+        RS1p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS1m = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS2p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS2m = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        Rg.process(catxa,catRgb)
+        RS1p.process(catxa,catRS1pb)
+        RS1m.process(catxa,catRS1mb)
+        RS2p.process(catxa,catRS2pb)
+        RS2m.process(catxa,catRS2mb)
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         norm = Rg.xi+(RS1+RS2)/2.
@@ -237,11 +237,11 @@ class xi_2pt(object):
       else:
         kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         kk.process(catma,catmb)
-        norm = kk.xi
+        norm=kk.xi
 
       xip = gg.xip/norm
       xim = gg.xim/norm
-      xiperr = ximerr = np.sqrt(gg.varxi)
+      xiperr = ximerr = np.sqrt(gg.varxi)/norm
       xip_im = gg.xip_im/norm
       xim_im = gg.xim_im/norm
       theta = np.exp(gg.meanlogr)
@@ -278,7 +278,7 @@ class xi_2pt(object):
       kg.process(catxa,catxb)
 
       if (catb.cat=='mcal')&(cata.bs):
-        Rg = treecorr.KKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        Rg = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1m = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
@@ -309,7 +309,7 @@ class xi_2pt(object):
       ng.process(catxa,catxb)
 
       if cata.cat=='mcal':
-        Rg = treecorr.KKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        Rg = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
