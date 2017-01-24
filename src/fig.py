@@ -337,8 +337,6 @@ class plot_methods(object):
   @staticmethod
   def plot_2pt_split_sub(cat,val,split,n,yl,xi,i,log):
 
- (theta,out,err,derr,a)
-
     plt.figure(0)
     ax=plt.subplot(3,3,n)
     #ax.fill_between([1,100],-1,1,facecolor='gray',alpha=0.25)
