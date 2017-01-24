@@ -338,7 +338,7 @@ class plot_methods(object):
   def plot_2pt_split_sub(cat,val,split,n,yl,xi,i,log):
 
     plt.figure(0)
-    ax=plt.subplot(3,3,n)
+    ax=plt.subplot(3,i,n)
     #ax.fill_between([1,100],-1,1,facecolor='gray',alpha=0.25)
     #ax.fill_between([1,100],-2,2,facecolor='gray',alpha=0.2)
     plt.errorbar(xi[0],np.zeros((len(xi[0]))),marker='',linestyle='-',color='k',alpha=.8)
@@ -356,7 +356,7 @@ class plot_methods(object):
     plt.ylabel(r'$\Delta '+yl+r'/'+yl+r'$')
     # ax.axes.get_yaxis().set_ticks([])
 
-    ax=plt.subplot(3,3,3+n)
+    ax=plt.subplot(3,i,3+n)
     s=config.lbl.get(val,val)
     if log:
       s='log '+s
@@ -376,7 +376,7 @@ class plot_methods(object):
       plt.ylim(0,4e-3)
     ax.axes.get_yaxis().set_ticks([])
 
-    ax=plt.subplot(3,3,6+n)
+    ax=plt.subplot(3,i,6+n)
     plt.errorbar(xi[0]*1.1,xi[1][1],yerr=xi[2][1],marker='v',linestyle='',color='g')
     plt.errorbar(xi[0],xi[1][0],yerr=xi[2][0],marker='o',linestyle='',color='r')
     plt.errorbar(xi[0]*1.2,xi[1][2],yerr=xi[2][2],marker='^',linestyle='',color='b')
@@ -400,9 +400,15 @@ class plot_methods(object):
 
     plt.figure(0,figsize=(15,10))
 
-    plot_methods.plot_2pt_split_sub(cat,val,split,1,r'\xi_{+}',xip,0,log)
-    plot_methods.plot_2pt_split_sub(cat,val,split,2,r'\xi_{-}',xim,1,log)
-    plot_methods.plot_2pt_split_sub(cat,val,split,3,r'\gamma_{t}',gt,0,log) 
+    if gt is None:
+      cols=2
+    else:
+      cols=3
+
+    plot_methods.plot_2pt_split_sub(cat,val,split,1,r'\xi_{+}',xip,cols,log)
+    plot_methods.plot_2pt_split_sub(cat,val,split,2,r'\xi_{-}',xim,cols,log)
+    if gt is not None:
+      plot_methods.plot_2pt_split_sub(cat,val,split,3,r'\gamma_{t}',gt,cols,log) 
 
     #plt.minorticks_on()
     plt.subplots_adjust(hspace=0,wspace=.4)
