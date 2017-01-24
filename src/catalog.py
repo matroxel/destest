@@ -661,7 +661,7 @@ class CatalogMethods(object):
 
     print 'fits load',time.time()-t0
 
-    if maxrows==150000000:
+    if maxrows!=150000000:
       tmparray = goldfits[hdu]['FLAGS_GOLD','FLAGS_BADREGION'][:maxrows]
     else:
       tmparray = goldfits[hdu]['FLAGS_GOLD','FLAGS_BADREGION']
@@ -703,10 +703,11 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      if maxrows==150000000:
+      if maxrows!=150000000:
         print tmpcols
         tmparray=shapefits[hdu][tmpcols][:maxrows]
       else:
+        print '?'
         tmparray=shapefits[hdu][tmpcols]
     except IOError:
       print 'error loading fits file: ',shape
@@ -723,7 +724,7 @@ class CatalogMethods(object):
 
     # Dump the requested columns into memory if everything is there
     try:
-      if maxrows==150000000:      
+      if maxrows!=150000000:      
         goldarray=goldfits[hdu][[goldtable.get(x,x) for x in goldcols]][:maxrows]
       else:
         goldarray=goldfits[hdu][[goldtable.get(x,x) for x in goldcols]]
@@ -735,7 +736,7 @@ class CatalogMethods(object):
       if shapecutslive is not None:
         cutcols=shapecutslive['col'][shapecutslive['derived']==False]
         tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
-      if maxrows==150000000:      
+      if maxrows!=150000000:      
         shapearray=shapefits[hdu][tmpcols][:maxrows]
       else:
         shapearray=shapefits[hdu][tmpcols]
