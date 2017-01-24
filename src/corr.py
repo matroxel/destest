@@ -229,7 +229,7 @@ class xi_2pt(object):
         RS2m.process(catxa,catRS2mb)
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
-        norm = Rg.xi+(RS1+RS2)/2.
+        norm = (Rg.xi+(RS1+RS2)/2.)**2
       elif catb.cat=='mcal':
         norm=1.
       else:
@@ -297,7 +297,7 @@ class xi_2pt(object):
         norm = kk.xi
 
       xip=kg.xi/norm
-      xiperr=np.sqrt(kg.varxi)
+      xiperr=np.sqrt(kg.varxi)/norm
       xip_im=kg.xi_im/norm
       theta=np.exp(kg.meanlogr)
 
@@ -320,19 +320,21 @@ class xi_2pt(object):
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         Rg.xi+=(RS1+RS2)/2.
+        norm=Rg.xi
       elif cata.cat=='mcal':
         norm=1.
       else:
         Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         Rg.process(catxa,catmb)
+        norm=Rg.xi
 
-      xip=ng.xi/Rg.xi
-      xiperr=np.sqrt(ng.varxi)
-      xip_im=ng.xi_im/Rg.xi
+      xip=ng.xi/norm
+      xiperr=np.sqrt(ng.varxi)/norm
+      xip_im=ng.xi_im/norm
       if ran:
         rg = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         rg.process(catra,catxb)
-        if catb.cat=='mcal':
+        if (catb.cat=='mcal')&(cata.bs):
           Rgr = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
@@ -346,18 +348,20 @@ class xi_2pt(object):
           RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
           RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
           Rgr.xi+=(RS1+RS2)/2.
+        elif cata.cat=='mcal':
+          norm=1.
         else:
           Rgr = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
           Rgr.process(catra,catmb)
 
         xip,xip_im,xiperr=ng.calculateXi(Rg)
         print 'random subtraction with mcal responsivities not finished - disregard this result' 
-        tmpa,tmp=nk.calculateXi(Rgr)
-        if np.sum(tmpa)==0:
-          tmpa=np.ones(len(xip))
-        xip/=tmpa
-        xiperr=np.sqrt(xiperr)
-        xip_im/=tmpa
+        norm,tmp=nk.calculateXi(Rgr)
+        if np.sum(norm)==0:
+          norm=np.ones(len(xip))
+        xip/=norm
+        xiperr=np.sqrt(xiperr)/norm
+        xip_im/=norm
       theta=np.exp(ng.meanlogr)
 
     elif corr=='NK':
