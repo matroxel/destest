@@ -267,7 +267,10 @@ class split_methods(object):
     xip=get_a_st(cat, theta, xip, xiperr)
     xim=get_a_st(cat, theta, xim, ximerr)
 
+    print cat2
+
     if cat2 is not None:
+      print 'test in cat2?'
       theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',ran=False)    
       gt=[out[0]]
       gterr=[err[0]]
