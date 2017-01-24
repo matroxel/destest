@@ -306,7 +306,7 @@ class xi_2pt(object):
       ng = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       ng.process(catxa,catxb)
 
-      if catb.cat=='mcal':
+      if (catb.cat=='mcal')&(cata.bs):
         Rg = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
@@ -320,6 +320,8 @@ class xi_2pt(object):
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         Rg.xi+=(RS1+RS2)/2.
+      elif cata.cat=='mcal':
+        norm=1.
       else:
         Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         Rg.process(catxa,catmb)
