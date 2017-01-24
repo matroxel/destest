@@ -134,8 +134,6 @@ class split(object):
     """
 
     mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
-    if cat2 is None:
-      cat2=cat        
 
     if cols is None:
       cols=catalog.CatalogMethods.get_cat_colnames(cat)
