@@ -335,12 +335,9 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_2pt_split_sub(cat,val,split,n,yl,xi,i,log,blind=True):
+  def plot_2pt_split_sub(cat,val,split,n,yl,xi,i,log):
 
-    if blind:
-      bf=1.+(np.random.rand(1)[0]-.5)*.4
-    else:
-      bf=1.
+ (theta,out,err,derr,a)
 
     plt.figure(0)
     ax=plt.subplot(3,3,n)
@@ -348,18 +345,15 @@ class plot_methods(object):
     #ax.fill_between([1,100],-2,2,facecolor='gray',alpha=0.2)
     plt.errorbar(xi[0],np.zeros((len(xi[0]))),marker='',linestyle='-',color='k',alpha=.8)
     # plt.errorbar(xi[0],xi[10][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='g')
-    plt.errorbar(xi[0],(xi[1][i]-xi[2][i])/xi[2][i],marker='v',linestyle='',color='g')#yerr=xi[7][i]/xi[2][i]
+    plt.errorbar(xi[0],(xi[1][1]-xi[1][0])/xi[1][0],marker='v',linestyle='',color='g')#yerr=xi[7][i]/xi[2][i]
     # plt.errorbar(xi[0],xi[11][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='r')
     # plt.errorbar(xi[0]*1.1,(xi[3][i]-xi[1][i])/xi[2][i],marker='o',linestyle='',color='r')#,yerr=xi[8][i]/xi[2][i]
     # plt.errorbar(xi[0],xi[12][i]*np.ones((len(xi[0]))),marker='',linestyle='-',color='b')
-    plt.errorbar(xi[0]*1.2,(xi[3][i]-xi[2][i])/xi[2][i],marker='^',linestyle='',color='b')#,yerr=xi[9][i]/xi[2][i]
+    plt.errorbar(xi[0]*1.2,(xi[1][2]-xi[1][0])/xi[1][0],marker='^',linestyle='',color='b')#,yerr=xi[9][i]/xi[2][i]
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
     plt.ylim(-2.5,2.5)
-    if i==1:
-      plt.xlim(10,100)
-    else:
-      plt.xlim(1,100)
+    plt.xlim(1,100)
     ax.set_xticklabels([])
     plt.ylabel(r'$\Delta '+yl+r'/'+yl+r'$')
     # ax.axes.get_yaxis().set_ticks([])
@@ -368,19 +362,16 @@ class plot_methods(object):
     s=config.lbl.get(val,val)
     if log:
       s='log '+s
-    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][i]*bf,yerr=xi[0]*xi[4][i],marker='v',linestyle='',color='g',label=s.replace('_','-')+r'$<$'+str(np.around(split,2)))
-    plt.errorbar(xi[0],xi[0]*xi[2][i]*bf,yerr=xi[0]*xi[5][i],marker='o',linestyle='',color='r',label='All')# (upper-lower in top)
-    plt.errorbar(xi[0]*1.2,xi[0]*xi[3][i]*bf,yerr=xi[0]*xi[6][i],marker='^',linestyle='',color='b',label=s.replace('_','-')+r'$>$'+str(np.around(split,2)))
+    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][0],yerr=xi[0]*xi[2][1],marker='v',linestyle='',color='g',label=s.replace('_','-')+r'$<$'+str(np.around(split,2)))
+    plt.errorbar(xi[0],xi[0]*xi[1][1],yerr=xi[0]*xi[2][0],marker='o',linestyle='',color='r',label='All')# (upper-lower in top)
+    plt.errorbar(xi[0]*1.2,xi[0]*xi[1][2],yerr=xi[0]*xi[2][2],marker='^',linestyle='',color='b',label=s.replace('_','-')+r'$>$'+str(np.around(split,2)))
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
     if n==1:
       leg=plt.legend(loc='upper left',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
     ax.set_xticklabels([])
     plt.ylabel(r'$\theta\times'+yl+r'$')
-    if i==1:
-      plt.xlim(10,100)
-    else:
-      plt.xlim(1,100)
+    plt.xlim(1,100)
     if n<3:
       plt.ylim(0,4e-4)
     else:
@@ -388,17 +379,14 @@ class plot_methods(object):
     ax.axes.get_yaxis().set_ticks([])
 
     ax=plt.subplot(3,3,6+n)
-    plt.errorbar(xi[0]*1.1,xi[1][i]*bf,yerr=xi[4][i],marker='v',linestyle='',color='g')
-    plt.errorbar(xi[0],xi[2][i]*bf,yerr=xi[5][i],marker='o',linestyle='',color='r')
-    plt.errorbar(xi[0]*1.2,xi[3][i]*bf,yerr=xi[6][i],marker='^',linestyle='',color='b')
+    plt.errorbar(xi[0]*1.1,xi[1][1],yerr=xi[2][1],marker='v',linestyle='',color='g')
+    plt.errorbar(xi[0],xi[1][0],yerr=xi[2][0],marker='o',linestyle='',color='r')
+    plt.errorbar(xi[0]*1.2,xi[1][2],yerr=xi[2][2],marker='^',linestyle='',color='b')
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.ylabel(r'$'+yl+r'$')
     plt.xscale('log')
     plt.yscale('log')
-    if i==1:
-      plt.xlim(10,100)
-    else:
-      plt.xlim(1,100)
+    plt.xlim(1,100)
     if n<3:
       plt.ylim(5e-7,1e-4)
     else:
@@ -410,18 +398,13 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_2pt_split(xi,gt,cat,val,split,log):
+  def plot_2pt_split(xip,xim,gt,cat,val,split,log):
 
     plt.figure(0,figsize=(15,10))
 
-    for i in range(3):
-
-      if i==0:
-        plot_methods.plot_2pt_split_sub(cat,val,split,i+1,r'\xi_{+}',xi,0,log)
-      elif i==1:
-        plot_methods.plot_2pt_split_sub(cat,val,split,i+1,r'\xi_{-}',xi,1,log)
-      elif i==2:
-        plot_methods.plot_2pt_split_sub(cat,val,split,i+1,r'\gamma_{t}',gt,0,log) 
+    plot_methods.plot_2pt_split_sub(cat,val,split,1,r'\xi_{+}',xip,0,log)
+    plot_methods.plot_2pt_split_sub(cat,val,split,2,r'\xi_{-}',xim,1,log)
+    plot_methods.plot_2pt_split_sub(cat,val,split,3,r'\gamma_{t}',gt,0,log) 
 
     #plt.minorticks_on()
     plt.subplots_adjust(hspace=0,wspace=.4)

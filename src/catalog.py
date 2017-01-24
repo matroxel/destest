@@ -621,7 +621,7 @@ class CatalogMethods(object):
     return cols,[array[col][:lenst] for i,col in enumerate(cols)],filenames[:lenst],filenums[:lenst]
 
   @staticmethod
-  def get_matched_cat_cols(gold,shape,goldcols,shapecols,goldtable,shapetable,shapetablesheared,shapecuts,shapecutslive,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=1):
+  def get_matched_cat_cols(gold,shape,goldcols,shapecols,goldtable,shapetable,shapetablesheared,shapecuts,shapecutslive,tiles=None,maxiter=999999,exiter=-1,hdu=-1,maxrows=150000000):
     """
     Work function for CatalogStore to parse and read in catalog informaiton from one or more fits files.
     """
@@ -661,8 +661,11 @@ class CatalogMethods(object):
 
     print 'fits load',time.time()-t0
 
-    tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
-    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
+    if maxrows==150000000:
+      tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'],rows=[:maxrows])
+    else:
+      tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
+    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)
 
     print 'gold mask',time.time()-t0
 
@@ -700,7 +703,10 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      tmparray=shapefits[hdu].read(columns=tmpcols)
+      if maxrows==150000000:      
+        tmparray=shapefits[hdu].read(columns=tmpcols,rows=[:maxrows])
+      else:
+        tmparray=shapefits[hdu].read(columns=tmpcols)        
     except IOError:
       print 'error loading fits file: ',shape
 
@@ -715,7 +721,10 @@ class CatalogMethods(object):
 
     # Dump the requested columns into memory if everything is there
     try:
-      goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
+      if maxrows==150000000:      
+        goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols],rows=[:maxrows])
+      else:
+        goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
     except IOError:
       print 'error loading fits file: ',gold
     print 'read gold file',time.time()-t0
@@ -724,7 +733,10 @@ class CatalogMethods(object):
       if shapecutslive is not None:
         cutcols=shapecutslive['col'][shapecutslive['derived']==False]
         tmpcols=col_list(cutcols,shapetable,shapetablesheared,cols2=tmpcols)
-      shapearray=shapefits[hdu].read(columns=tmpcols)
+      if maxrows==150000000:      
+        shapearray=shapefits[hdu].read(columns=tmpcols,rows=[:maxrows])
+      else:
+        shapearray=shapefits[hdu].read(columns=tmpcols)        
     except IOError:
       print 'error loading fits file: ',shape
 

@@ -146,38 +146,39 @@ class split(object):
 
       txt.write_methods.heading(x,cat,label='2pt_splits',create=False)
 
-      xi,gt,split,edge=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,jkon=False,mock=False,log=False,plot=True)
+      xip,xim,gt,split,edge=split_methods.split_gals_2pt_along(cat,cat2,x,mask=mask,jkon=False,mock=False,log=False,plot=True)
 
       txt.write_methods.write_append(x+'  '+str(np.min(getattr(cat,x)[mask]))+'  '+str(split)+'  '+str(np.max(getattr(cat,x)[mask])),cat,label='2pt_splits',create=False)
 
-      txt.write_methods.write_append('theta  '+str(xi[0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('theta  '+str(xip[0]),cat,label='2pt_splits',create=False)
 
-      # txt.write_methods.write_append('xip  '+str(xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('lower delta xip  '+str((xi[1][0]-xi[2][0])/xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('upper delta xip  '+str((xi[3][0]-xi[2][0])/xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('delta xip  '+str((xi[3][0]-xi[1][0])/xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('lower delta xip err  '+str(xi[7][0]/xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('upper delta xip err  '+str(xi[9][0]/xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('delta xip err  '+str(xi[8][0]/xi[2][0]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('amp xip  '+str(xi[10][0])+'  '+str(xi[11][0])+'  '+str(xi[12][0]),cat,label='2pt_splits',create=False)
+      # txt.write_methods.write_append('xip  '+str(xi[2]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('lower delta xip  '+str((xip[1][1]-xip[1][0])/xip[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('upper delta xip  '+str((xip[1][2]-xip[1][0])/xip[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('delta xip  '+str((xip[1][2]-xip[1][1])/xip[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('lower delta xip err  '+str(xip[2][1]/xip[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('upper delta xip err  '+str(xip[2][2]/xip[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('delta xip err  '+str(xip[2][0]/xip[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('amp xip  '+str(xip[4][0])+'  '+str(xip[4][1])+'  '+str(xip[4][2]),cat,label='2pt_splits',create=False)
 
-      # txt.write_methods.write_append('xim  '+str(xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('lower delta xim  '+str((xi[1][1]-xi[2][1])/xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('upper delta xim  '+str((xi[3][1]-xi[2][1])/xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('delta xim  '+str((xi[3][1]-xi[1][1])/xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('lower delta xim err  '+str(xi[7][1]/xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('upper delta xim err  '+str(xi[9][1]/xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('delta xim err  '+str(xi[8][1]/xi[2][1]),cat,label='2pt_splits',create=False)
-      txt.write_methods.write_append('amp xim  '+str(xi[10][1])+'  '+str(xi[11][1])+'  '+str(xi[12][1]),cat,label='2pt_splits',create=False)
+      # txt.write_methods.write_append('xim  '+str(xi[2]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('lower delta xim  '+str((xim[1][1]-xim[1][0])/xim[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('upper delta xim  '+str((xim[1][2]-xim[1][0])/xim[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('delta xim  '+str((xim[1][2]-xim[1][1])/xim[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('lower delta xim err  '+str(xim[2][1]/xim[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('upper delta xim err  '+str(xim[2][2]/xim[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('delta xim err  '+str(xim[2][0]/xim[1][0]),cat,label='2pt_splits',create=False)
+      txt.write_methods.write_append('amp xim  '+str(xim[4][0])+'  '+str(xim[4][1])+'  '+str(xim[4][2]),cat,label='2pt_splits',create=False)
 
-      # txt.write_methods.write_append('gt  '+str(gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('lower delta gt  '+str((gt[1][0]-gt[2][0])/gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('upper delta gt  '+str((gt[3][0]-gt[2][0])/gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('delta gt  '+str((gt[3][0]-gt[1][0])/gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('lower delta gt err  '+str(gt[7][0]/gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('upper delta gt err  '+str(gt[9][0]/gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('delta gt err  '+str(gt[8][0]/gt[2][0]),cat,label='2pt_tan_splits',create=False)
-      txt.write_methods.write_append('amp gt  '+str(gt[10][0])+'  '+str(gt[11][0])+'  '+str(gt[12][0]),cat,label='2pt_tan_splits',create=False)
+      if cat2 is not None:
+        # txt.write_methods.write_append('gt  '+str(xi[2]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('lower delta gt  '+str((gt[1][1]-gt[1][0])/gt[1][0]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('upper delta gt  '+str((gt[1][2]-gt[1][0])/gt[1][0]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('delta gt  '+str((gt[1][2]-gt[1][1])/gt[1][0]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('lower delta gt err  '+str(gt[2][1]/gt[1][0]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('upper delta gt err  '+str(gt[2][2]/gt[1][0]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('delta gt err  '+str(gt[2][0]/gt[1][0]),cat,label='2pt_splits',create=False)
+        txt.write_methods.write_append('amp gt  '+str(gt[4][0])+'  '+str(gt[4][1])+'  '+str(gt[4][2]),cat,label='2pt_splits',create=False)
 
     return
 
@@ -206,6 +207,26 @@ class split_methods(object):
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
 
+    def get_a_st(cat, theta, out, err):
+
+      a=[]
+      derr0=[]
+      for i in xrange(cat.sbins+1):
+        if ~jkon:
+          derr.append(err[i])
+      a.append(split_methods.amp_shift(out[0],out[2]-out[1],np.sqrt(err[1]*err[2])))
+      a.append(split_methods.amp_shift(out[0],out[1]-out[0],err[1]))
+      a.append(split_methods.amp_shift(out[0],out[2]-out[0],err[2]))
+
+      if blind:
+        r0=ran.rand()
+        for i in xrange(cat.sbins+1):
+          out[i]*=(r0*0.1+1.)
+          err[i]*=(r0*0.1+1.)
+          derr[i]*=(r0*0.1+1.)
+
+      return (theta,out,err,derr,a)
+
     if cat.cat!='mcal':
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     else:
@@ -222,54 +243,59 @@ class split_methods(object):
 
     bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
 
-    theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
-    theta,out0,err0,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',ran=False)
+    theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
+    xip=[out[0]]
+    xiperr=[err[0]]
+    xim=[out[1]]
+    ximerr=[err[1]]
     for i in xrange(cat.sbins):
       if cat.cat!='mcal':
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==i),wa=w)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==0),wb=w,ran=False)
+        theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==i),wa=w)
+        xip.append(out[0])
+        xiperr.append(err[0])
+        xim.append(out[1])
+        ximerr.append(err[1])
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
-        theta,outa,erra,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',wb=w,ran=False)
+        theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+        xip.append(out[0])
+        xiperr.append(err[0])
+        xim.append(out[1])
+        ximerr.append(err[1])
 
-      # if (jkon)&(cat.use_jk==1):
-      #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
-      # elif (jkon)&(cat.use_jk==2):
-      #   me1err,me2err,slp1err,slp2err,b1err,b2err=BCC_Methods.jk_iter_lin(array,cat,label,parallel=parallel)
+    xip=get_a_st(cat, theta, xip, xiperr)
+    xim=get_a_st(cat, theta, xim, ximerr)
 
-      a0=np.zeros((2))
-      a1=np.zeros((2))
-      a2=np.zeros((2))
-      if ~jkon:
-        derra=erra
-        derr0=err0
-        derrb=errb
-        for i in xrange(2):
-          if (j==1)&(i==1):
-            continue
-          a0[i]=split_methods.amp_shift(out0[i],outb[i]-outa[i],np.sqrt(erra[i]*errb[i]))
-          a1[i]=split_methods.amp_shift(out0[i],outa[i]-out0[i],erra[i])
-          a2[i]=split_methods.amp_shift(out0[i],outb[i]-out0[i],errb[i])
+    if cat2 is not None:
+      theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',ran=False)    
+      gt=[out[0]]
+      gterr=[err[0]]
+      for i in xrange(cat.sbins):
+        if cat.cat!='mcal':
+          theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',maskb=mask&(bins==0),wb=w,ran=False)
+          gt.append(out[0])
+          gterr.append(err[0])
+        else:
+          catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+          theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',wb=w,ran=False)
+          gt.append(out[0])
+          gterr.append(err[0])
+          catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
-      #if blind:
-        #out0=out0*(ran.rand()*0.1+1.)
-      if blind:
-        for i in xrange(2):
-          if (j==1)&(i==1):
-            continue
-          out0[i]*=(ran.rand()*0.1+1.)
+      gt=get_a_st(cat, theta, gt, gterr)
+    else:
+      gt=None
 
-      if j==0:
-        xi=(theta,outa,out0,outb,erra,err0,errb,derra,derr0,derrb,a1,a0,a2)
-      else:
-        gt=(theta,outa,out0,outb,erra,err0,errb,derra,derr0,derrb,a1,a0,a2)
+    # if (jkon)&(cat.use_jk==1):
+    #   me1err,me2err,slp1err,slp2err,b1err,b2err=jackknife_methods.lin_err0(array,cat,label,mask0=mask,parallel=parallel)
+    # elif (jkon)&(cat.use_jk==2):
+    #   me1err,me2err,slp1err,slp2err,b1err,b2err=BCC_Methods.jk_iter_lin(array,cat,label,parallel=parallel)
 
     if plot:
-      fig.plot_methods.plot_2pt_split(xi,gt,cat,val,edge[1],log)
+      fig.plot_methods.plot_2pt_split(xip,xim,gt,cat,val,edge[1],log)
 
-    return xi,gt,split,edge
+    return xip,xim,gt,split,edge
 
   @staticmethod
   def load_maps(cat,maps=None):
