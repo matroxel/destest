@@ -703,7 +703,8 @@ class CatalogMethods(object):
 
     # Dump the columns needed for masking into memory if everything is there
     try:
-      if maxrows==150000000:      
+      if maxrows==150000000:
+        print tmpcols
         tmparray=shapefits[hdu][tmpcols][:maxrows]
       else:
         tmparray=shapefits[hdu][tmpcols]
