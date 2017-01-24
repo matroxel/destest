@@ -232,8 +232,8 @@ class split_methods(object):
 
     array=getattr(cat,val)
 
-    if log:
-      array=np.log10(array)
+    # if log:
+    #   array=np.log10(array)
 
     s=config.lbl.get(val,val)
     if config.log_val.get(val,False):
