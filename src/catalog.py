@@ -711,6 +711,7 @@ class CatalogMethods(object):
       print 'error loading fits file: ',shape
 
     print 'shape cuts',time.time()-t0
+    print tmparray
 
     # Generate the selection mask based on the passed cut function
     shapemask=np.array([])
