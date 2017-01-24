@@ -356,7 +356,7 @@ class plot_methods(object):
     plt.ylabel(r'$\Delta '+yl+r'/'+yl+r'$')
     # ax.axes.get_yaxis().set_ticks([])
 
-    ax=plt.subplot(3,i,3+n)
+    ax=plt.subplot(3,i,i+n)
     s=config.lbl.get(val,val)
     if log:
       s='log '+s
@@ -376,7 +376,7 @@ class plot_methods(object):
       plt.ylim(0,4e-3)
     ax.axes.get_yaxis().set_ticks([])
 
-    ax=plt.subplot(3,i,6+n)
+    ax=plt.subplot(3,i,2*i+n)
     plt.errorbar(xi[0]*1.1,xi[1][1],yerr=xi[2][1],marker='v',linestyle='',color='g')
     plt.errorbar(xi[0],xi[1][0],yerr=xi[2][0],marker='o',linestyle='',color='r')
     plt.errorbar(xi[0]*1.2,xi[1][2],yerr=xi[2][2],marker='^',linestyle='',color='b')
