@@ -108,7 +108,9 @@ class xi_2pt(object):
       w0=wa
 
     if w0 is None:
-      w0=np.ones(len(cata.coadd))
+      w0=np.ones(len(cata.coadd))        
+      if cat.cat!='mcal':
+        wa=[np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd))]
 
     if catb is None:
       if corr not in ['GG','NN','KK']:
@@ -180,6 +182,8 @@ class xi_2pt(object):
 
       if w0 is None:
         w0=np.ones(len(catb.coadd))
+        if cat.cat!='mcal':
+          wa=[np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd))]
 
       if gb is not None:
         e1=getattr(catb,gb+'1')[maskb0]
