@@ -360,8 +360,8 @@ class plot_methods(object):
     s=config.lbl.get(val,val)
     if log:
       s='log '+s
-    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][0],yerr=xi[0]*xi[2][1],marker='v',linestyle='',color='g',label=s.replace('_','-')+r'$<$'+str(np.around(split,2)))
-    plt.errorbar(xi[0],xi[0]*xi[1][1],yerr=xi[0]*xi[2][0],marker='o',linestyle='',color='r',label='All')# (upper-lower in top)
+    plt.errorbar(xi[0]*1.1,xi[0]*xi[1][1],yerr=xi[0]*xi[2][1],marker='v',linestyle='',color='g',label=s.replace('_','-')+r'$<$'+str(np.around(split,2)))
+    plt.errorbar(xi[0],xi[0]*xi[1][0],yerr=xi[0]*xi[2][0],marker='o',linestyle='',color='r',label='All')# (upper-lower in top)
     plt.errorbar(xi[0]*1.2,xi[0]*xi[1][2],yerr=xi[0]*xi[2][2],marker='^',linestyle='',color='b',label=s.replace('_','-')+r'$>$'+str(np.around(split,2)))
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
