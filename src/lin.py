@@ -136,7 +136,9 @@ class linear_methods(object):
       # print e1,mask,len(e1),len(mask)
       w=np.ones(np.sum(mask0))
       if w1 is not None:
-        w*=w1
+        w=[]
+        for i in range(5):
+          w.append(w1[mask[i]])
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
