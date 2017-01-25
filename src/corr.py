@@ -97,7 +97,8 @@ class xi_2pt(object):
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
       maska0 = maska[0]
-      w0=wa[0]
+      if wa is not None:
+        w0=wa[0]
     else:
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
