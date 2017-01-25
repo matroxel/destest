@@ -94,6 +94,8 @@ class xi_2pt(object):
 
     """
 
+    print 'start',wa
+
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
       maska0 = maska[0]
