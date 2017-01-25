@@ -388,7 +388,10 @@ class split_methods(object):
     print 'before fig',len(nz),len(w),len(bins),len(bins[0]),len(bins[1])
 
     if plot:
-      fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
+      if cat.cat=='mcal':
+        fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w,label,edge)
+      else:
+        fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
     return bins,w,edge
 
