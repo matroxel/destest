@@ -431,7 +431,7 @@ class split_methods(object):
           else:
             w[binmask&binmask2]=0.5*h0[k]/h[k]
 
-    print 'max/min weight', np.max(w),np.min(w)
+        print 'max/min/mean weight', k,np.max(w),np.min(w),np.mean(w[binmask&binmask2])
 
     return w
 
