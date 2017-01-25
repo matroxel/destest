@@ -242,6 +242,7 @@ class split_methods(object):
     bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
     print 'edge',edge,w
 
+    print '00000000000000', -1
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     xip=[out[0]]
     xiperr=[err[0]]
@@ -259,6 +260,7 @@ class split_methods(object):
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         print 'before',w
+        print '00000000000000', i
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
         xip.append(out[0])
