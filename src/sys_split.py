@@ -398,6 +398,8 @@ class split_methods(object):
       else:
         fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
+    print '11111111111',np.mean(w[0][bins[0][0]]),np.mean(w[0][bins[1][0]])
+
     return bins,w,edge
 
   @staticmethod
