@@ -379,17 +379,17 @@ class split_methods(object):
         w=split_methods.pz_weight(cat,nz,mask0,bins)
     else:
       if cat.cat!='mcal':
+        w=np.ones(np.sum([mask]))
+      else:
         w=[]
         for i in range(5):
-          w.append(np.ones(np.sum([mask])))
-      else:
-        w=np.ones(len(nz))
+          w.append(np.ones(len(nz)))
 
     print 'before fig',len(nz),len(w),len(bins),len(bins[0]),len(bins[1])
 
     if plot:
       if cat.cat=='mcal':
-        fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w,label,edge)
+        fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w[0],label,edge)
       else:
         fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
