@@ -138,7 +138,7 @@ class linear_methods(object):
       if w1 is not None:
         w=[]
         for i in range(5):
-          w.append(w1[mask[i]])
+          w.append(w1[i][mask[i]])
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
