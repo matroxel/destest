@@ -350,7 +350,7 @@ class split_methods(object):
     if cat.cat!='mcal':
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     else:
-      mask0=catalog.CatalogMethods.get_cuts_mask(cat,full=Full)
+      mask0=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
       mask=mask0[0]
 
     w=np.ones(len(cat.coadd))
