@@ -868,7 +868,6 @@ class CatalogMethods(object):
 
     else:
       print 'Not registered as sheared column:  ',col
-      raise
 
     return cat.livecuts
 
