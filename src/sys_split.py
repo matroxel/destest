@@ -247,8 +247,10 @@ class split_methods(object):
     xiperr=[err[0]]
     xim=[out[1]]
     ximerr=[err[1]]
+    print '---------'
     for i in xrange(cat.sbins):
       if cat.cat!='mcal':
+        print 'why'
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==i),wa=w)
         xip.append(out[0])
         xiperr.append(err[0])
