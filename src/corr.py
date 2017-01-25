@@ -99,6 +99,8 @@ class xi_2pt(object):
       maska0 = maska[0]
       if wa is not None:
         w0=wa[0]
+      else:
+        w0=wa
     else:
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
