@@ -415,15 +415,16 @@ class split_methods(object):
       return
     else:
       h0,b0=np.histogram(nz,bins=binnum)
-      for j in xrange(cat.sbins):
+      for j in range(cat.sbins):
         if cat.cat!='mcal':
           binmask=(bins==j)
         else:
           binmask=bins[j]
+          print 'binmask',j,binmask
         h,b=np.histogram(nz[binmask],bins=b0)
         w=np.ones(len(nz))
         print 'w0',len(w)
-        for k in xrange(binnum):
+        for k in range(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
           if h[k]<0.01*h0[k]:
             w[binmask&binmask2]=0.
