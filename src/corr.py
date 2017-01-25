@@ -111,7 +111,7 @@ class xi_2pt(object):
 
     if w0 is None:
       w0=np.ones(len(cata.coadd))        
-      if cata.cat!='mcal':
+      if cata.cat=='mcal':
         wa=[np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd))]
 
     if catb is None:
@@ -184,7 +184,7 @@ class xi_2pt(object):
 
       if w0 is None:
         w0=np.ones(len(catb.coadd))
-        if catb.cat!='mcal':
+        if catb.cat=='mcal':
           wa=[np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd))]
 
       if gb is not None:
