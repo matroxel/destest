@@ -240,18 +240,15 @@ class split_methods(object):
       s='log '+s
 
     bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
-    print 'edge',edge,w
+    print 'edge',edge
 
-    print '00000000000000', -1
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     xip=[out[0]]
     xiperr=[err[0]]
     xim=[out[1]]
     ximerr=[err[1]]
-    print '---------'
     for i in xrange(cat.sbins):
       if cat.cat!='mcal':
-        print 'why'
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==i),wa=w)
         xip.append(out[0])
         xiperr.append(err[0])
@@ -259,8 +256,6 @@ class split_methods(object):
         ximerr.append(err[1])
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
-        print 'before',w
-        print '00000000000000', i
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
         xip.append(out[0])
@@ -272,7 +267,6 @@ class split_methods(object):
     xim=get_a_st(cat, theta, xim, ximerr)
 
     if cat2 is not None:
-      print 'test in cat2?'
       theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat2,catb=cat,corr='NG',ran=False)    
       gt=[out[0]]
       gterr=[err[0]]
@@ -373,8 +367,6 @@ class split_methods(object):
         bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=True))
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
-      print 'wnz',edge,bins,np.sum(bins[0]),np.sum(bins[1])
-
     if cat.pzrw:
       if cat.cat=='mcal':
         w=[]
@@ -390,15 +382,11 @@ class split_methods(object):
         for i in range(5):
           w.append(np.ones(len(nz)))
 
-    print 'before fig',len(nz),len(w),len(bins),len(bins[0]),len(bins[1])
-
     if plot:
       if cat.cat=='mcal':
         fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w[0],label,edge)
       else:
         fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
-
-    print '11111111111',np.mean(w[0][bins[0][0]]),np.mean(w[0][bins[1][0]])
 
     return bins,w,edge
 
@@ -424,7 +412,6 @@ class split_methods(object):
           binmask=(bins==j)
         else:
           binmask=bins[j]
-          print 'binmask',j,binmask
         h,b=np.histogram(nz[binmask],bins=b0)
         for k in range(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
