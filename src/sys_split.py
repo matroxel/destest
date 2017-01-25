@@ -256,6 +256,7 @@ class split_methods(object):
         ximerr.append(err[1])
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        print 'before',w
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
         xip.append(out[0])
