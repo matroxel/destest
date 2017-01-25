@@ -97,13 +97,15 @@ class xi_2pt(object):
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
       maska0 = maska[0]
+      w0=wa[0]
     else:
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
       maska0=maska&jkmask
+      w0=wa
 
-    if wa is None:
-      wa=np.ones(len(cata.coadd))
+    if w0 is None:
+      w0=np.ones(len(cata.coadd))
 
     if catb is None:
       if corr not in ['GG','NN','KK']:
@@ -125,10 +127,10 @@ class xi_2pt(object):
       if (cata.cat=='mcal')&(cata.bs):
         print 'test'
         catRga=treecorr.Catalog(k=(m1+m2)/2., w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
-        catRS1pa=treecorr.Catalog(g1=cata.e1[maska[1]], g2=cata.e2[maska[1]], ra=cata.ra[maska[1]], dec=cata.dec[maska[1]], ra_units='deg', dec_units='deg')
-        catRS1ma=treecorr.Catalog(g1=cata.e1[maska[2]], g2=cata.e2[maska[2]], ra=cata.ra[maska[2]], dec=cata.dec[maska[2]], ra_units='deg', dec_units='deg')
-        catRS2pa=treecorr.Catalog(g1=cata.e1[maska[3]], g2=cata.e2[maska[3]], ra=cata.ra[maska[3]], dec=cata.dec[maska[3]], ra_units='deg', dec_units='deg')
-        catRS2ma=treecorr.Catalog(g1=cata.e1[maska[4]], g2=cata.e2[maska[4]], ra=cata.ra[maska[4]], dec=cata.dec[maska[4]], ra_units='deg', dec_units='deg')
+        catRS1pa=treecorr.Catalog(g1=cata.e1[maska[1]], g2=cata.e2[maska[1]], w=wa[1], ra=cata.ra[maska[1]], dec=cata.dec[maska[1]], ra_units='deg', dec_units='deg')
+        catRS1ma=treecorr.Catalog(g1=cata.e1[maska[2]], g2=cata.e2[maska[2]], w=wa[2], ra=cata.ra[maska[2]], dec=cata.dec[maska[2]], ra_units='deg', dec_units='deg')
+        catRS2pa=treecorr.Catalog(g1=cata.e1[maska[3]], g2=cata.e2[maska[3]], w=wa[3], ra=cata.ra[maska[3]], dec=cata.dec[maska[3]], ra_units='deg', dec_units='deg')
+        catRS2ma=treecorr.Catalog(g1=cata.e1[maska[4]], g2=cata.e2[maska[4]], w=wa[4], ra=cata.ra[maska[4]], dec=cata.dec[maska[4]], ra_units='deg', dec_units='deg')
       elif cata.cat=='mcal':
         pass
       else:
@@ -168,11 +170,13 @@ class xi_2pt(object):
       if catb.cat=='mcal':
         maskb = catalog.CatalogMethods.get_cuts_mask(catb)
         maskb0 = maskb[0]
+        w0=wb[0]
       else:
         maskb0=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
+        w0=wb
 
-      if wb is None:
-        wb=np.ones(len(catb.coadd))
+      if w0 is None:
+        w0=np.ones(len(catb.coadd))
 
       if gb is not None:
         e1=getattr(catb,gb+'1')[maskb0]
@@ -181,16 +185,16 @@ class xi_2pt(object):
         gb='e'
       if conj:
         e2=-e2
-      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=w0)
 
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if (catb.cat=='mcal')&(catb.bs):
           catRgb=treecorr.Catalog(k=(m1+m2)/2., w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
-          catRS1pb=treecorr.Catalog(g1=catb.e1[maskb[1]], g2=catb.e2[maskb[1]], ra=catb.ra[maskb[1]], dec=catb.dec[maskb[1]], ra_units='deg', dec_units='deg')
-          catRS1mb=treecorr.Catalog(g1=catb.e1[maskb[2]], g2=catb.e2[maskb[2]], ra=catb.ra[maskb[2]], dec=catb.dec[maskb[2]], ra_units='deg', dec_units='deg')
-          catRS2pb=treecorr.Catalog(g1=catb.e1[maskb[3]], g2=catb.e2[maskb[3]], ra=catb.ra[maskb[3]], dec=catb.dec[maskb[3]], ra_units='deg', dec_units='deg')
-          catRS2mb=treecorr.Catalog(g1=catb.e1[maskb[4]], g2=catb.e2[maskb[4]], ra=catb.ra[maskb[4]], dec=catb.dec[maskb[4]], ra_units='deg', dec_units='deg')
+          catRS1pb=treecorr.Catalog(g1=catb.e1[maskb[1]], g2=catb.e2[maskb[1]], w=wa[1], ra=catb.ra[maskb[1]], dec=catb.dec[maskb[1]], ra_units='deg', dec_units='deg')
+          catRS1mb=treecorr.Catalog(g1=catb.e1[maskb[2]], g2=catb.e2[maskb[2]], w=wa[2], ra=catb.ra[maskb[2]], dec=catb.dec[maskb[2]], ra_units='deg', dec_units='deg')
+          catRS2pb=treecorr.Catalog(g1=catb.e1[maskb[3]], g2=catb.e2[maskb[3]], w=wa[3], ra=catb.ra[maskb[3]], dec=catb.dec[maskb[3]], ra_units='deg', dec_units='deg')
+          catRS2mb=treecorr.Catalog(g1=catb.e1[maskb[4]], g2=catb.e2[maskb[4]], w=wa[4], ra=catb.ra[maskb[4]], dec=catb.dec[maskb[4]], ra_units='deg', dec_units='deg')
         elif catb.cat=='mcal':
           pass
         else:

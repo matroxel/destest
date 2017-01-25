@@ -240,6 +240,7 @@ class split_methods(object):
       s='log '+s
 
     bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
+    print 'edge',edge,w
 
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     xip=[out[0]]
@@ -264,8 +265,6 @@ class split_methods(object):
 
     xip=get_a_st(cat, theta, xip, xiperr)
     xim=get_a_st(cat, theta, xim, ximerr)
-
-    print cat2
 
     if cat2 is not None:
       print 'test in cat2?'
@@ -351,7 +350,8 @@ class split_methods(object):
     if cat.cat!='mcal':
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     else:
-      mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+      mask0=catalog.CatalogMethods.get_cuts_mask(cat,full=Full)
+      mask=mask0[0]
 
     w=np.ones(len(cat.coadd))
     if cat.wt:
@@ -363,18 +363,25 @@ class split_methods(object):
       bins=np.digitize(array[mask],edge)-1
     else:
       bins=[]
-      for i in xrange(cat.sbins):
+      for i in range(cat.sbins):
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
-        bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=False))
+        bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=True))
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
       print 'wnz',edge,bins,np.sum(bins[0]),np.sum(bins[1])
 
     if cat.pzrw:
-      w=split_methods.pz_weight(cat,nz,mask,bins)
+      if cat.cat=='mcal':
+        w=[]
+        for i in range(5):
+          w.append(split_methods.pz_weight(cat,nz,mask0[i],[bins[0][i],bins[1][i]]))
+      else:
+        w=split_methods.pz_weight(cat,nz,mask0,bins)
     else:
       if cat.cat!='mcal':
-        w=np.ones(np.sum([mask]))
+        w=[]
+        for i in range(5):
+          w.append(np.ones(np.sum([mask])))
       else:
         w=np.ones(len(nz))
 
@@ -395,8 +402,6 @@ class split_methods(object):
       print 'am i stupid?'
       nz=nz[mask]
 
-    w=np.ones(len(nz))
-    print 'w0',len(w)
     if pdf:
       print 'transfer pdf support'
       return
@@ -408,6 +413,8 @@ class split_methods(object):
         else:
           binmask=bins[j]
         h,b=np.histogram(nz[binmask],bins=b0)
+        w=np.ones(len(nz))
+        print 'w0',len(w)
         for k in xrange(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
           if h[k]<0.01*h0[k]:
