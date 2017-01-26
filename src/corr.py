@@ -394,7 +394,7 @@ class xi_2pt(object):
 
     if erron:
       if config.cov.get('path') is not None:
-        try tp.TwoPointFile.from_fits(config.cov.get('path')):
+        try tmp=tp.TwoPointFile.from_fits(config.cov.get('path')):
           np.save('/text/archived_shapenoise_error.npy',np.vstack((theta,err[0],err[1])).T)
           err2=[xiperr,ximerr,xiperr,ximerr]
           err[0]=tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info.get_error(config.cov.get('name')[0])
