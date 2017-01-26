@@ -23,6 +23,7 @@ import config
 import fig
 import txt
 import lin
+import twopoint
 
 class UseError(Exception):
   def __init__(self, value):
@@ -65,7 +66,7 @@ class xi_2pt(object):
     return theta,[xip,xim,xip_im,xim_im],[xiperr,ximerr,xip_imerr,xim_imerr],[xipchi2,ximchi2,xip_imchi2,xim_imchi2]
 
   @staticmethod
-  def xi_2pt(cata,catb=None,k=None,ga=None,gb=None,corr='GG',maska=None,maskb=None,wa=None,wb=None,ran=True,mock=False,erron=True,jkmask=None,label0='',plot=False,conj=False):
+  def xi_2pt(cata,catb=None,k=None,ga=None,gb=None,corr='GG',maska=None,maskb=None,wa=None,wb=None,ran=True,mock=False,erron=True,jkmask=None,label0='',plot=False,conj=False,bin1=0,bin2=0):
     """
     This is a flexible convenience wrapper for interaction with treecorr to work on CatalogStore objects. Some basic examples are given in corr_tests() of the main testsuite.py. g1, g2 correctly by c1, c2 if ellipticities and cat.bs is true. Correction by sensitivity, 1+m applied if cat.bs=True. Weighting applied if cat.wt is true. Other config properties for treecorr stored in CatalogStore object. See catalog.py or config.py. Not all correlation types fully integrated or tested. For example, only one kappa value is currently possible. Will be updated in future as useful.
 
@@ -392,6 +393,22 @@ class xi_2pt(object):
     chi2=[0.,0.,0.,0.]
 
     if erron:
+      if config.cov.get('path') is not None:
+        try tp.TwoPointFile.from_fits(config.cov.get('path')):
+          np.save('/text/archived_shapenoise_error.npy',np.vstack((theta,err[0],err[1])).T)
+          err2=[xiperr,ximerr,xiperr,ximerr]
+          err[0]=tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info.get_error(config.cov.get('name')[0])
+          err[2]=err[0]
+          if corr=='GG':
+            if len(config.cov.get('name'))!=2:
+              print 'problem with cov names list - not == 2 for GG'
+            err[1]=tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info.get_error(config.cov.get('name')[1])
+            err[3]=err[1]
+          else:
+            err[1]=err[0]          
+            err[3]=err[0]          
+        except:
+          print 'failure to read cov file'          
       kwargs={'catb':catb,'k':k,'corr':corr,'maska':maska,'maskb':maskb,'wa':wa,'wb':wb,'ran':ran}
       if catb is None:
         if corr in ['KK','NK','KG']:

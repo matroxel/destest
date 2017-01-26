@@ -42,9 +42,9 @@ cfg = {
   'footbins':100,
   'sbins':2,
   'slop':0.1,
-  'tbins':8,
+  'tbins':20,
   'cbins':5,
-  'sep':np.array([1.,400.]),
+  'sep':np.array([1.,300.]),
   'num_patch':126,
   'num_reg':150,
   'bs':False,
@@ -55,6 +55,13 @@ cfg = {
   'mcal_dg':0.01
 
 }
+
+cov = {
+'path' : '../des-mpp/cosmosis/baseline/simulated_y1_v10_fiducial_wcov_v1.fits',
+'name' : ['xip','xim']
+
+}
+
 
 ra_lim = {
   
