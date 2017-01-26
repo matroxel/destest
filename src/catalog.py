@@ -663,6 +663,7 @@ class CatalogMethods(object):
 
     tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
     goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
+    tmparray = None # clearing tmparray for masking
 
     print 'gold mask',time.time()-t0
 
@@ -710,6 +711,7 @@ class CatalogMethods(object):
     shapemask=np.array([])
     for icut,cut in enumerate(shapecuts): 
       shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray[shapetable.get(cutcols[icut])],shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
+    tmparray = None # Clearing tmparray for masking
 
     print 'shape cuts done',time.time()-t0
 
@@ -718,7 +720,9 @@ class CatalogMethods(object):
       goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
     except IOError:
       print 'error loading fits file: ',gold
+    goldfits.close()
     print 'read gold file',time.time()-t0
+    
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
       if shapecutslive is not None:
@@ -727,6 +731,7 @@ class CatalogMethods(object):
       shapearray=shapefits[hdu].read(columns=tmpcols)
     except IOError:
       print 'error loading fits file: ',shape
+    shapefits.close()
 
     print 'read shape file',time.time()-t0
 
@@ -741,6 +746,7 @@ class CatalogMethods(object):
       i=np.argsort(shapearray[shapetable.get('coadd')])
       shapearray=shapearray[i]
       shapemask=shapemask[i]
+    i=None # Clear i array
 
     print 'order',time.time()-t0
 
@@ -756,6 +762,8 @@ class CatalogMethods(object):
 
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
+    goldmask = None
+    shapemask = None #clearing mask arrays
 
     print 'cuts',time.time()-t0
 
@@ -763,9 +771,6 @@ class CatalogMethods(object):
     shapearray = nlr.rename_fields(shapearray,{v: k for k, v in shapetable.iteritems()})
 
     print 'rename',time.time()-t0
-
-    goldfits.close()
-    shapefits.close()
 
     outcols = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)]+[shapearray[col] for col in shapearray.dtype.names if col != 'coadd']
     outnames = [col for col in goldarray.dtype.names]+[col for col in shapearray.dtype.names if col != 'coadd']
