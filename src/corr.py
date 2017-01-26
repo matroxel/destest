@@ -394,9 +394,7 @@ class xi_2pt(object):
 
     if erron:
       if config.cov.get('path') is not None:
-        try tmp=tp.TwoPointFile.from_fits(config.cov.get('path')):
-          np.save('/text/archived_shapenoise_error.npy',np.vstack((theta,err[0],err[1])).T)
-          err2=[xiperr,ximerr,xiperr,ximerr]
+        try:
           err[0]=tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info.get_error(config.cov.get('name')[0])
           err[2]=err[0]
           if corr=='GG':
@@ -407,8 +405,10 @@ class xi_2pt(object):
           else:
             err[1]=err[0]          
             err[3]=err[0]          
+          np.save('/text/archived_shapenoise_error.npy',np.vstack((theta,err[0],err[1])).T)
+          err2=[xiperr,ximerr,xiperr,ximerr]
         except:
-          print 'failure to read cov file'          
+          print 'failure to read cov file, using shape noise'         
       kwargs={'catb':catb,'k':k,'corr':corr,'maska':maska,'maskb':maskb,'wa':wa,'wb':wb,'ran':ran}
       if catb is None:
         if corr in ['KK','NK','KG']:
