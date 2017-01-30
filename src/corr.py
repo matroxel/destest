@@ -24,6 +24,8 @@ import fig
 import txt
 import lin
 import twopoint
+import time
+t0=time.time()
 
 class UseError(Exception):
   def __init__(self, value):
@@ -94,6 +96,7 @@ class xi_2pt(object):
     :conj:          bool - Conjugate calculation.
 
     """
+    print 'start of xi_2pt',time.time()-t0
 
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
@@ -102,6 +105,7 @@ class xi_2pt(object):
         w0=wa[0]
       else:
         w0=wa
+      print 'mask done',time.time()-t0
     else:
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
@@ -117,6 +121,7 @@ class xi_2pt(object):
       if corr not in ['GG','NN','KK']:
         raise UseError('Must supply both cata,catb for NG,NK correlations.')
 
+    print 'before catalog',time.time()-t0
     if ga is not None:
       e1=getattr(cata,ga+'1')[maska0]
       e2=getattr(cata,ga+'2')[maska0]
@@ -127,15 +132,22 @@ class xi_2pt(object):
     if conj:
       e2=-e2
     e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
+    print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w[0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+      print 'after catxa',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
         catRga=treecorr.Catalog(k=(m1+m2)/2., w=w[0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        print 'after catRga',time.time()-t0
         catRS1pa=treecorr.Catalog(g1=cata.e1[maska[1]], g2=cata.e2[maska[1]], w=w[1], ra=cata.ra[maska[1]], dec=cata.dec[maska[1]], ra_units='deg', dec_units='deg')
+        print 'after catRS1pa',time.time()-t0
         catRS1ma=treecorr.Catalog(g1=cata.e1[maska[2]], g2=cata.e2[maska[2]], w=w[2], ra=cata.ra[maska[2]], dec=cata.dec[maska[2]], ra_units='deg', dec_units='deg')
+        print 'after catRS1ma',time.time()-t0
         catRS2pa=treecorr.Catalog(g1=cata.e1[maska[3]], g2=cata.e2[maska[3]], w=w[3], ra=cata.ra[maska[3]], dec=cata.dec[maska[3]], ra_units='deg', dec_units='deg')
+        print 'after catRS2pa',time.time()-t0
         catRS2ma=treecorr.Catalog(g1=cata.e1[maska[4]], g2=cata.e2[maska[4]], w=w[4], ra=cata.ra[maska[4]], dec=cata.dec[maska[4]], ra_units='deg', dec_units='deg')
+        print 'after catRS2ma',time.time()-t0
       elif cata.cat=='mcal':
         pass
       else:
@@ -153,6 +165,7 @@ class xi_2pt(object):
         raise UseError('Unknown k field specified.')
       catxa=treecorr.Catalog(k=getattr(cata, k)[maska0], w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
+    print 'before cat2',time.time()-t0
     if catb is None:
       catb=cata
       catxb=catxa
@@ -162,6 +175,7 @@ class xi_2pt(object):
         catRS1mb=catRS1ma
         catRS2pb=catRS2pa
         catRS2mb=catRS2ma
+        print 'after cat2',time.time()-t0
       elif cata.cat=='mcal':
         pass
       else:

@@ -4,6 +4,7 @@ import healpy as hp
 import multiprocessing
 import os
 import numpy.random as ran
+import time
 
 import catalog
 import config
@@ -12,6 +13,7 @@ import txt
 import lin
 import corr
 
+t0=time.time()
 
 class split(object):
 
@@ -20,8 +22,6 @@ class split(object):
     """
     Loop over array names in cols of CatalogStore cat with optional masking. Calls split_methods.split_gals_lin_along().
     """
-
-    print '!!!!!!!!!!!!!!!!!!!! check if plotting at mean of log(val) or log(mean(val))...'
 
     if p is not None:
       jobs=[]
@@ -205,6 +205,8 @@ class split_methods(object):
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
 
+    print '2pt main start'
+
     def get_a_st(cat, theta, out, err):
 
       a=[]
@@ -230,6 +232,8 @@ class split_methods(object):
     else:
       mask=np.ones(len(cat.coadd)).astype(bool)
 
+    print 'after mask getting',time.time()-t0
+
     array=getattr(cat,val)
 
     # if log:
@@ -239,10 +243,15 @@ class split_methods(object):
     if config.log_val.get(val,False):
       s='log '+s
 
+    print 'before wnz',time.time()-t0
+
     bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
     print 'edge',edge
+    print 'after wnz',time.time()-t0
 
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
+    print 'after main 2pt',time.time()-t0
+
     xip=[out[0]]
     xiperr=[err[0]]
     xim=[out[1]]
@@ -255,9 +264,13 @@ class split_methods(object):
         xim.append(out[1])
         ximerr.append(err[1])
       else:
+        print 'before '+str(i)+' 2pt',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        print 'before '+str(i)+' 2pt v2',time.time()-t0
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',wa=w)
+        print 'after '+str(i)+' 2pt ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+        print 'after '+str(i)+' 2pt v2',time.time()-t0
         xip.append(out[0])
         xiperr.append(err[0])
         xim.append(out[1])
@@ -346,31 +359,37 @@ class split_methods(object):
     Calculate splitting and redshift reweighting. 
     """
 
+    print 'start of wnz ',time.time()-t0
     if cat.cat!='mcal':
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     else:
       mask0=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
       mask=mask0[0]
 
+    print 'after mask ',time.time()-t0
     w=np.ones(len(cat.coadd))
     if cat.wt:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
     else:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins)
+    print 'after edge ',time.time()-t0
 
     if cat.cat!='mcal':
       bins=np.digitize(array[mask],edge)-1
     else:
       bins=[]
       for i in range(cat.sbins):
+        print 'before '+str(i)+' bins ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=True))
+        print 'after '+str(i)+' bins ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
     if cat.pzrw:
       if cat.cat=='mcal':
         w=[]
         for i in range(5):
+          print 'before '+str(i)+' weights ',time.time()-t0
           w.append(split_methods.pz_weight(cat,nz,mask0[i],[bins[0][i],bins[1][i]]))
       else:
         w=split_methods.pz_weight(cat,nz,mask0,bins)
@@ -382,12 +401,15 @@ class split_methods(object):
         for i in range(5):
           w.append(np.ones(len(nz)))
 
+    print 'before plots ',time.time()-t0
+
     if plot:
       if cat.cat=='mcal':
         fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w[0],label,edge)
       else:
         fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
+    print 'end of wnz ',time.time()-t0
     return bins,w,edge
 
   @staticmethod

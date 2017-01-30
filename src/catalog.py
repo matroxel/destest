@@ -7,13 +7,14 @@ try:
 except:
   print "No Pandas"
   pd=None
-
+import time
 import config
 import pickle
 import multiprocessing
 import ctypes
 
 noval=999999
+t0=time.time()
 
 class CatalogStore(object):
   """
@@ -628,7 +629,6 @@ class CatalogMethods(object):
 
     import fitsio as fio
     import numpy.lib.recfunctions as nlr
-    import time
 
     def col_list(cols,shapetable,shapetablesheared,cols2=[]):
 
@@ -644,7 +644,14 @@ class CatalogMethods(object):
 
       return cols2
 
-    t0=time.time()
+    # def inplace_cut(x, mask)
+    #     n = len(mask)
+    #     j=0
+    #     for i in xrange(n):
+    #         if mask[i]:
+    #             x[j] = x[i]
+    #             j+=1
+
 
     lenst=0
     # File format may not be readable
@@ -722,7 +729,7 @@ class CatalogMethods(object):
       print 'error loading fits file: ',gold
     goldfits.close()
     print 'read gold file',time.time()-t0
-    
+
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
       if shapecutslive is not None:
@@ -742,11 +749,12 @@ class CatalogMethods(object):
       i=np.argsort(goldarray[goldtable.get('coadd')])
       goldarray=goldarray[i]
       goldmask = goldmask[i]
+      i=None # Clear i array
     if np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
       i=np.argsort(shapearray[shapetable.get('coadd')])
       shapearray=shapearray[i]
       shapemask=shapemask[i]
-    i=None # Clear i array
+      i=None # Clear i array
 
     print 'order',time.time()-t0
 
