@@ -434,10 +434,10 @@ class PZStore(object):
         fits=fio.FITS(config.pzdir+file)
         #self.bin=fits[1].read()['redshift']
         self.bin=(np.linspace(0,4,400)[:-1]+np.linspace(0,4,400)[1:])/2
-        self.coadd=fits[2].read()['coadd_objects_id'].astype(int)
-        self.z_peak_full=fits[3].read()['mode_z']
-        self.z_mean_full=fits[4].read()['mean_z']
-        self.pz_full=fits[5].read()['z_mc']
+        self.coadd=fits[-1].read()['coadd_objects_id'].astype(int)
+        self.z_peak_full=fits[-1].read()['mode_z']
+        self.z_mean_full=fits[-1].read()['mean_z']
+        self.pz_full=fits[-1].read()['z_mc']
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
         self.bins=len(self.bin)
