@@ -71,6 +71,7 @@ class linear_methods(object):
       if (cat.cat=='gal'):
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,None,None,None,None,None,None,None
       else:
+        if cat.cat!='mcal':
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w        
     else:
       cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat
@@ -351,10 +352,13 @@ class linear_methods(object):
       else:
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
 
-    if w is not None:
-      edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10),w[mask])
+    if cat.edge is not None:
+      edge=cat.edge
     else:
-      edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10))
+      if w is not None:
+        edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10),w[mask])
+      else:
+        edge=linear_methods.find_bin_edges(x[mask],config.cfg.get('lbins',10))
 
     print 'edge',edge
 
