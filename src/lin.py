@@ -71,7 +71,6 @@ class linear_methods(object):
       if (cat.cat=='gal'):
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,None,None,None,None,None,None,None
       else:
-        if cat.cat!='mcal':
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w        
     else:
       cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat
