@@ -161,7 +161,7 @@ class CatalogStore(object):
 
 
       #Generate derived quantities
-      if cattype in ['i3','ng','mcal']:
+      if cattype in ['i3','ng']:
         if ('e1' in cols)&('e2' in cols):
           self.pos=self.add_shared_array(len(filenames),0.5*np.arctan2(self.e2,self.e1)+np.pi/2.,p)
           self.e=self.add_shared_array(len(filenames),np.sqrt(self.e1**2.+self.e2**2.),p)
@@ -204,6 +204,7 @@ class CatalogStore(object):
         self.ri=self.add_shared_array(len(filenames),self.r-self.i,p)
       if ('i' in cols)&('z' in cols):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
+        
       if cattype=='mcal':
         if not hasattr(self,'rgp'):
           self.rgp=self.add_shared_array(len(filenames),self.size/self.psfsize,p)

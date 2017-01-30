@@ -98,6 +98,15 @@ class xi_2pt(object):
     """
     print 'start of xi_2pt',time.time()-t0
 
+    def cat_G(cat,w,mask):
+      return treecorr.Catalog(g1=cat.e1[mask], g2=cat.e2[mask], w=w, ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
+
+    def cat_K(cat,k,w,mask):
+      return treecorr.Catalog(k=k, w=w, ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
+
+    def cat_N(cat,w,mask):
+      return treecorr.Catalog(w=w, ra=cat.ra[mask], dec=cat.dec[mask], ra_units='deg', dec_units='deg')
+
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
       maska0 = maska[0]
@@ -140,14 +149,6 @@ class xi_2pt(object):
       if (cata.cat=='mcal')&(cata.bs):
         catRga=treecorr.Catalog(k=(m1+m2)/2., w=w[0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         print 'after catRga',time.time()-t0
-        catRS1pa=treecorr.Catalog(g1=cata.e1[maska[1]], g2=cata.e2[maska[1]], w=w[1], ra=cata.ra[maska[1]], dec=cata.dec[maska[1]], ra_units='deg', dec_units='deg')
-        print 'after catRS1pa',time.time()-t0
-        catRS1ma=treecorr.Catalog(g1=cata.e1[maska[2]], g2=cata.e2[maska[2]], w=w[2], ra=cata.ra[maska[2]], dec=cata.dec[maska[2]], ra_units='deg', dec_units='deg')
-        print 'after catRS1ma',time.time()-t0
-        catRS2pa=treecorr.Catalog(g1=cata.e1[maska[3]], g2=cata.e2[maska[3]], w=w[3], ra=cata.ra[maska[3]], dec=cata.dec[maska[3]], ra_units='deg', dec_units='deg')
-        print 'after catRS2pa',time.time()-t0
-        catRS2ma=treecorr.Catalog(g1=cata.e1[maska[4]], g2=cata.e2[maska[4]], w=w[4], ra=cata.ra[maska[4]], dec=cata.dec[maska[4]], ra_units='deg', dec_units='deg')
-        print 'after catRS2ma',time.time()-t0
       elif cata.cat=='mcal':
         pass
       else:
@@ -169,12 +170,9 @@ class xi_2pt(object):
     if catb is None:
       catb=cata
       catxb=catxa
+      wb=wa
       if (cata.cat=='mcal')&(cata.bs):
         catRgb=catRga
-        catRS1pb=catRS1pa
-        catRS1mb=catRS1ma
-        catRS2pb=catRS2pa
-        catRS2mb=catRS2ma
         print 'after cat2',time.time()-t0
       elif cata.cat=='mcal':
         pass
@@ -197,7 +195,7 @@ class xi_2pt(object):
       if w0 is None:
         w0=np.ones(len(catb.coadd))
         if catb.cat=='mcal':
-          wa=[np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd))]
+          wb=[np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd))]
 
       if gb is not None:
         e1=getattr(catb,gb+'1')[maskb0]
@@ -212,10 +210,6 @@ class xi_2pt(object):
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w[0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if (catb.cat=='mcal')&(catb.bs):
           catRgb=treecorr.Catalog(k=(m1+m2)/2., w=w[0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
-          catRS1pb=treecorr.Catalog(g1=catb.e1[maskb[1]], g2=catb.e2[maskb[1]], w=w[1], ra=catb.ra[maskb[1]], dec=catb.dec[maskb[1]], ra_units='deg', dec_units='deg')
-          catRS1mb=treecorr.Catalog(g1=catb.e1[maskb[2]], g2=catb.e2[maskb[2]], w=w[2], ra=catb.ra[maskb[2]], dec=catb.dec[maskb[2]], ra_units='deg', dec_units='deg')
-          catRS2pb=treecorr.Catalog(g1=catb.e1[maskb[3]], g2=catb.e2[maskb[3]], w=w[3], ra=catb.ra[maskb[3]], dec=catb.dec[maskb[3]], ra_units='deg', dec_units='deg')
-          catRS2mb=treecorr.Catalog(g1=catb.e1[maskb[4]], g2=catb.e2[maskb[4]], w=w[4], ra=catb.ra[maskb[4]], dec=catb.dec[maskb[4]], ra_units='deg', dec_units='deg')
         elif catb.cat=='mcal':
           pass
         else:
@@ -250,10 +244,14 @@ class xi_2pt(object):
         RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         Rg.process(catxa,catRgb)
-        RS1p.process(catxa,catRS1pb)
-        RS1m.process(catxa,catRS1mb)
-        RS2p.process(catxa,catRS2pb)
-        RS2m.process(catxa,catRS2mb)
+        catRS=cat_G(catb,w[1],maskb[1])
+        RS1p.process(catxa,catRS)
+        catRS=cat_G(catb,w[2],maskb[2])
+        RS1m.process(catxa,catRS)
+        catRS=cat_G(catb,w[3],maskb[3])
+        RS2p.process(catxa,catRS)
+        catRS=cat_G(catb,w[4],maskb[4])
+        RS2m.process(catxa,catRS)
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         norm = (Rg.xi+(RS1+RS2)/2.)**2
@@ -309,10 +307,14 @@ class xi_2pt(object):
         RS2p = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2m = treecorr.KGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         Rg.process(catxa,catRgb)
-        RS1p.process(catxa,catRS1pb)
-        RS1m.process(catxa,catRS1mb)
-        RS2p.process(catxa,catRS2pb)
-        RS2m.process(catxa,catRS2mb)
+        catRS=cat_G(catb,w[1],maskb[1])
+        RS1p.process(catxa,catRS)
+        catRS=cat_G(catb,w[2],maskb[2])
+        RS1m.process(catxa,catRS)
+        catRS=cat_G(catb,w[3],maskb[3])
+        RS2p.process(catxa,catRS)
+        catRS=cat_G(catb,w[4],maskb[4])
+        RS2m.process(catxa,catRS)
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         norm = Rg.xi+(RS1+RS2)/2.
@@ -340,10 +342,14 @@ class xi_2pt(object):
         RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         Rg.process(catxa,catRgb)
-        RS1p.process(catxa,catRS1pb)
-        RS1m.process(catxa,catRS1mb)
-        RS2p.process(catxa,catRS2pb)
-        RS2m.process(catxa,catRS2mb)
+        catRS=cat_G(catb,w[1],maskb[1])
+        RS1p.process(catxa,catRS)
+        catRS=cat_G(catb,w[2],maskb[2])
+        RS1m.process(catxa,catRS)
+        catRS=cat_G(catb,w[3],maskb[3])
+        RS2p.process(catxa,catRS)
+        catRS=cat_G(catb,w[4],maskb[4])
+        RS2m.process(catxa,catRS)
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         Rg.xi+=(RS1+RS2)/2.
@@ -368,10 +374,14 @@ class xi_2pt(object):
           RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
           Rg.process(catra,catRgb)
-          RS1p.process(catra,catRS1pb)
-          RS1m.process(catra,catRS1mb)
-          RS2p.process(catra,catRS2pb)
-          RS2m.process(catra,catRS2mb)
+          catRS=cat_G(catb,w[1],maskb[1])
+          RS1p.process(catra,catRS)
+          catRS=cat_G(catb,w[2],maskb[2])
+          RS1m.process(catra,catRS)
+          catRS=cat_G(catb,w[3],maskb[3])
+          RS2p.process(catra,catRS)
+          catRS=cat_G(catb,w[4],maskb[4])
+          RS2m.process(catra,catRS)
           RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
           RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
           Rgr.xi+=(RS1+RS2)/2.
