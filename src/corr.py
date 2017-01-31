@@ -170,6 +170,7 @@ class xi_2pt(object):
     if catb is None:
       catb=cata
       catxb=catxa
+      maskb=maska
       wb=wa
       if (cata.cat=='mcal')&(cata.bs):
         catRgb=catRga
@@ -182,7 +183,6 @@ class xi_2pt(object):
         catrb=catra
 
     else:
-
 
       if catb.cat=='mcal':
         maskb = catalog.CatalogMethods.get_cuts_mask(catb)
