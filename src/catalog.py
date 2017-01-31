@@ -263,6 +263,7 @@ class CatalogStore(object):
     self.release=release
     #Number of bins in linear split functions (see e.g., sys_split module).
     self.lbins=config.cfg.get('lbins',10)
+    self.edge=None
     #Number of bins to split signal in for systematics null tests.
     self.sbins=config.cfg.get('sbins',2)
     #Binslop for use in Treecorr.
