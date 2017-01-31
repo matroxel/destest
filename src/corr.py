@@ -242,6 +242,7 @@ class xi_2pt(object):
         RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         Rg.process(catxa,catRgb)
+        print catb,w,maskb
         catRS=cat_G(catb,w[1],maskb[1])
         RS1p.process(catxa,catRS)
         catRS=cat_G(catb,w[2],maskb[2])
