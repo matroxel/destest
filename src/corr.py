@@ -246,32 +246,39 @@ class xi_2pt(object):
     ximerr=None
     xiperr_im=None
     ximerr_im=None
+    print 'before gg run',time.time()-t0
     if corr=='GG':
       gg = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+      return None
       gg.process(catxa,catxb)
       clear_cache(catxa)
       clear_cache(catxb)
-
+      print 'after gg run',time.time()-t0
       if (catb.cat=='mcal')&(catb.bs):
         Rg = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        print 'before rg run',time.time()-t0
         Rg.process(catxa,catRgb)
         clear_cache(catxa)
         clear_cache(catRgb)
-        print catb,w,maskb
+        print 'after rg run',time.time()-t0
         catRS=cat_G(catb,w[1],maskb[1])
         RS1p.process(catxa,catRS)
+        print 'after rs1 run',time.time()-t0
         catRS=cat_G(catb,w[2],maskb[2])
         RS1m.process(catxa,catRS)
+        print 'after rs1 run',time.time()-t0
         catRS=cat_G(catb,w[3],maskb[3])
         RS2p.process(catxa,catRS)
+        print 'after rs1 run',time.time()-t0
         catRS=cat_G(catb,w[4],maskb[4])
         RS2m.process(catxa,catRS)
         clear_cache(catxa)
         clear_cache(catRS)
+        print 'after rs1 run',time.time()-t0
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         norm = (Rg.xi+(RS1+RS2)/2.)**2
@@ -487,6 +494,7 @@ class xi_2pt(object):
       elif cata.calc_err=='mock':
         ggperr,ggmerr,chi2p,chi2m,ceerr,cberr,cechi2,cbchi2=BCC_Methods.jk_iter_xi(cat,ggp,ggm,ce,cb,mask,w,cosebi=cosebi,parallel=parallel)
 
+    print 'done xi_2pt',time.time()-t0
     if plot:
       fig.plot_methods.fig_create_xi(cata,catb,corr,theta,out,err,k,ga,gb)
 
