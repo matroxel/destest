@@ -57,7 +57,7 @@ cfg = {
 }
 
 cov = {
-'path' : '../des-mpp/cosmosis/baseline/simulated_y1_v10_fiducial_wcov_v1.fits',
+'path' : 'nontomo_cov.fits',
 'name' : ['xip','xim']
 
 }
@@ -362,17 +362,21 @@ matched_ng_col_lookup = {
   'psf1':'psf_e1',
   'psf2':'psf_e2',
   'psfsize':'psf_size',
-  'w':'weight'
+  'R11':'R11',
+  'R22':'R22',
+  #'w':'weight'
 }
 
 matched_ng_col_sheared = {
 
-  'e1':True,
-  'e2':True,
+  'e1':False,
+  'e2':False,
   'snr':True,
   'size':True,
   'rgp':True,
-  'w':True
+  'w':False,
+  'R11':False,
+  'R22':False
 }
 
 buzzard_col_lookup = {

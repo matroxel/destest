@@ -213,6 +213,10 @@ class CatalogStore(object):
           self.rgp_1m=self.add_shared_array(len(filenames),self.size_1m/self.psfsize,p)
           self.rgp_2p=self.add_shared_array(len(filenames),self.size_2p/self.psfsize,p)
           self.rgp_2m=self.add_shared_array(len(filenames),self.size_2m/self.psfsize,p)
+          self.size_1p=None
+          self.size_1m=None
+          self.size_2p=None
+          self.size_2m=None
 
 
       #Make footprint contiguous across ra=0

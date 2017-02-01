@@ -142,19 +142,17 @@ class linear_methods(object):
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
-          m1=(cat.e1_1p[mask0]-cat.e1_1m[mask0])/(2.*config.cfg.get('mcal_dg'))
-          m2=(cat.e2_2p[mask0]-cat.e2_2m[mask0])/(2.*config.cfg.get('mcal_dg'))
+          m1=cat.R11[mask0] #(cat.e1_1p[mask0]-cat.e1_1m[mask0])/(2.*config.cfg.get('mcal_dg'))
+          m2=cat.R22[mask0] #(cat.e2_2p[mask0]-cat.e2_2m[mask0])/(2.*config.cfg.get('mcal_dg'))
           return e1[mask0],e2[mask0],w,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
-          m1=np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
-          m2=np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
-          print 'resp g',m1/(2.*config.cfg.get('mcal_dg')),m2/(2.*config.cfg.get('mcal_dg'))
-          m1+=np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]])
-          m2+=np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]])
+          m1=np.mean(cat.R11[mask0]) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
+          m2=np.mean(cat.R22[mask0]) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
+          print 'resp g',m1,m2
+          m1+=(np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]]))/(2.*config.cfg.get('mcal_dg'))
+          m2+=(np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]]))/(2.*config.cfg.get('mcal_dg'))
           print 'resp S',(np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]]))/(2.*config.cfg.get('mcal_dg')),(np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]]))/(2.*config.cfg.get('mcal_dg'))
-          m1/=2.*config.cfg.get('mcal_dg')
-          m2/=2.*config.cfg.get('mcal_dg')
           return e1[mask0],e2[mask0],w,m1,m2
       else:
         m1=1.
