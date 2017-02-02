@@ -254,7 +254,6 @@ class xi_2pt(object):
     print 'before gg run',time.time()-t0
     if corr=='GG':
       gg = treecorr.GGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-      return None
       gg.process(catxa)
       if cata.cat=='mcal':
         gg.finalize(catxa.varg,catxa.varg)
