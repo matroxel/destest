@@ -253,7 +253,7 @@ class xi_2pt(object):
     ximerr_im=None
     print 'before gg run',time.time()-t0
     if corr=='GG':
-      gg = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+      gg = treecorr.GGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       return None
       gg.process(catxa)
       if cata.cat=='mcal':
@@ -262,38 +262,38 @@ class xi_2pt(object):
       # clear_cache(catxa)
       print 'after gg run',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
-        Rg   = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
-        RS1p = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop/2,verbose=0)
-        RS1m = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop/2,verbose=0)
-        RS2p = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop/2,verbose=0)
-        RS2m = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop/2,verbose=0)
-        RS0  = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        Rg   = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        RS1p = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop/2,verbose=0)
+        RS1m = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop/2,verbose=0)
+        RS2p = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop/2,verbose=0)
+        RS2m = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop/2,verbose=0)
+        RS0  = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         print 'before rg run',time.time()-t0
         Rg.process(catRga)
         catRga=None
         # clear_cache(catRga)
         print 'after rg run',time.time()-t0
-        catRS0=cat_G(catb,w[5],maska[5])
+        catRS0=cat_G(cata,w[5],maska[5])
         RS0.process(catRS)
-        catRS=cat_G(catb,w[1],maska[1])
+        catRS=cat_G(cata,w[1],maska[1])
         RS1p.process(catRS)
         RS1p.process(catRS0,catRS)
         RS1p+=RS0
         RS1p.finalize(catRS.varg, catRS.varg)
         print 'after rs1 run',time.time()-t0
-        catRS=cat_G(catb,w[2],maska[2])
+        catRS=cat_G(cata,w[2],maska[2])
         RS1m.process(catRS)
         RS1m.process(catRS0,catRS)
         RS1m+=RS0
         RS1m.finalize(catRS.varg, catRS.varg)
         print 'after rs2 run',time.time()-t0
-        catRS=cat_G(catb,w[3],maska[3])
+        catRS=cat_G(cata,w[3],maska[3])
         RS2p.process(catRS)
         RS2p.process(catRS0,catRS)
         RS2p+=RS0
         RS2p.finalize(catRS.varg, catRS.varg)
         print 'after rs3 run',time.time()-t0
-        catRS=cat_G(catb,w[4],maska[4])
+        catRS=cat_G(cata,w[4],maska[4])
         RS2m.process(catRS)
         RS2m.process(catRS0,catRS)
         RS2m+=RS0
@@ -305,7 +305,7 @@ class xi_2pt(object):
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         norm = (Rg.xi+(RS1+RS2)/2.)**2
-      elif catb.cat=='mcal':
+      elif cata.cat=='mcal':
         norm=1.
       else:
         kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
