@@ -191,7 +191,7 @@ class linear_methods(object):
       rms1=np.sqrt(np.sum((w*e1)**2)/ww)
       rms2=np.sqrt(np.sum((w*e2)**2)/ww)
 
-      print 'calcmeanstdrms',mean1,mean2,std1,std2
+      print 'calcmeanstdrms',wm1s,w,e1-mean1
 
       return mean1,mean2,std1,std2,rms1,rms2
     else:
