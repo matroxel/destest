@@ -303,7 +303,7 @@ class linear_methods(object):
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
-        print 'masking',i, mask0
+        # print 'masking',i, mask0
         print len(mask0[0]), len(mask0[1]), len(mask0[2]), len(mask0[3]), len(mask0[4]), len(mask0[5])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
