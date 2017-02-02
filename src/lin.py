@@ -290,6 +290,7 @@ class linear_methods(object):
     if isinstance(cat,catalog.CatalogStore):
       if cat.cat!='mcal':
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+        mask=np.where(mask)[0]
 
     y_mean1=[]
     y_err1=[]
@@ -298,19 +299,19 @@ class linear_methods(object):
 
     for i in xrange(config.cfg.get('lbins',10)):
       if cat.cat!='mcal':
-        mask0=[(bin==i)&mask]
+        mask0=mask[np.in1d(mask,np.where(bin==i)[0])]
       else:
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
         print 'masking',i, mask0
-        print np.sum(mask0[0]), np.sum(mask0[1]), np.sum(mask0[2]), np.sum(mask0[3]), np.sum(mask0[4]), np.sum(mask0[5])
+        print len(mask0[0]), len(mask0[1]), len(mask0[2]), len(mask0[3]), len(mask0[4]), len(mask0[5])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
-      print 'e means',i,mean1,mean2,std1/np.sqrt(np.sum(mask0)),std2/np.sqrt(np.sum(mask0))
+      print 'e means',i,mean1,mean2,std1/np.sqrt(len(mask0)),std2/np.sqrt(len(mask0))
       y_mean1=np.append(y_mean1,mean1)
-      y_err1=np.append(y_err1,std1/np.sqrt(np.sum(mask0)))
+      y_err1=np.append(y_err1,std1/np.sqrt(len(mask0)))
       y_mean2=np.append(y_mean2,mean2)
-      y_err2=np.append(y_err2,std2/np.sqrt(np.sum(mask0)))
+      y_err2=np.append(y_err2,std2/np.sqrt(len(mask0)))
 
     return y_mean1,y_err1,y_mean2,y_err2
 
