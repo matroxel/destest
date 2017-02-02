@@ -813,7 +813,8 @@ class CatalogMethods(object):
 
     mask=np.array([])
     for icut,cut in enumerate(cat.livecuts):
-      mask=np.where(CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max']))[0]
+      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+      mask=np.where(mask)[0]
 
     if not full:
       return mask
