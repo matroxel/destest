@@ -191,6 +191,8 @@ class linear_methods(object):
       rms1=np.sqrt(np.sum((w*e1)**2)/ww)
       rms2=np.sqrt(np.sum((w*e2)**2)/ww)
 
+      print 'calcmeanstdrms',mean1,mean2,std1,std2
+
       return mean1,mean2,std1,std2,rms1,rms2
     else:
       return mean1,mean2
@@ -323,6 +325,7 @@ class linear_methods(object):
         mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
       else:
         mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+        mask=np.where(mask)[0]
 
     x_mean=[]
     x_err=[]
