@@ -835,14 +835,12 @@ class CatalogMethods(object):
         mask_2p=CatalogMethods.cuts_on_col(mask_2p,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
         mask_2m=CatalogMethods.cuts_on_col(mask_2m,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
 
-    print 'cat mask func',np.sum(mask_1p),np.sum(mask_1m),np.sum(mask_2p),np.sum(mask_2m)
     mask_0=mask_1p&mask_1m&mask_2p&mask_2m
     mask_1p=np.where(mask_1p&~mask_0)[0]
     mask_1m=np.where(mask_1m&~mask_0)[0]
     mask_2p=np.where(mask_2p&~mask_0)[0]
     mask_2m=np.where(mask_2m&~mask_0)[0]
     mask_0=np.where(mask_0)[0]
-    print 'cat mask func',len(mask_1p),len(mask_1m),len(mask_2p),len(mask_2m),len(mask_0)
 
     return mask, mask_1p, mask_1m, mask_2p, mask_2m, mask_0
 
