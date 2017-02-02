@@ -849,7 +849,7 @@ class CatalogMethods(object):
     if mask.size==0:
       mask=np.ones((len(array)), dtype=bool)
 
-    print len(mask),len()
+    print len(mask),len(array)
 
     if (valmin==noval) & (valmax==noval):
       if valeq==noval:
