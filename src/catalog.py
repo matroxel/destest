@@ -813,7 +813,7 @@ class CatalogMethods(object):
 
     mask=np.array([])
     for icut,cut in enumerate(cat.livecuts):
-      mask=CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
+      mask=np.where(CatalogMethods.cuts_on_col(mask,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max']))[0]
 
     if not full:
       return mask
@@ -834,7 +834,14 @@ class CatalogMethods(object):
         mask_2p=CatalogMethods.cuts_on_col(mask_2p,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
         mask_2m=CatalogMethods.cuts_on_col(mask_2m,getattr(cat,cut['col']),cut['col'],cut['min'],cut['eq'],cut['max'])
 
-    return mask, mask_1p, mask_1m, mask_2p, mask_2m
+    mask_0=mask_1p&mask_1m&mask_2p&mask_2m
+    mask_1p=np.where(mask_1p&~mask_0)[0]
+    mask_1m=np.where(mask_1m&~mask_0)[0]
+    mask_2p=np.where(mask_2p&~mask_0)[0]
+    mask_2m=np.where(mask_2m&~mask_0)[0]
+    mask_0=np.where(mask_0)[0]
+
+    return mask, mask_1p, mask_1m, mask_2p, mask_2m, mask_0
 
   @staticmethod
   def cuts_on_col(mask,array,col,valmin,valeq,valmax):

@@ -139,7 +139,7 @@ class xi_2pt(object):
     if w0 is None:
       w0=np.ones(len(cata.coadd))        
       if cata.cat=='mcal':
-        wa=[np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd)),np.ones(len(cata.coadd))]
+        wa=[np.ones(len(maska[0])),np.ones(len(maska[1])),np.ones(len(maska[2])),np.ones(len(maska[3])),np.ones(len(maska[4])),np.ones(len(maska[5]))]
 
     if catb is None:
       if corr not in ['GG','NN','KK']:
@@ -182,7 +182,7 @@ class xi_2pt(object):
       catxa=treecorr.Catalog(k=getattr(cata, k)[maska0], w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
     print 'before cat2',time.time()-t0
-    if catb is None:
+    if (catb is None)&(corr!='GG'):
       catb=cata
       catxb=catxa
       maskb=maska
@@ -197,6 +197,8 @@ class xi_2pt(object):
       if (corr=='NN')&ran:
         catrb=catra
 
+    if (catb is not None)&(corr=='GG')
+      raise UseError('Two cats specified for GG.')
     else:
 
       if catb.cat=='mcal':
@@ -250,35 +252,53 @@ class xi_2pt(object):
     if corr=='GG':
       gg = treecorr.GGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
       return None
-      gg.process(catxa,catxb)
-      clear_cache(catxa)
-      clear_cache(catxb)
+      gg.process(catxa)
+      if cata.cat=='mcal':
+        gg.finalize(catxa.varg,catxa.varg)
+      catxa=None
+      # clear_cache(catxa)
       print 'after gg run',time.time()-t0
-      if (catb.cat=='mcal')&(catb.bs):
-        Rg = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+      if (cata.cat=='mcal')&(cata.bs):
+        Rg   = treecorr.NKCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS1m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2p = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         RS2m = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
+        RS0  = treecorr.NGCorrelation(nbins=catb.tbins, min_sep=catb.sep[0], max_sep=catb.sep[1], sep_units='arcmin',bin_slop=catb.slop,verbose=0)
         print 'before rg run',time.time()-t0
-        Rg.process(catxa,catRgb)
-        clear_cache(catxa)
-        clear_cache(catRgb)
+        Rg.process(catRga)
+        catRga=None
+        # clear_cache(catRga)
         print 'after rg run',time.time()-t0
-        catRS=cat_G(catb,w[1],maskb[1])
-        RS1p.process(catxa,catRS)
+        catRS0=cat_G(catb,w[5],maska[5])
+        RS0.process(catRS)
+        catRS=cat_G(catb,w[1],maska[1])
+        RS1p.process(catRS)
+        RS1p.process(catRS0,catRS)
+        RS1p+=RS0
+        RS1p.finalize(catRS.varg, catRS.varg)
         print 'after rs1 run',time.time()-t0
-        catRS=cat_G(catb,w[2],maskb[2])
-        RS1m.process(catxa,catRS)
-        print 'after rs1 run',time.time()-t0
-        catRS=cat_G(catb,w[3],maskb[3])
-        RS2p.process(catxa,catRS)
-        print 'after rs1 run',time.time()-t0
-        catRS=cat_G(catb,w[4],maskb[4])
-        RS2m.process(catxa,catRS)
-        clear_cache(catxa)
-        clear_cache(catRS)
-        print 'after rs1 run',time.time()-t0
+        catRS=cat_G(catb,w[2],maska[2])
+        RS1m.process(catRS)
+        RS1m.process(catRS0,catRS)
+        RS1m+=RS0
+        RS1m.finalize(catRS.varg, catRS.varg)
+        print 'after rs2 run',time.time()-t0
+        catRS=cat_G(catb,w[3],maska[3])
+        RS2p.process(catRS)
+        RS2p.process(catRS0,catRS)
+        RS2p+=RS0
+        RS2p.finalize(catRS.varg, catRS.varg)
+        print 'after rs3 run',time.time()-t0
+        catRS=cat_G(catb,w[4],maska[4])
+        RS2m.process(catRS)
+        RS2m.process(catRS0,catRS)
+        RS2m+=RS0
+        RS2m.finalize(catRS.varg, catRS.varg)
+        # clear_cache(catRS)
+        catRS0=None
+        catRS=None
+        print 'after rs4 run',time.time()-t0
         RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
         RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
         norm = (Rg.xi+(RS1+RS2)/2.)**2
@@ -286,7 +306,7 @@ class xi_2pt(object):
         norm=1.
       else:
         kk = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-        kk.process(catma,catmb)
+        kk.process(catma)
         norm=kk.xi
 
       xip = gg.xip/norm

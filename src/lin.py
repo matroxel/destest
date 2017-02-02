@@ -150,9 +150,9 @@ class linear_methods(object):
           m1=np.mean(cat.R11[mask0]) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
           m2=np.mean(cat.R22[mask0]) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
           print 'resp g',m1,m2
-          m1+=(np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]]))/(2.*config.cfg.get('mcal_dg'))
-          m2+=(np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]]))/(2.*config.cfg.get('mcal_dg'))
-          print 'resp S',(np.mean(cat.e1[mask[1]])-np.mean(cat.e1[mask[2]]))/(2.*config.cfg.get('mcal_dg')),(np.mean(cat.e2[mask[3]])-np.mean(cat.e2[mask[4]]))/(2.*config.cfg.get('mcal_dg'))
+          m1+=(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
+          m2+=(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
+          print 'resp S',(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg')),(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
           return e1[mask0],e2[mask0],w,m1,m2
       else:
         m1=1.
@@ -303,7 +303,7 @@ class linear_methods(object):
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask0 = catalog.CatalogMethods.get_cuts_mask(cat)
         print 'masking',i, mask0
-        print np.sum(mask0[0]), np.sum(mask0[1]), np.sum(mask0[2]), np.sum(mask0[3]), np.sum(mask0[4])
+        print np.sum(mask0[0]), np.sum(mask0[1]), np.sum(mask0[2]), np.sum(mask0[3]), np.sum(mask0[4]), np.sum(mask0[5])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       print 'e means',i,mean1,mean2,std1/np.sqrt(np.sum(mask0)),std2/np.sqrt(np.sum(mask0))

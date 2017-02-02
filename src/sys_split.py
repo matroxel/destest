@@ -437,10 +437,14 @@ class split_methods(object):
         h,b=np.histogram(nz[binmask],bins=b0)
         for k in range(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
-          if h[k]<0.01*h0[k]:
-            w[binmask&binmask2]=0.
+          if cat.cat!='mcal':
+            mask_=binmask&binmask2
           else:
-            w[binmask&binmask2]=0.5*h0[k]/h[k]
+            mask_=binmask[np.in1d(binmask,np.where(binmask2)[0])]
+          if h[k]<0.01*h0[k]:
+            w[mask_]=0.
+          else:
+            w[mask_]=0.5*h0[k]/h[k]
 
         print 'max/min/mean weight', k,np.max(w),np.min(w),np.mean(w[binmask])
 
