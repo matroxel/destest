@@ -138,7 +138,8 @@ class linear_methods(object):
       if w1 is not None:
         w=[]
         for i in range(5):
-          print 'test emc',len(w1[i],len(mask[i]))
+          print 'test w',len(w1[i],len(mask[i]))
+          print 'test emc',len(w1[i][0],len(mask[i]))
           w.append(w1[i][mask[i]])
       if bs:
         if xi:
