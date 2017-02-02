@@ -819,10 +819,6 @@ class CatalogMethods(object):
     if not full:
       return mask
 
-    mask_1p=np.array([])
-    mask_1m=np.array([])
-    mask_2p=np.array([])
-    mask_2m=np.array([])
     for icut,cut in enumerate(cat.livecuts):
       if cat.tablesheared.get(cut['col'],False):
         mask_1p=CatalogMethods.cuts_on_col(mask_1p,getattr(cat,cut['col']+'_1p'),cut['col'],cut['min'],cut['eq'],cut['max'])
@@ -852,6 +848,8 @@ class CatalogMethods(object):
 
     if mask.size==0:
       mask=np.ones((len(array)), dtype=bool)
+
+    print len(mask),len()
 
     if (valmin==noval) & (valmax==noval):
       if valeq==noval:
