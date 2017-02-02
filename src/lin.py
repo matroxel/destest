@@ -327,7 +327,7 @@ class linear_methods(object):
     x_err=[]
 
     for i in xrange(config.cfg.get('lbins',10)):
-      mask0=(bin==i)&mask
+      mask0=mask[np.in1d(mask,np.where(bin==i)[0])]
       mean,std,rms=linear_methods.calc_mean_stdev_rms(cat,x,mask0,mock=mock)
       print 'end mean x',mean,std/np.sqrt(np.sum(mask0))
       x_mean=np.append(x_mean,mean)
