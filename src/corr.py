@@ -197,7 +197,7 @@ class xi_2pt(object):
       if (corr=='NN')&ran:
         catrb=catra
 
-    if (catb is not None)&(corr=='GG')
+    if (catb is not None)&(corr=='GG'):
       raise UseError('Two cats specified for GG.')
     else:
 
