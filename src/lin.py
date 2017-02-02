@@ -191,8 +191,6 @@ class linear_methods(object):
       rms1=np.sqrt(np.sum((w*e1)**2)/ww)
       rms2=np.sqrt(np.sum((w*e2)**2)/ww)
 
-      print 'calcmeanstdrms',wm1s,w,e1-mean1
-
       return mean1,mean2,std1,std2,rms1,rms2
     else:
       return mean1,mean2
@@ -363,7 +361,6 @@ class linear_methods(object):
 
     print 'edge',edge
 
-    print x,np.shape(x),np.shape(edge)
     xbin=np.digitize(x,edge)-1
 
     x_mean,x_err=linear_methods.binned_mean_x(xbin,x,cat,mask,mock=mock)
