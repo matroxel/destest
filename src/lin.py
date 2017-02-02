@@ -134,7 +134,7 @@ class linear_methods(object):
         mask0=mask
         print 'assuming no selection effects in responsivity'
       # print e1,mask,len(e1),len(mask)
-      w=np.ones(np.sum(mask0))
+      w=np.ones(len(mask0))
       if w1 is not None:
         w=[]
         for i in range(5):
