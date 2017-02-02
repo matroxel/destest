@@ -202,7 +202,7 @@ class xi_2pt(object):
 
     if (catb is not None)&(corr=='GG'):
       raise UseError('Two cats specified for GG.')
-    else:
+    elif (catb is not None):
 
       if catb.cat=='mcal':
         maskb = catalog.CatalogMethods.get_cuts_mask(catb)
