@@ -131,7 +131,7 @@ class xi_2pt(object):
       m2=np.mean(cata.R22[maska[0]])
       m1+=(np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
       m2+=(np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
-
+      print '1',(m1+m2)/2
       return (m1+m2)/2
 
     def mcal_norm_2(cata,catxa,catRga,w,maska):
@@ -147,26 +147,23 @@ class xi_2pt(object):
       # clear_cache(catRga)
       print 'after rg run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[1]))
-      RS1p.process_cross(catxa,catRS)
-      RS1p.finalize(catRS.vark)
+      RS1p.process(catxa,catRS)
       print 'after rs1 run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[2]))
-      RS1m.process_cross(catxa,catRS)
-      RS1m.finalize(catRS.vark)
+      RS1m.process(catxa,catRS)
       print 'after rs2 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[3]))
-      RS2p.process_cross(catxa,catRS)
-      RS2p.finalize(catRS.vark)
+      RS2p.process(catxa,catRS)
       print 'after rs3 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[4]))
-      RS2m.process_cross(catxa,catRS)
-      RS2m.finalize(catRS.vark)
+      RS2m.process(catxa,catRS)
       # clear_cache(catRS)
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
+      print '2',(Rg.xi+(RS1+RS2)/2.)**2,Rg.xi,(RS1+RS2)/2.
       return (Rg.xi+(RS1+RS2)/2.)**2
 
     def mcal_norm_3(cata,catxa,catRga,w,maska):
@@ -183,28 +180,25 @@ class xi_2pt(object):
       print 'after rg run',time.time()-t0
       catxa=cat_K(cata,cata.e1,w,maska[0])
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[1]))
-      RS1p.process_cross(catxa,catRS)
-      RS1p.finalize(catRS.vark, catRS.vark)
+      RS1p.process(catxa,catRS)
       print 'after rs1 run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[2]))
-      RS1m.process_cross(catxa,catRS)
-      RS1m.finalize(catRS.vark, catRS.vark)
+      RS1m.process(catxa,catRS)
       print 'after rs2 run',time.time()-t0
       catxa=cat_K(cata,cata.e2,w,maska[0])
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[3]))
-      RS2p.process_cross(catxa,catRS)
-      RS2p.finalize(catRS.vark, catRS.vark)
+      RS2p.process(catxa,catRS)
       print 'after rs3 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[4]))
-      RS2m.process_cross(catxa,catRS)
-      RS2m.finalize(catRS.vark, catRS.vark)
+      RS2m.process(catxa,catRS)
       # clear_cache(catRS)
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
-      return (Rg.xi+(RS1+RS2)/2.)**2
+      print '3',Rg.xi,(RS1+RS2)/2.
+      return (Rg.xi+(RS1+RS2)/2.)
 
     def mcal_norm_4(cata,catxa,catRga,w,maska):
 
@@ -217,6 +211,7 @@ class xi_2pt(object):
       Rg.process(catxa,catRga)
       catRga=None
       print 'after rg run',time.time()-t0
+      print '4',(Rg.xi)**2,Rg.xi
       return (Rg.xi)**2
 
     def mcal_norm_5(cata,catxa,catRga,w,maska):
@@ -230,6 +225,7 @@ class xi_2pt(object):
       Rg.process(catRga,catRga)
       catRga=None
       print 'after rg run',time.time()-t0
+      print '5',Rg.xip
       return Rg.xip
 
 
@@ -262,7 +258,6 @@ class xi_2pt(object):
     print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
-      print len(w),len(maska0)
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       print 'after catxa',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
