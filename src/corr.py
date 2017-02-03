@@ -199,7 +199,7 @@ class xi_2pt(object):
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
       print '3',Rg.xi,(RS1+RS2)/2.
-      return (Rg.xi+(RS1+RS2)/2.)
+      return (Rg.xi+(RS1+RS2)/2.)/2
 
     # def mcal_norm_4(cata,catxa,catRga,w,maska):
 
