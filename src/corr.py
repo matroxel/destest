@@ -133,7 +133,7 @@ class xi_2pt(object):
       m1+=(np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
       m2+=(np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
       print '1',(m1+m2)/2
-      return (m1+m2)/2
+      return ((m1+m2)/2)**2
 
     def mcal_norm_2(cata,catxa,catRga,w,maska):
       Rg   = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
@@ -196,8 +196,8 @@ class xi_2pt(object):
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
-      RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
-      RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
+      RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))**2
+      RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))**2
       print '3',Rg.xi,(RS1+RS2)/2.
       return (Rg.xi+(RS1+RS2)/2.)
 
@@ -213,7 +213,7 @@ class xi_2pt(object):
       catRga=None
       print 'after rg run',time.time()-t0
       print '4',(Rg.xi)**2,Rg.xi
-      return (Rg.xi)**2
+      return (Rg.xi)
 
     def mcal_norm_5(cata,catxa,catRga,w,maska):
 
@@ -227,7 +227,7 @@ class xi_2pt(object):
       catRga=None
       print 'after rg run',time.time()-t0
       print '5',Rg.xip
-      return Rg.xip
+      return Rg.xip/2
 
 
     if cata.cat=='mcal':
