@@ -400,7 +400,7 @@ class split_methods(object):
 
     if plot:
       if cat.cat=='mcal':
-        fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w[0],label,edge)
+        fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w,label,edge)
       else:
         fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
 
