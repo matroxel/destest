@@ -68,7 +68,7 @@ class xi_2pt(object):
     return theta,[xip,xim,xip_im,xim_im],[xiperr,ximerr,xip_imerr,xim_imerr],[xipchi2,ximchi2,xip_imchi2,xim_imchi2]
 
   @staticmethod
-  def xi_2pt(cata,catb=None,k=None,ga=None,gb=None,corr='GG',maska=None,maskb=None,wa=None,wb=None,ran=True,mock=False,erron=True,jkmask=None,label0='',plot=False,conj=False,bin1=0,bin2=0):
+  def xi_2pt(cata,catb=None,k=None,ga=None,gb=None,corr='GG',maska=None,maskb=None,wa=None,wb=None,ran=True,mock=False,erron=True,jkmask=None,label0='',plot=False,conj=False,bin1=0,bin2=0,rtype=1):
     """
     This is a flexible convenience wrapper for interaction with treecorr to work on CatalogStore objects. Some basic examples are given in corr_tests() of the main testsuite.py. g1, g2 correctly by c1, c2 if ellipticities and cat.bs is true. Correction by sensitivity, 1+m applied if cat.bs=True. Weighting applied if cat.wt is true. Other config properties for treecorr stored in CatalogStore object. See catalog.py or config.py. Not all correlation types fully integrated or tested. For example, only one kappa value is currently possible. Will be updated in future as useful.
 
@@ -356,7 +356,16 @@ class xi_2pt(object):
       clear_cache(catxa)
       print 'after gg run',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
-        norm=mcal_norm_1(cata,catxa,catRga,w,maska)
+        if rtype==1:
+          norm=mcal_norm_1(cata,catxa,catRga,w,maska)
+        elif rtype==2:
+          norm=mcal_norm_2(cata,catxa,catRga,w,maska)
+        elif rtype==3:
+          norm=mcal_norm_3(cata,catxa,catRga,w,maska)
+        elif rtype==4:
+          norm=mcal_norm_4(cata,catxa,catRga,w,maska)
+        elif rtype==5:
+          norm=mcal_norm_5(cata,catxa,catRga,w,maska)
       elif cata.cat=='mcal':
         norm=1.
       else:
