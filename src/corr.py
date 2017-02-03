@@ -148,19 +148,19 @@ class xi_2pt(object):
       print 'after rg run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[1]))
       RS1p.process_cross(catxa,catRS)
-      RS1p.finalize(catRS.varg, catRS.varg)
+      RS1p.finalize(catRS.vark)
       print 'after rs1 run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[2]))
       RS1m.process_cross(catxa,catRS)
-      RS1m.finalize(catRS.varg, catRS.varg)
+      RS1m.finalize(catRS.vark)
       print 'after rs2 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[3]))
       RS2p.process_cross(catxa,catRS)
-      RS2p.finalize(catRS.varg, catRS.varg)
+      RS2p.finalize(catRS.vark)
       print 'after rs3 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[4]))
       RS2m.process_cross(catxa,catRS)
-      RS2m.finalize(catRS.varg, catRS.varg)
+      RS2m.finalize(catRS.vark)
       # clear_cache(catRS)
       catRS0=None
       catRS=None
@@ -184,20 +184,20 @@ class xi_2pt(object):
       catxa=cat_K(cata,cata.e1,w,maska[0])
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[1]))
       RS1p.process_cross(catxa,catRS)
-      RS1p.finalize(catRS.varg, catRS.varg)
+      RS1p.finalize(catRS.vark, catRS.vark)
       print 'after rs1 run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[2]))
       RS1m.process_cross(catxa,catRS)
-      RS1m.finalize(catRS.varg, catRS.varg)
+      RS1m.finalize(catRS.vark, catRS.vark)
       print 'after rs2 run',time.time()-t0
       catxa=cat_K(cata,cata.e2,w,maska[0])
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[3]))
       RS2p.process_cross(catxa,catRS)
-      RS2p.finalize(catRS.varg, catRS.varg)
+      RS2p.finalize(catRS.vark, catRS.vark)
       print 'after rs3 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[4]))
       RS2m.process_cross(catxa,catRS)
-      RS2m.finalize(catRS.varg, catRS.varg)
+      RS2m.finalize(catRS.vark, catRS.vark)
       # clear_cache(catRS)
       catRS0=None
       catRS=None
