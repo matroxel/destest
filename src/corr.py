@@ -230,7 +230,7 @@ class xi_2pt(object):
       Rg.process(catRga,catRga)
       catRga=None
       print 'after rg run',time.time()-t0
-      return Rg.xi
+      return Rg.xip
 
 
     if cata.cat=='mcal':
