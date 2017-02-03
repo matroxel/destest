@@ -146,19 +146,19 @@ class xi_2pt(object):
       catRga=None
       # clear_cache(catRga)
       print 'after rg run',time.time()-t0
-      catRS=cat_K(cata,cat.e1,w,np.append(mask[5]&maska[1]))
+      catRS=cat_K(cata,cata.e1,w,np.append(mask[5]&maska[1]))
       RS1p.process_cross(catxa,catRS)
       RS1p.finalize(catRS.varg, catRS.varg)
       print 'after rs1 run',time.time()-t0
-      catRS=cat_K(cata,cat.e1,w,np.append(mask[5]&maska[2]))
+      catRS=cat_K(cata,cata.e1,w,np.append(mask[5]&maska[2]))
       RS1m.process_cross(catxa,catRS)
       RS1m.finalize(catRS.varg, catRS.varg)
       print 'after rs2 run',time.time()-t0
-      catRS=cat_K(cata,cat.e2,w,np.append(mask[5]&maska[3]))
+      catRS=cat_K(cata,cata.e2,w,np.append(mask[5]&maska[3]))
       RS2p.process_cross(catxa,catRS)
       RS2p.finalize(catRS.varg, catRS.varg)
       print 'after rs3 run',time.time()-t0
-      catRS=cat_K(cata,cat.e2,w,np.append(mask[5]&maska[4]))
+      catRS=cat_K(cata,cata.e2,w,np.append(mask[5]&maska[4]))
       RS2m.process_cross(catxa,catRS)
       RS2m.finalize(catRS.varg, catRS.varg)
       # clear_cache(catRS)
@@ -181,21 +181,21 @@ class xi_2pt(object):
       catRga=None
       # clear_cache(catRga)
       print 'after rg run',time.time()-t0
-      catxa=cat_K(cata,cat.e1,w,maska[0])
-      catRS=cat_K(cata,cat.e1,w,np.append(mask[5]&maska[1]))
+      catxa=cat_K(cata,cata.e1,w,maska[0])
+      catRS=cat_K(cata,cata.e1,w,np.append(mask[5]&maska[1]))
       RS1p.process_cross(catxa,catRS)
       RS1p.finalize(catRS.varg, catRS.varg)
       print 'after rs1 run',time.time()-t0
-      catRS=cat_K(cata,cat.e1,w,np.append(mask[5]&maska[2]))
+      catRS=cat_K(cata,cata.e1,w,np.append(mask[5]&maska[2]))
       RS1m.process_cross(catxa,catRS)
       RS1m.finalize(catRS.varg, catRS.varg)
       print 'after rs2 run',time.time()-t0
-      catxa=cat_K(cata,cat.e2,w,maska[0])
-      catRS=cat_K(cata,cat.e2,w,np.append(mask[5]&maska[3]))
+      catxa=cat_K(cata,cata.e2,w,maska[0])
+      catRS=cat_K(cata,cata.e2,w,np.append(mask[5]&maska[3]))
       RS2p.process_cross(catxa,catRS)
       RS2p.finalize(catRS.varg, catRS.varg)
       print 'after rs3 run',time.time()-t0
-      catRS=cat_K(cata,cat.e2,w,np.append(mask[5]&maska[4]))
+      catRS=cat_K(cata,cata.e2,w,np.append(mask[5]&maska[4]))
       RS2m.process_cross(catxa,catRS)
       RS2m.finalize(catRS.varg, catRS.varg)
       # clear_cache(catRS)
@@ -213,7 +213,7 @@ class xi_2pt(object):
 
       Rg   = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       print 'before rg run',time.time()-t0
-      catRga=cat_G(cata,cat.R11+m1,cat.R22+m2,w,maska[0])
+      catRga=cat_G(cata,cata.R11+m1,cata.R22+m2,w,maska[0])
       Rg.process(catxa,catRga)
       catRga=None
       print 'after rg run',time.time()-t0
@@ -226,7 +226,7 @@ class xi_2pt(object):
 
       Rg   = treecorr.GGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
       print 'before rg run',time.time()-t0
-      catRga=cat_G(cata,cat.R11+m1,cat.R22+m2,w,maska[0])
+      catRga=cat_G(cata,cata.R11+m1,cata.R22+m2,w,maska[0])
       Rg.process(catRga,catRga)
       catRga=None
       print 'after rg run',time.time()-t0
