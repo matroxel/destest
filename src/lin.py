@@ -137,7 +137,7 @@ class linear_methods(object):
       if w1 is not None:
         w=w1
       else:
-        w=np.ones(len(mask0))
+        w=np.ones(len(e1))
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
