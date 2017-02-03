@@ -236,21 +236,13 @@ class xi_2pt(object):
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
       maska0 = maska[0]
-      if wa is not None:
-        w0=wa[0]
-      else:
-        w0=wa
       print 'mask done',time.time()-t0
     else:
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
       maska0=maska&jkmask
-      w0=wa
-
-    if w0 is None:
-      w0=np.ones(len(cata.coadd))        
-      if cata.cat=='mcal':
-        wa=np.ones(len(maska[0]))
+    if wa is not None:
+      wa=np.ones(len(cata.coadd))
 
     if catb is None:
       if corr not in ['GG','NN','KK']:
@@ -316,15 +308,11 @@ class xi_2pt(object):
       if catb.cat=='mcal':
         maskb = catalog.CatalogMethods.get_cuts_mask(catb)
         maskb0 = maskb[0]
-        w0=wb[0]
       else:
         maskb0=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
-        w0=wb
 
-      if w0 is None:
-        w0=np.ones(len(catb.coadd))
-        if catb.cat=='mcal':
-          wb=[np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd)),np.ones(len(catb.coadd))]
+      if wb is not None:
+        wb=np.ones(len(cata.coadd))
 
       if gb is not None:
         e1=getattr(catb,gb+'1')[maskb0]
@@ -333,7 +321,7 @@ class xi_2pt(object):
         gb='e'
       if conj:
         e2=-e2
-      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=w0)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
         catxb=treecorr.Catalog(g1=e1, g2=e2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
