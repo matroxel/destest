@@ -152,6 +152,7 @@ class linear_methods(object):
           m1+=(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
           m2+=(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
           print 'resp S',(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg')),(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
+          w=np.ones(len(mask0))
           return e1[mask0],e2[mask0],w,m1,m2
       else:
         m1=1.
