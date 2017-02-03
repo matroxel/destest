@@ -270,6 +270,7 @@ class xi_2pt(object):
     print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
+      print len(w),len(maska0)
       catxa=treecorr.Catalog(g1=e1, g2=e2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       print 'after catxa',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
