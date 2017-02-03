@@ -367,7 +367,6 @@ class split_methods(object):
       mask=mask0[0]
 
     print 'after mask ',time.time()-t0
-    w=np.ones(len(cat.coadd))
     if cat.wt:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
     else:
@@ -375,7 +374,7 @@ class split_methods(object):
     print 'after edge ',time.time()-t0
 
     if cat.cat!='mcal':
-      bins=np.digitize(array[mask],edge)-1
+      bins=np.digitize(array,edge)-1
     else:
       bins=[]
       for i in range(cat.sbins):
@@ -387,19 +386,15 @@ class split_methods(object):
 
     if cat.pzrw:
       if cat.cat=='mcal':
-        w=[]
-        for i in range(5):
-          print 'before '+str(i)+' weights ',time.time()-t0
-          w.append(split_methods.pz_weight(cat,nz,mask0[i],[bins[0][i],bins[1][i]]))
+        print 'before '+str(i)+' weights ',time.time()-t0
+        w=split_methods.pz_weight(cat,nz,mask0[0],[bins[0][0],bins[1][0]])
       else:
         w=split_methods.pz_weight(cat,nz,mask0,bins)
     else:
       if cat.cat!='mcal':
         w=np.ones(np.sum([mask]))
       else:
-        w=[]
-        for i in range(5):
-          w.append(np.ones(len(nz)))
+        w=np.ones(len(nz))
 
     print 'before plots ',time.time()-t0
 
@@ -418,20 +413,16 @@ class split_methods(object):
     Reweight portions of galaxy population to match redshift distributions to that of the whole population.
     """
 
-    if cat.cat!='mcal':
-      print 'am i stupid?'
-      nz=nz[mask]
-
     if pdf:
       print 'transfer pdf support'
       return
     else:
-      h0,b0=np.histogram(nz,bins=binnum)
+      h0,b0=np.histogram(nz[mask],bins=binnum)
       w=np.ones(len(nz))
       print 'w0',len(w)
       for j in range(cat.sbins):
         if cat.cat!='mcal':
-          binmask=(bins==j)
+          binmask=(bins==j)&mask
         else:
           binmask=bins[j]
         h,b=np.histogram(nz[binmask],bins=b0)

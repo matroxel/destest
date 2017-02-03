@@ -134,13 +134,10 @@ class linear_methods(object):
         mask0=mask
         print 'assuming no selection effects in responsivity'
       # print e1,mask,len(e1),len(mask)
-      w=np.ones(len(mask0))
       if w1 is not None:
-        w=[]
-        for i in range(5):
-          # print 'test w',w1[i],mask[i]
-          # print 'test emc',len(w1[i]),len(mask[i])
-          w.append(w1[i])
+        w=w1
+      else:
+        w=np.ones(len(mask0))
       if bs:
         if xi:
           # unsheared, 1p, 1m, 2p, 2m
