@@ -129,6 +129,7 @@ class xi_2pt(object):
 
       m1=np.mean(cata.R11[maska[0]])
       m2=np.mean(cata.R22[maska[0]])
+      print '1a',(m1+m2)/2
       m1+=(np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
       m2+=(np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
       print '1',(m1+m2)/2
