@@ -165,9 +165,11 @@ class xi_2pt(object):
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
+      RS10=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
+      RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
-      print 'RS1,RS2',RS1**2,RS2**2,(RS1-np.mean(RS1))/np.mean(RS1),(RS2-np.mean(RS2))/np.mean(RS2)
+      print 'RS1,RS2',RS1**2,RS2**2,(RS1**2-np.mean(RS10**2))/np.mean(RS10**2),(RS2**2-np.mean(RS20**2))/np.mean(RS20**2)
       print 'Rg,(RS1+RS2)/2',Rg.xi**2,((RS1+RS2)/2.)**2
       R=(Rg.xi+(RS1+RS2)/2.)**2
       print 'R',R,(R-np.mean(R))/np.mean(R)
@@ -202,9 +204,11 @@ class xi_2pt(object):
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
+      RS10=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
+      RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
-      print 'RS1,RS2',RS1**2,RS2**2,(RS1-np.mean(RS1))/np.mean(RS1),(RS2-np.mean(RS2))/np.mean(RS2)
+      print 'RS1,RS2',RS1,RS2,(RS1-np.mean(RS10))/np.mean(RS10),(RS2-np.mean(RS20))/np.mean(RS20)
       print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
       R=(Rg.xi+(RS1+RS2)/2.)
       print 'R',R,(R-np.mean(R))/np.mean(R)
