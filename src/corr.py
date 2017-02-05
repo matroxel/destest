@@ -195,17 +195,17 @@ class xi_2pt(object):
       print 'after rg run',time.time()-t0
       catxa=cat_K(cata,cata.e1,w,maska[0])
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[1]))
-      RS1p.process(catxa,catRS)
+      RS1p.process(catRS)
       print 'after rs1 run',time.time()-t0
       catRS=cat_K(cata,cata.e1,w,np.append(maska[5],maska[2]))
-      RS1m.process(catxa,catRS)
+      RS1m.process(catRS)
       print 'after rs2 run',time.time()-t0
       catxa=cat_K(cata,cata.e2,w,maska[0])
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[3]))
-      RS2p.process(catxa,catRS)
+      RS2p.process(catRS)
       print 'after rs3 run',time.time()-t0
       catRS=cat_K(cata,cata.e2,w,np.append(maska[5],maska[4]))
-      RS2m.process(catxa,catRS)
+      RS2m.process(catRS)
       # clear_cache(catRS)
       catRS0=None
       catRS=None
@@ -262,7 +262,6 @@ class xi_2pt(object):
       print 'R xi++,xixx',(Rg.xip+Rg.xim)/2,(Rg.xip-Rg.xim)/2
       print 'dR xi++,xixx',(Rg.xip+Rg.xim)/2/((m1+m2)/2)**2,(Rg.xip-Rg.xim)/2/((m1+m2)/2)**2
       return Rg.xip/2
-
 
     if cata.cat=='mcal':
       maska = catalog.CatalogMethods.get_cuts_mask(cata)
