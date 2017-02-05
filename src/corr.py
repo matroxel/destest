@@ -131,10 +131,10 @@ class xi_2pt(object):
       m2=np.mean(cata.R22[maska[0]])
       RS1=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
       RS2=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
+      m1+=RS1
+      m2+=RS2
       print 'RS1,RS2',RS1**2,RS2**2
       print 'Rg,(RS1+RS2)/2',((m1+m2)/2)**2,((RS1+RS2)/2)**2
-      m1+=(np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
-      m2+=(np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))
       print 'R',((m1+m2)/2)**2
       return ((m1+m2)/2)**2
 
@@ -165,8 +165,12 @@ class xi_2pt(object):
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
+      m1=np.mean(cata.R11[maska[0]])
+      m2=np.mean(cata.R22[maska[0]])
       RS10=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
       RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
+      m1+=RS10
+      m2+=RS20
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
       print 'RS1,RS2',RS1,RS2
@@ -174,7 +178,7 @@ class xi_2pt(object):
       print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
       R=(Rg.xi+(RS1+RS2)/2.)
       print 'R',R
-      print 'dR',(R-np.mean(R))/R
+      print 'dR',(R-np.mean((m1+m2)/2))/(m1+m2)/2
       return (Rg.xi+(RS1+RS2)/2.)
 
     def mcal_norm_3(cata,catxa,catRga,w,maska):
@@ -206,8 +210,12 @@ class xi_2pt(object):
       catRS0=None
       catRS=None
       print 'after rs4 run',time.time()-t0
+      m1=np.mean(cata.R11[maska[0]])
+      m2=np.mean(cata.R22[maska[0]])
       RS10=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
       RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
+      m1+=RS10
+      m2+=RS20
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
       print 'RS1,RS2',RS1,RS2
@@ -215,7 +223,7 @@ class xi_2pt(object):
       print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
       R=(Rg.xi+(RS1+RS2)/2.)
       print 'R',R
-      print 'dR',(R-np.mean(R))/(R)
+      print 'dR',(R-np.mean((m1+m2)/2))/((m1+m2)/2)
       return (Rg.xi+(RS1+RS2)/2.)
 
     # def mcal_norm_4(cata,catxa,catRga,w,maska):
