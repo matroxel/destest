@@ -364,6 +364,8 @@ matched_ng_col_lookup = {
   'psfsize':'psf_size',
   'R11':'R11',
   'R22':'R22',
+  'R12':'R12',
+  'R21':'R21',
   #'w':'weight'
 }
 
