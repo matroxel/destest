@@ -251,9 +251,16 @@ class xi_2pt(object):
       catRga=cat_G(cata,cata.R11+m1,cata.R22+m2,w,maska[0])
       Rg.process(catRga,catRga)
       catRga=None
+      m1=np.mean(cata.R11[maska[0]])
+      m2=np.mean(cata.R22[maska[0]])
+      RS10=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
+      RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
+      m1+=RS10
+      m2+=RS20
       print 'after rg run',time.time()-t0
       print 'R xip, xim',Rg.xip,Rg.xim,(Rg.xip-np.mean(Rg.xip))/np.mean(Rg.xip)
       print 'R xi++,xixx',(Rg.xip+Rg.xim)/2,(Rg.xip-Rg.xim)/2
+      print 'dR xi++,xixx',(Rg.xip+Rg.xim)/2/((m1+m2)/2),(Rg.xip-Rg.xim)/2/((m1+m2)/2)
       return Rg.xip/2
 
 
