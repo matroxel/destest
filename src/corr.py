@@ -223,7 +223,7 @@ class xi_2pt(object):
       print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
       R=(Rg.xi+(RS1+RS2)/2.)
       print 'R',R
-      print 'dR',(R-np.mean((m1+m2)/2))/((m1+m2)/2)
+      print 'dR',(R-np.mean((m1+m2)/2)**2)/((m1+m2)/2)**2
       return (Rg.xi+(RS1+RS2)/2.)
 
     # def mcal_norm_4(cata,catxa,catRga,w,maska):
