@@ -260,7 +260,7 @@ class xi_2pt(object):
       print 'after rg run',time.time()-t0
       print 'R xip, xim',Rg.xip,Rg.xim,(Rg.xip-np.mean(Rg.xip))/np.mean(Rg.xip)
       print 'R xi++,xixx',(Rg.xip+Rg.xim)/2,(Rg.xip-Rg.xim)/2
-      print 'dR xi++,xixx',(Rg.xip+Rg.xim)/2/((m1+m2)/2),(Rg.xip-Rg.xim)/2/((m1+m2)/2)
+      print 'dR xi++,xixx',(Rg.xip+Rg.xim)/2/((m1+m2)/2)**2,(Rg.xip-Rg.xim)/2/((m1+m2)/2)**2
       return Rg.xip/2
 
 
