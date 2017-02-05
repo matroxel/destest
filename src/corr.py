@@ -169,11 +169,13 @@ class xi_2pt(object):
       RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
       RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
       RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
-      print 'RS1,RS2',RS1,RS2,(RS1-np.mean(RS10))/np.mean(RS10),(RS2-np.mean(RS20))/np.mean(RS20)
-      print 'Rg,(RS1+RS2)/2',Rg.xi**2,((RS1+RS2)/2.)**2
-      R=(Rg.xi+(RS1+RS2)/2.)**2
-      print 'R',R,(R-np.mean(R))/R
-      return (Rg.xi+(RS1+RS2)/2.)**2
+      print 'RS1,RS2',RS1,RS2
+      print 'd RS1,RS2',(RS1-np.mean(RS10))/np.mean(RS10),(RS2-np.mean(RS20))/np.mean(RS20)
+      print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
+      R=(Rg.xi+(RS1+RS2)/2.)
+      print 'R',R
+      print 'dR',(R-np.mean(R))/R
+      return (Rg.xi+(RS1+RS2)/2.)
 
     def mcal_norm_3(cata,catxa,catRga,w,maska):
       Rg   = treecorr.KKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
@@ -206,12 +208,14 @@ class xi_2pt(object):
       print 'after rs4 run',time.time()-t0
       RS10=((np.mean(cata.e1[np.append(maska[1],maska[5])])-np.mean(cata.e1[np.append(maska[2],maska[5])]))/(2.*config.cfg.get('mcal_dg')))
       RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
-      RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))**2
-      RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))**2
-      print 'RS1,RS2',RS1,RS2,(RS1-np.mean(RS10))/np.mean(RS10),(RS2-np.mean(RS20))/np.mean(RS20)
+      RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
+      RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
+      print 'RS1,RS2',RS1,RS2
+      print 'd RS1,RS2',(RS1-np.mean(RS10))/np.mean(RS10),(RS2-np.mean(RS20))/np.mean(RS20)
       print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
       R=(Rg.xi+(RS1+RS2)/2.)
-      print 'R',R,(R-np.mean(R))/(R)
+      print 'R',R
+      print 'dR',(R-np.mean(R))/(R)
       return (Rg.xi+(RS1+RS2)/2.)
 
     # def mcal_norm_4(cata,catxa,catRga,w,maska):
