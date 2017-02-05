@@ -216,10 +216,10 @@ class xi_2pt(object):
       RS20=(((np.mean(cata.e2[np.append(maska[3],maska[5])])-np.mean(cata.e2[np.append(maska[4],maska[5])]))/(2.*config.cfg.get('mcal_dg'))))
       m1+=RS10
       m2+=RS20
-      RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))**2
-      RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))**2
+      RS1=(RS1p.xi-RS1m.xi)/(2.*config.cfg.get('mcal_dg'))
+      RS2=(RS2p.xi-RS2m.xi)/(2.*config.cfg.get('mcal_dg'))
       print 'RS1,RS2',RS1,RS2
-      print 'd RS1,RS2',(np.sqrt(RS1)-np.mean(RS10))/np.mean(RS10),(np.sqrt(RS2)-np.mean(RS20))/np.mean(RS20)
+      print 'd RS1,RS2',(RS1-RS10**2)/RS10**2,(RS2-RS20**2)/RS20**2
       print 'Rg,(RS1+RS2)/2',Rg.xi,((RS1+RS2)/2.)
       R=(Rg.xi+(RS1+RS2)/2.)
       print 'R',R
