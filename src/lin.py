@@ -134,15 +134,17 @@ class linear_methods(object):
         mask0=mask
         print 'assuming no selection effects in responsivity'
       # print e1,mask,len(e1),len(mask)
-      if w1 is not None:
-        w=w1
-      else:
-        w=np.ones(len(e1))
       if bs:
         if xi:
+          if w1 is not None:
+            w=w1
+          else:
+            w=np.ones(len(e1))
           # unsheared, 1p, 1m, 2p, 2m
-          m1=cat.R11[mask0] #(cat.e1_1p[mask0]-cat.e1_1m[mask0])/(2.*config.cfg.get('mcal_dg'))
-          m2=cat.R22[mask0] #(cat.e2_2p[mask0]-cat.e2_2m[mask0])/(2.*config.cfg.get('mcal_dg'))
+          m1=np.mean(cat.R11[mask0]) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
+          m2=np.mean(cat.R22[mask0]) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
+          m1+=(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
+          m2+=(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
           return e1[mask0],e2[mask0],w,m1,m2
         else:
           # unsheared, 1p, 1m, 2p, 2m
