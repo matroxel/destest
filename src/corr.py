@@ -296,6 +296,7 @@ class xi_2pt(object):
       print 'after catxa',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
         #catRga=treecorr.Catalog(k=(m1+m2)/2., w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        pass
         print 'after catRga',time.time()-t0
       elif cata.cat=='mcal':
         pass
@@ -356,6 +357,7 @@ class xi_2pt(object):
         catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if (catb.cat=='mcal')&(catb.bs):
           #catRgb=treecorr.Catalog(k=(m1+m2)/2., w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+          pass
         elif catb.cat=='mcal':
           pass
         else:
