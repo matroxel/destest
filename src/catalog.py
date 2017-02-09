@@ -498,7 +498,7 @@ class PZStore(object):
               print 'coadds in sheared file '+file.replace('.fits',s+'.fits')+' mismatch with parent '+file
               raise
 
-            setattr(self,'z_mean_full'+s)=fits[-1].read(columns=['MEAN_Z'])
+            setattr(self,'z_mean_full'+s,fits[-1].read(columns=['MEAN_Z']))
 
       self.pztype=pztype
       self.name=name
