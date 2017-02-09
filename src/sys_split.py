@@ -12,6 +12,7 @@ import fig
 import txt
 import lin
 import corr
+import mock
 
 t0=time.time()
 
@@ -386,6 +387,7 @@ class split_methods(object):
     if cat.pzrw:
       print 'before '+str(i)+' weights ',time.time()-t0
       w=split_methods.pz_weight(cat,mask,bins)
+      mock.methods.save_weights(cat,val,w,bins)
     else:
       if cat.cat!='mcal':
         w=np.ones(np.sum([mask]))
