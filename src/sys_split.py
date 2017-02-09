@@ -366,7 +366,9 @@ class split_methods(object):
     else:
       mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
 
+
     print 'after mask ',time.time()-t0
+    print array,len(array),mask,len(mask)
     if cat.wt:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
     else:
