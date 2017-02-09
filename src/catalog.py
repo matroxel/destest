@@ -466,15 +466,13 @@ class PZStore(object):
         self.coadd=fits[-1].read(columns=['COADD_OBJECTS_ID']).astype(int)
         if np.any(np.diff(self.coadd) < 1):
           i=np.argsort(self.coadd)
-          shapearray=shapearray[i]
-          shapemask=shapemask[i]
-          i=None # Clear i array
+          self.coadd=self.coadd[i]
         if np.any(np.diff(self.coadd)==0):
           print 'non-unique ids in file: ',file
           raise
         # self.z_peak_full=fits[-1].read()['MODE_Z']
-        self.z_mean_full=fits[-1].read(columns=['MEAN_Z'])
-        self.pz_full=fits[-1].read(columns=['Z_MC'])
+        self.z_mean_full=fits[-1].read(columns=['MEAN_Z'])[i]
+        self.pz_full=fits[-1].read(columns=['Z_MC'])[i]
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
         self.bins=len(self.bisn)
@@ -487,10 +485,7 @@ class PZStore(object):
             coadd=fits[-1].read(columns=['COADD_OBJECTS_ID']).astype(int)
 
             if np.any(np.diff(coadd) < 1):
-              i=np.argsort(goldarray[goldtable.get('coadd')])
-              goldarray=goldarray[i]
-              goldmask = goldmask[i]
-              i=None # Clear i array
+              i=np.argsort(coadd)
             if np.any(np.diff(coadd)==0):
               print 'non-unique ids in file: ',file.replace('.fits',s+'.fits')
               raise
@@ -498,7 +493,7 @@ class PZStore(object):
               print 'coadds in sheared file '+file.replace('.fits',s+'.fits')+' mismatch with parent '+file
               raise
 
-            setattr(self,'z_mean_full'+s,fits[-1].read(columns=['MEAN_Z']))
+            setattr(self,'z_mean_full'+s,fits[-1].read(columns=['MEAN_Z'])[i])
 
       self.pztype=pztype
       self.name=name
