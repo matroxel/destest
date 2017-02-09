@@ -326,7 +326,7 @@ matched_gold_col_lookup = {
   'flags_gold':'FLAGS_GOLD',
   'modest_class':'MODEST_CLASS',
   'nexp':'n_exposure',
-  'zp':'DESDM_ZP'
+  'pz':'DESDM_ZP'
 }
 
 matched_i3_col_lookup = {  

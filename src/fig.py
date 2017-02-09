@@ -351,7 +351,7 @@ class plot_methods(object):
     plt.xlabel(r'$\theta$ (arcmin)')
     plt.xscale('log')
     plt.ylim(-2.5,2.5)
-    plt.xlim(1,100)
+    plt.xlim(.5,500)
     ax.set_xticklabels([])
     plt.ylabel(r'$\Delta '+yl+r'/'+yl+r'$')
     # ax.axes.get_yaxis().set_ticks([])
@@ -369,7 +369,7 @@ class plot_methods(object):
       leg=plt.legend(loc='upper left',ncol=1, frameon=False,prop={'size':12},framealpha=0.2)
     ax.set_xticklabels([])
     plt.ylabel(r'$\theta\times'+yl+r'$')
-    plt.xlim(1,100)
+    plt.xlim(.5,500)
     if n<3:
       plt.ylim(0,4e-4)
     else:
@@ -384,7 +384,7 @@ class plot_methods(object):
     plt.ylabel(r'$'+yl+r'$')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlim(1,100)
+    plt.xlim(.5,500)
     if n<3:
       plt.ylim(5e-7,1e-4)
     else:
@@ -940,10 +940,15 @@ class plot_methods(object):
 
 
   @staticmethod
-  def plot_pzrw(cat,pz,mask,bins,w,label,edge):
+  def plot_pzrw(cat,mask,bins,w,label,edge):
 
     plt.figure(0,figsize=(10,5))
     ax=plt.subplot(1,2,1)
+
+    if hasattr(cat,'pzstore'):
+      pz = cat.pzstore.pz_full
+    else:
+      pz = cat.pz
 
     col=['r','b','g']
     plt.hist(pz,bins=100,color='k',linestyle=('solid'),linewidth=1.,label='Full sample',histtype='step',normed=True)

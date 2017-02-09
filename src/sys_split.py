@@ -245,7 +245,7 @@ class split_methods(object):
 
     print 'before wnz',time.time()-t0
 
-    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,cat.zp,mask=mask,label=val,plot=plot)
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,mask=mask,label=val,plot=plot)
     print 'edge',edge
     print 'after wnz',time.time()-t0
 
@@ -354,7 +354,7 @@ class split_methods(object):
     return array
 
   @staticmethod
-  def get_mask_wnz(cat,array,val,nz,mask=None,label='',plot=False):
+  def get_mask_wnz(cat,array,val,mask=None,label='',plot=False):
     """
     Calculate splitting and redshift reweighting. 
     """
@@ -363,8 +363,7 @@ class split_methods(object):
     if cat.cat!='mcal':
       mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
     else:
-      mask0=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
-      mask=mask0[0]
+      mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
 
     print 'after mask ',time.time()-t0
     if cat.wt:
@@ -380,35 +379,29 @@ class split_methods(object):
       for i in range(cat.sbins):
         print 'before '+str(i)+' bins ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
-        bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=True))
+        bins.append(catalog.CatalogMethods.get_cuts_mask(cat,full=False))
         print 'after '+str(i)+' bins ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
     if cat.pzrw:
-      if cat.cat=='mcal':
-        print 'before '+str(i)+' weights ',time.time()-t0
-        w=split_methods.pz_weight(cat,nz,mask0[0],[bins[0][0],bins[1][0]])
-      else:
-        w=split_methods.pz_weight(cat,nz,mask0,bins)
+      print 'before '+str(i)+' weights ',time.time()-t0
+      w=split_methods.pz_weight(cat,mask,bins)
     else:
       if cat.cat!='mcal':
         w=np.ones(np.sum([mask]))
       else:
-        w=np.ones(len(nz))
+        w=np.ones(len(cat.coadd))
 
     print 'before plots ',time.time()-t0
 
     if plot:
-      if cat.cat=='mcal':
-        fig.plot_methods.plot_pzrw(cat,nz,mask,[bins[0][0],bins[1][0]],w,label,edge)
-      else:
-        fig.plot_methods.plot_pzrw(cat,nz,mask,bins,w,label,edge)
+      fig.plot_methods.plot_pzrw(cat,mask,bins,w,label,edge)
 
     print 'end of wnz ',time.time()-t0
     return bins,w,edge
 
   @staticmethod
-  def pz_weight(cat,nz,mask,bins,binnum=100,pdf=False):
+  def pz_weight(cat,mask,bins,binnum=100,pdf=False):
     """
     Reweight portions of galaxy population to match redshift distributions to that of the whole population.
     """
@@ -417,6 +410,10 @@ class split_methods(object):
       print 'transfer pdf support'
       return
     else:
+      if hasattr(cat,'pzstore'):
+        nz = cat.pzstore.pz_full
+      else:
+        nz = cat.pz
       h0,b0=np.histogram(nz[mask],bins=binnum)
       w=np.ones(len(nz))
       print 'w0',len(w)

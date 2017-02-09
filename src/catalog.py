@@ -307,6 +307,28 @@ class CatalogStore(object):
       array=array0
     return array
 
+  def add_pz(self,pz):
+
+    if hasattr(pz,'pztype'):
+      s1,s2 = CatalogMethods.sort2(self.coadd,pz.coadd)
+      if len(s1)!=len(self.coadd):
+        print 'pz not same lenght as catalog - cutting all but intersection: ',len(s1),' out of ',len(self.coadd)
+      CatalogMethods.match_cat(self,s1)
+      CatalogMethods.match_cat(pz,s2)
+      self.pzstore = pz
+      self.pz      = self.pzstore.z_mean_full
+      self.pz_1p   = self.pzstore.z_mean_full_1p
+      self.pz_1m   = self.pzstore.z_mean_full_1m
+      self.pz_2p   = self.pzstore.z_mean_full_2p
+      self.pz_2m   = self.pzstore.z_mean_full_2m
+    else:
+      if len(pz)==len(self.coadd):
+        self.pz=pz
+      else:
+        print 'pz not same length as catalog - not adding'
+
+    return
+
 class PZStore(object):
   """
   A flexible class that reads and stores photo-z catalog information. An example is given in the main testsuite.py.
@@ -322,7 +344,7 @@ class PZStore(object):
 
   # This is messy currently due to randomness in catalog formats for photo-z information...
 
-  def __init__(self,name,setup=True,pztype='skynet',filetype=None,file=None):
+  def __init__(self,name,setup=True,pztype='skynet',filetype=None,file=None,sheared=False):
 
     if setup:
 
@@ -438,17 +460,45 @@ class PZStore(object):
         store.close()
       elif filetype=='fits':
         self.pdftype='sample'
-        fits=fio.FITS(config.pzdir+file)
+        fits=fio.FITS(file)
         #self.bin=fits[1].read()['redshift']
         self.bin=(np.linspace(0,4,400)[:-1]+np.linspace(0,4,400)[1:])/2
-        self.coadd=fits[-1].read()['COADD_OBJECTS_ID'].astype(int)
-        self.z_peak_full=fits[-1].read()['MODE_Z']
-        self.z_mean_full=fits[-1].read()['MEAN_Z']
-        self.pz_full=fits[-1].read()['Z_MC']
+        self.coadd=fits[-1].read(columns=['COADD_OBJECTS_ID']).astype(int)
+        if np.any(np.diff(self.coadd) < 1):
+          i=np.argsort(self.coadd)
+          shapearray=shapearray[i]
+          shapemask=shapemask[i]
+          i=None # Clear i array
+        if np.any(np.diff(self.coadd)==0):
+          print 'non-unique ids in file: ',file
+          raise
+        # self.z_peak_full=fits[-1].read()['MODE_Z']
+        self.z_mean_full=fits[-1].read(columns=['MEAN_Z'])
+        self.pz_full=fits[-1].read(columns=['Z_MC'])
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
         self.bins=len(self.bin)
-        self.w=np.ones(len(self.z_mean_full))
+        # self.w=np.ones(len(self.z_mean_full))
+        self.sheared=False
+        if sheared:
+          self.sheared=True
+          for s in ['_1p','_1m','_2p','_2m']
+            fits=fio.FITS(file.replace('.fits',s+'.fits'))
+            coadd=fits[-1].read(columns=['COADD_OBJECTS_ID']).astype(int)
+
+            if np.any(np.diff(coadd) < 1):
+              i=np.argsort(goldarray[goldtable.get('coadd')])
+              goldarray=goldarray[i]
+              goldmask = goldmask[i]
+              i=None # Clear i array
+            if np.any(np.diff(coadd)==0):
+              print 'non-unique ids in file: ',file.replace('.fits',s+'.fits')
+              raise
+            if np.any(self.coadd!=coadd):
+              print 'coadds in sheared file '+file.replace('.fits',s+'.fits')+' mismatch with parent '+file
+              raise
+
+            setattr(self,'z_mean_full'+s)=fits[-1].read(columns=['MEAN_Z'])
 
       self.pztype=pztype
       self.name=name
@@ -893,7 +943,7 @@ class CatalogMethods(object):
           print 'Not in masking cuts:  ',col
       else:
 
-        cat.livecuts=CatalogMethods.add_cut(cat.livecuts,col,cmin,ceq,cmax)
+        cat.livecuts=CatalogMethods.add_cut(cat.livecuts,col,cmin,ceq,cmax,derived=derived)
 
     else:
       print 'Not registered as sheared column:  ',col
@@ -1029,6 +1079,7 @@ class CatalogMethods(object):
 
     cuts=CatalogMethods.add_cut(np.array([]),'snr',10.,noval,noval)
     cuts=CatalogMethods.add_cut(cuts,'rgp',0.5,noval,noval,derived=True)
+    cuts=CatalogMethods.add_cut(cuts,'pz',0.2,noval,1.3,derived=True)
 
     return cuts
 
@@ -1544,8 +1595,13 @@ class CatalogMethods(object):
     Returns healpix pixel array for input ra,dec.
     """  
     import healpy as hp
-
     return hp.ang2pix(nside, np.pi/2.-np.radians(dec),np.radians(ra), nest=nest)
+
+  @staticmethod
+  def hpix_to_radec(pix,nside=4096,nest=True):
+    import healpy as hp
+    theta, phi = hp.pix2ang(nside, pix, nest=nest)
+    return (np.pi/2.0 - theta)/np.pi*180.0*60.0, phi/np.pi*180.0*60.0
 
   @staticmethod
   def remove_duplicates(cat):
