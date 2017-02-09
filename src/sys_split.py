@@ -250,6 +250,7 @@ class split_methods(object):
     print 'edge',edge
     print 'after wnz',time.time()-t0
 
+    return
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     print 'after main 2pt',time.time()-t0
 
