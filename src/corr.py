@@ -527,9 +527,9 @@ class xi_2pt(object):
             err[1]=tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info.get_error(config.cov.get('name')[1])
             err[3]=err[1]
           else:
-            err[1]=err[0]          
-            err[3]=err[0]          
-          np.save('/text/archived_shapenoise_error.npy',np.vstack((theta,err[0],err[1])).T)
+            err[1]=err[0]
+            err[3]=err[0]
+          np.save('text/archived_shapenoise_error.npy',np.vstack((theta,err[0],err[1])).T)
           err2=[xiperr,ximerr,xiperr,ximerr]
         except:
           print 'failure to read cov file, using shape noise'         
