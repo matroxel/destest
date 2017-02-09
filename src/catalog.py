@@ -475,7 +475,7 @@ class PZStore(object):
         self.pz_full=fits[-1].read(columns=['Z_MC'])[i]
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
-        self.bins=len(self.bisn)
+        self.bins=len(self.bin)
         # self.w=np.ones(len(self.z_mean_full))
         self.sheared=False
         if sheared:
