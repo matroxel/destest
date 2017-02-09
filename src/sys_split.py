@@ -250,7 +250,6 @@ class split_methods(object):
     print 'edge',edge
     print 'after wnz',time.time()-t0
 
-    return
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     print 'after main 2pt',time.time()-t0
 
@@ -369,7 +368,6 @@ class split_methods(object):
 
 
     print 'after mask ',time.time()-t0
-    print array,len(array),mask,len(mask)
     if cat.wt:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
     else:
