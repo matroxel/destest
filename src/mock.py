@@ -62,7 +62,7 @@ euler_angle_2 = {
 }
 
 class methods(object):
-  
+
   @staticmethod
   def rotate_mock_rescale_nsigma( zbin,                 # tomographic bin index - 0 to n
                                   rlsn,                 # mock cutout (realisation)
@@ -135,7 +135,7 @@ class methods(object):
       w    = np.bincount(pix,weights=w0)
       w2   = np.bincount(pix,weights=w0*w0)
 
-      out  = np.array(len(upix),dtype=[('pix',int)]+[('weight','f4')]+[('weightsq','f4')])
+      out  = np.empty(len(upix),dtype=[('pix',int)]+[('weight','f4')]+[('weightsq','f4')])
       out['pix']      = upix
       out['weight']   = w
       out['weightsq'] = w2
