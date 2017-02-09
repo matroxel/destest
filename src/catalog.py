@@ -477,12 +477,12 @@ class PZStore(object):
         self.pz_full=fits[-1].read(columns=['Z_MC'])
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
-        self.bins=len(self.bin)
+        self.bins=len(self.bisn)
         # self.w=np.ones(len(self.z_mean_full))
         self.sheared=False
         if sheared:
           self.sheared=True
-          for s in ['_1p','_1m','_2p','_2m']
+          for s in ['_1p','_1m','_2p','_2m']:
             fits=fio.FITS(file.replace('.fits',s+'.fits'))
             coadd=fits[-1].read(columns=['COADD_OBJECTS_ID']).astype(int)
 
