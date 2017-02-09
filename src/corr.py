@@ -23,7 +23,7 @@ import config
 import fig
 import txt
 import lin
-import twopoint
+import twopoint as tp
 import time
 t0=time.time()
 
