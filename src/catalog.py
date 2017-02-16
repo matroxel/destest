@@ -307,7 +307,7 @@ class CatalogStore(object):
       array=array0
     return array
 
-  def add_pz(self,pz):
+  def add_pz(self,pz,sheared=False):
 
     if hasattr(pz,'pztype'):
       s1,s2 = CatalogMethods.sort2(self.coadd,pz.coadd)
@@ -317,10 +317,11 @@ class CatalogStore(object):
       CatalogMethods.match_cat(pz,s2)
       self.pzstore = pz
       self.pz      = self.pzstore.z_mean_full
-      self.pz_1p   = self.pzstore.z_mean_full_1p
-      self.pz_1m   = self.pzstore.z_mean_full_1m
-      self.pz_2p   = self.pzstore.z_mean_full_2p
-      self.pz_2m   = self.pzstore.z_mean_full_2m
+      if sheared:
+        self.pz_1p   = self.pzstore.z_mean_full_1p
+        self.pz_1m   = self.pzstore.z_mean_full_1m
+        self.pz_2p   = self.pzstore.z_mean_full_2p
+        self.pz_2m   = self.pzstore.z_mean_full_2m
     else:
       if len(pz)==len(self.coadd):
         self.pz=pz
