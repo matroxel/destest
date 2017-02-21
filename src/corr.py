@@ -354,6 +354,7 @@ class xi_2pt(object):
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
+        print e1/m1, e2/m2, w,catb.ra,cabt.dec,maskb0
         catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if (catb.cat=='mcal')&(catb.bs):
           #catRgb=treecorr.Catalog(k=(m1+m2)/2., w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
