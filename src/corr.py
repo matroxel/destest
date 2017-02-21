@@ -271,7 +271,7 @@ class xi_2pt(object):
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
       maska0=maska&jkmask
-    if wa is not None:
+    if wa is None:
       wa=np.ones(len(cata.coadd))
 
     if catb is None:
@@ -341,7 +341,7 @@ class xi_2pt(object):
       else:
         maskb0=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
 
-      if wb is not None:
+      if wb is None:
         wb=np.ones(len(cata.coadd))
 
       if gb is not None:
