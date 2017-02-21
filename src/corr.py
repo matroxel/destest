@@ -351,6 +351,7 @@ class xi_2pt(object):
         gb='e'
       if conj:
         e2=-e2
+      print len(wb)
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(catb,xi=True,mock=mock,mask=maskb,w1=wb)
 
       if corr in ['GG','NG','KG']:
