@@ -342,7 +342,7 @@ class xi_2pt(object):
         maskb0=catalog.CatalogMethods.check_mask(catb.coadd,maskb)
 
       if wb is None:
-        wb=np.ones(len(cata.coadd))
+        wb=np.ones(len(catb.coadd))
 
       if gb is not None:
         e1=getattr(catb,gb+'1')[maskb0]
