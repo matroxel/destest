@@ -138,8 +138,10 @@ class linear_methods(object):
         if xi:
           if w1 is not None:
             w=w1
+            print '1',w
           else:
             w=np.ones(len(e1))
+            print '2',w
           # unsheared, 1p, 1m, 2p, 2m
           m1=np.mean(cat.R11[mask0]) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
           m2=np.mean(cat.R22[mask0]) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
