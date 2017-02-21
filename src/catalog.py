@@ -742,7 +742,9 @@ class CatalogMethods(object):
       if colex<1:
         print 'Warning: cut columns '+colist+' do not exist in file: '+shape+' (not crashing)'
 
+    print goldcols,[goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames()
     colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
+    print colex,colist
     if colex<1:
       for i,x in enumerate(goldcols):
         goldcols[i]=x.lower()
