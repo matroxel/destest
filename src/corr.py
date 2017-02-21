@@ -468,7 +468,7 @@ class xi_2pt(object):
       clear_cache(catxa)
       clear_cache(catxb)
 
-      if (catb.cat=='mcal')&(cata.bs):
+      if (catb.cat=='mcal')&(catb.bs):
         norm=1.
       elif cata.cat=='mcal':
         norm=1.
@@ -483,7 +483,7 @@ class xi_2pt(object):
       if ran:
         rg = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         rg.process(catra,catxb)
-        if (catb.cat=='mcal')&(cata.bs):
+        if (catb.cat=='mcal')&(catb.bs):
           norm=1.
         elif cata.cat=='mcal':
           norm=1.
