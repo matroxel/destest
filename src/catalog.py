@@ -930,22 +930,20 @@ class CatalogMethods(object):
     Helper function to format catalog cuts.
     """    
 
-    if cat.tablesheared.get(col,False):
-
-      if remove:
-        if col in cat.livecuts['col']:
-
-          mask=(cat.livecuts['col']==col)&(cat.livecuts['min']==cmin)&(cat.livecuts['eq']==ceq)&(cat.livecuts['max']==cmax)
-          cat.livecuts=cat.livecuts[~mask]
-
-        else:
-          print 'Not in masking cuts:  ',col
-      else:
-
-        cat.livecuts=CatalogMethods.add_cut(cat.livecuts,col,cmin,ceq,cmax,derived=derived)
-
-    else:
+    if not cat.tablesheared.get(col,False):
       print 'Not registered as sheared column:  ',col
+
+    if remove:
+      if col in cat.livecuts['col']:
+
+        mask=(cat.livecuts['col']==col)&(cat.livecuts['min']==cmin)&(cat.livecuts['eq']==ceq)&(cat.livecuts['max']==cmax)
+        cat.livecuts=cat.livecuts[~mask]
+
+      else:
+        print 'Not in masking cuts:  ',col
+    else:
+
+      cat.livecuts=CatalogMethods.add_cut(cat.livecuts,col,cmin,ceq,cmax,derived=derived)
 
     return cat.livecuts
 
