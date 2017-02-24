@@ -827,6 +827,7 @@ class CatalogMethods(object):
 
     goldarray=goldarray[goldmask&shapemask]
     shapearray=shapearray[goldmask&shapemask]
+    np.save('cutmask.npy',goldmask&shapemask)
     goldmask = None
     shapemask = None #clearing mask arrays
 
