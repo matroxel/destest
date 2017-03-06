@@ -319,14 +319,14 @@ truth_col_lookup = {
 
 matched_gold_col_lookup = {  
 
-  'coadd':'COADD_OBJECTS_ID',
-  'ra':'RA',
-  'dec':'DEC',
-  'flags_badregion':'FLAGS_BADREGION',
-  'flags_gold':'FLAGS_GOLD',
-  'modest_class':'MODEST_CLASS',
+  'coadd':'coadd_objects_id',
+  'ra':'ra',
+  'dec':'dec',
+  'flags_badregion':'flags_badregion',
+  'flags_gold':'flags_gold',
+  'modest_class':'modest_class',
   'nexp':'n_exposure',
-  'pz':'DESDM_ZP'
+  'pz':'desdm_zp'
 }
 
 matched_i3_col_lookup = {  
@@ -334,6 +334,8 @@ matched_i3_col_lookup = {
   'coadd':'coadd_objects_id',
   'e1':'e1',
   'e2':'e2',
+  'ra':'ra',
+  'dec':'dec',
   'flags':'flags',
   'snr':'snr',
   'rgp':'rgpp_rp',
@@ -346,9 +348,6 @@ matched_i3_col_lookup = {
   'c1':'c1',
   'c2':'c2',
   'w':'weight',
-  'cov11':'covmat_0_0',
-  'cov22':'covmat_1_1',
-  'cov12':'covmat_0_1'
 }
 
 matched_ng_col_lookup = {  
@@ -356,7 +355,9 @@ matched_ng_col_lookup = {
   'coadd':'coadd_objects_id',
   'e1':'e1',
   'e2':'e2',
-  'flags':'flags',
+  'ra':'ra',
+  'dec':'dec',
+  'flags':'flags_select',
   'snr':'snr',
   'size':'size',
   'psf1':'psf_e1',
@@ -377,6 +378,7 @@ matched_ng_col_sheared = {
   'size':True,
   'rgp':True,
   'w':False,
+  'flags':False,
   'R11':False,
   'R22':False
 }

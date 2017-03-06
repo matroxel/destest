@@ -710,11 +710,12 @@ class CatalogMethods(object):
 
     lenst=0
     # File format may not be readable
-    try:
-      goldfits=fio.FITS(gold)
-    except IOError:
-      print 'error loading fits file: ',gold
-      raise
+    if goldcols != []:
+      try:
+        goldfits=fio.FITS(gold)
+      except IOError:
+        print 'error loading fits file: ',gold
+        raise
     try:
       shapefits=fio.FITS(shape)
     except IOError:
@@ -723,11 +724,10 @@ class CatalogMethods(object):
 
     print 'fits load',time.time()-t0
 
-    tmparray = goldfits[hdu].read(columns=['FLAGS_GOLD','FLAGS_BADREGION'])
-    goldmask = (tmparray['FLAGS_GOLD']==0)&(tmparray['FLAGS_BADREGION']==0)&(np.arange(len(tmparray))<maxrows)
-    tmparray = None # clearing tmparray for masking
-
-    print 'gold mask',time.time()-t0
+    if goldcols != []:
+      nrows = goldfits[hdu].get_nrows()
+      goldmask = (np.arange(len(nrows))<maxrows)
+      print 'gold mask',time.time()-t0
 
     # Verify that the columns requested exist in the file
     tmpcols=col_list(shapecols,shapetable,shapetablesheared)
@@ -742,15 +742,16 @@ class CatalogMethods(object):
       if colex<1:
         print 'Warning: cut columns '+colist+' do not exist in file: '+shape+' (not crashing)'
 
-    print goldcols,[goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames()
-    colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
-    print colex,colist
-    if colex<1:
-      for i,x in enumerate(goldcols):
-        goldcols[i]=x.lower()
-      colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
+
+    if goldcols != []:
+      colex,colist=CatalogMethods.col_exists([goldtable.get(x,x) for x in goldcols],goldfits[hdu].get_colnames())
+      print colex,colist
       if colex<1:
-        raise ColError('columns '+colist+' do not exist in file: '+gold)
+        for i,x in enumerate(goldcols):
+          goldcols[i]=x.lower()
+        colex,colist=CatalogMethods.col_exists(goldcols,goldfits[hdu].get_colnames())
+        if colex<1:
+          raise ColError('columns '+colist+' do not exist in file: '+gold)
 
     cutcols=shapecuts['col']
     tmpcols=col_list(cutcols,shapetable,shapetablesheared)
@@ -780,12 +781,13 @@ class CatalogMethods(object):
     print 'shape cuts done',time.time()-t0
 
     # Dump the requested columns into memory if everything is there
-    try:
-      goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
-    except IOError:
-      print 'error loading fits file: ',gold
-    goldfits.close()
-    print 'read gold file',time.time()-t0
+    if goldcols != []:
+      try:
+        goldarray=goldfits[hdu].read(columns=[goldtable.get(x,x) for x in goldcols])
+      except IOError:
+        print 'error loading fits file: ',gold
+      goldfits.close()
+      print 'read gold file',time.time()-t0
 
     try:
       tmpcols=col_list(shapecols,shapetable,shapetablesheared)
@@ -802,11 +804,12 @@ class CatalogMethods(object):
     # print 'FIX TEMPORARY PATCH FOR MATCHED FILES - DROPPING GOLD COADDS INTO SHAPE ARRAY'
     # shapearray[shapetable.get('coadd')]=goldarray[goldtable.get('coadd')]
 
-    if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
-      i=np.argsort(goldarray[goldtable.get('coadd')])
-      goldarray=goldarray[i]
-      goldmask = goldmask[i]
-      i=None # Clear i array
+    if goldcols != []:
+      if np.any(np.diff(goldarray[goldtable.get('coadd')]) < 1):
+        i=np.argsort(goldarray[goldtable.get('coadd')])
+        goldarray=goldarray[i]
+        goldmask = goldmask[i]
+        i=None # Clear i array
     if np.any(np.diff(shapearray[shapetable.get('coadd')]) < 1):
       i=np.argsort(shapearray[shapetable.get('coadd')])
       shapearray=shapearray[i]
@@ -815,9 +818,10 @@ class CatalogMethods(object):
 
     print 'order',time.time()-t0
 
-    if np.any(np.diff(goldarray[goldtable.get('coadd')])==0):
-      print 'non-unique ids in file: ',gold
-      raise
+    if goldcols != []:
+      if np.any(np.diff(goldarray[goldtable.get('coadd')])==0):
+        print 'non-unique ids in file: ',gold
+        raise
 
     if np.any(np.diff(shapearray[shapetable.get('coadd')])==0):
       print 'non-unique ids in file: ',shape
@@ -825,24 +829,33 @@ class CatalogMethods(object):
 
     print 'unique ',time.time()-t0
 
-    goldarray=goldarray[goldmask&shapemask]
-    shapearray=shapearray[goldmask&shapemask]
-    np.save('cutmask.npy',goldmask&shapemask)
-    goldmask = None
+    if goldcols != []:
+      goldarray=goldarray[goldmask&shapemask]
+      shapearray=shapearray[goldmask&shapemask]
+      np.save('cutmask.npy',goldmask&shapemask)
+      goldmask = None
+    else:
+      shapearray=shapearray[shapemask]
+      np.save('cutmask.npy',shapemask)
     shapemask = None #clearing mask arrays
 
     print 'cuts',time.time()-t0
 
-    goldarray = nlr.rename_fields(goldarray,{v: k for k, v in goldtable.iteritems()})
+    if goldcols != []:
+      goldarray = nlr.rename_fields(goldarray,{v: k for k, v in goldtable.iteritems()})
     shapearray = nlr.rename_fields(shapearray,{v: k for k, v in shapetable.iteritems()})
 
     print 'rename',time.time()-t0
 
-    outcols = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)]+[shapearray[col] for col in shapearray.dtype.names if col != 'coadd']
-    outnames = [col for col in goldarray.dtype.names]+[col for col in shapearray.dtype.names if col != 'coadd']
+    if goldcols != []:
+      outcols = [goldarray[col] for i,col in enumerate(goldarray.dtype.names)]+[shapearray[col] for col in shapearray.dtype.names if col != 'coadd']
+      outnames = [col for col in goldarray.dtype.names]+[col for col in shapearray.dtype.names if col != 'coadd']
+    else:
+      outcols = [shapearray[col] for col in shapearray.dtype.names]
+      outnames = [col for col in shapearray.dtype.names]
 
     print 'done',time.time()-t0
-    return outnames,outcols,np.repeat([shape],len(goldarray)),np.arange(len(goldarray))
+    return outnames,outcols,np.repeat([shape],len(shapearray)),np.arange(len(shapearray))
 
   @staticmethod
   def col_exists(cols,colnames):
