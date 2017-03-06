@@ -1092,9 +1092,7 @@ class CatalogMethods(object):
   @staticmethod
   def matched_metacal_cut_live():
 
-    cuts=CatalogMethods.add_cut(np.array([]),'snr',10.,noval,noval)
-    cuts=CatalogMethods.add_cut(cuts,'rgp',0.5,noval,noval,derived=True)
-    cuts=CatalogMethods.add_cut(cuts,'pz',0.2,noval,1.3,derived=True)
+    cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
 
     return cuts
 
