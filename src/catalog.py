@@ -206,17 +206,17 @@ class CatalogStore(object):
       if ('i' in cols)&('z' in cols):
         self.iz=self.add_shared_array(len(filenames),self.i-self.z,p)
 
-      if cattype=='mcal':
-        if not hasattr(self,'rgp'):
-          self.rgp=self.add_shared_array(len(filenames),self.size/self.psfsize,p)
-          self.rgp_1p=self.add_shared_array(len(filenames),self.size_1p/self.psfsize,p)
-          self.rgp_1m=self.add_shared_array(len(filenames),self.size_1m/self.psfsize,p)
-          self.rgp_2p=self.add_shared_array(len(filenames),self.size_2p/self.psfsize,p)
-          self.rgp_2m=self.add_shared_array(len(filenames),self.size_2m/self.psfsize,p)
-          self.size_1p=None
-          self.size_1m=None
-          self.size_2p=None
-          self.size_2m=None
+      # if cattype=='mcal':
+      #   if not hasattr(self,'rgp'):
+      #     self.rgp=self.add_shared_array(len(filenames),self.size/self.psfsize,p)
+      #     self.rgp_1p=self.add_shared_array(len(filenames),self.size_1p/self.psfsize,p)
+      #     self.rgp_1m=self.add_shared_array(len(filenames),self.size_1m/self.psfsize,p)
+      #     self.rgp_2p=self.add_shared_array(len(filenames),self.size_2p/self.psfsize,p)
+      #     self.rgp_2m=self.add_shared_array(len(filenames),self.size_2m/self.psfsize,p)
+      #     self.size_1p=None
+      #     self.size_1m=None
+      #     self.size_2p=None
+      #     self.size_2m=None
 
 
       #Make footprint contiguous across ra=0
@@ -753,30 +753,37 @@ class CatalogMethods(object):
         if colex<1:
           raise ColError('columns '+colist+' do not exist in file: '+gold)
 
-    cutcols=shapecuts['col']
-    tmpcols=col_list(cutcols,shapetable,shapetablesheared)
-    colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
-    if colex<1:
-      cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
+    if shapecuts is not None:
+      cutcols=shapecuts['col']
+      tmpcols=col_list(cutcols,shapetable,shapetablesheared)
       colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
       if colex<1:
-        print 'Warning 2: cut columns '+colist+' do not exist in file: '+shape+' (not crashing)'
+        cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
+        colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
+        if colex<1:
+          print 'Warning 2: cut columns '+colist+' do not exist in file: '+shape+' (not crashing)'
 
     print 'cols exist',time.time()-t0
 
     # Dump the columns needed for masking into memory if everything is there
-    try:
-      tmparray=shapefits[hdu].read(columns=tmpcols)
-    except IOError:
-      print 'error loading fits file: ',shape
-
-    print 'shape cuts',time.time()-t0
+    if shapecuts is not None:
+      try:
+        tmparray=shapefits[hdu].read(columns=tmpcols)
+      except IOError:
+        print 'error loading fits file: ',shape
+      print 'shape cuts',time.time()-t0
 
     # Generate the selection mask based on the passed cut function
-    shapemask=np.array([])
-    for icut,cut in enumerate(shapecuts): 
-      shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray[shapetable.get(cutcols[icut])],shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
-    tmparray = None # Clearing tmparray for masking
+    nrows = shapefits[hdu].get_nrows()
+    if shapecuts is not None:
+      shapemask=np.array([])
+      for icut,cut in enumerate(shapecuts): 
+        shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray[shapetable.get(cutcols[icut])],shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
+      tmparray = None # Clearing tmparray for masking
+      shapemask = shapemask&(np.arange(len(nrows))<maxrows)
+    else:
+      shapemask = (np.arange(len(nrows))<maxrows)
+      print '!!!!! insert precut on non-sheared bits of select_flags?'
 
     print 'shape cuts done',time.time()-t0
 
@@ -1080,10 +1087,7 @@ class CatalogMethods(object):
   @staticmethod
   def matched_metacal_cut():
 
-    cuts=CatalogMethods.add_cut(np.array([]),'flags',noval,0,noval)
-    cuts=CatalogMethods.add_cut(cuts,'coadd',0,noval,noval)
-
-    return cuts
+    return None
 
   @staticmethod
   def matched_metacal_cut_live():
