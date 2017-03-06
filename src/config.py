@@ -357,7 +357,7 @@ matched_ng_col_lookup = {
   'e2':'e2',
   'ra':'ra',
   'dec':'dec',
-  'flags':'flags_select',
+  'flags_select':'flags_select',
   'snr':'snr',
   'size':'size',
   'psf1':'psf_e1',
@@ -378,7 +378,7 @@ matched_ng_col_sheared = {
   'size':True,
   'rgp':True,
   'w':False,
-  'flags':True,
+  'flags_select':True,
   'R11':False,
   'R22':False
 }
