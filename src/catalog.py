@@ -286,10 +286,10 @@ class CatalogStore(object):
       self.bs=False
       self.wt=config.cfg.get('wt',False)
     else:
-      self.bs=config.cfg.get('bs',False)
-      self.wt=config.cfg.get('wt',False)
+      self.bs=config.cfg.get('bs',True)
+      self.wt=config.cfg.get('wt',True)
     #Whether to reweight n(z) when comparing subsets of data for null tests.
-    self.pzrw=config.cfg.get('pzrw',False) 
+    self.pzrw=config.cfg.get('pzrw',True)
 
     return
 
@@ -756,6 +756,7 @@ class CatalogMethods(object):
     if shapecuts is not None:
       cutcols=shapecuts['col']
       tmpcols=col_list(cutcols,shapetable,shapetablesheared)
+      print tmpcols
       colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
       if colex<1:
         cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]
