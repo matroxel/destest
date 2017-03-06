@@ -726,7 +726,7 @@ class CatalogMethods(object):
 
     if goldcols != []:
       nrows = goldfits[hdu].get_nrows()
-      goldmask = (np.arange(len(nrows))<maxrows)
+      goldmask = (np.arange(nrows)<maxrows)
       print 'gold mask',time.time()-t0
 
     # Verify that the columns requested exist in the file
@@ -780,9 +780,9 @@ class CatalogMethods(object):
       for icut,cut in enumerate(shapecuts): 
         shapemask=CatalogMethods.cuts_on_col(shapemask,tmparray[shapetable.get(cutcols[icut])],shapetable.get(cutcols[icut]),cut['min'],cut['eq'],cut['max'])
       tmparray = None # Clearing tmparray for masking
-      shapemask = shapemask&(np.arange(len(nrows))<maxrows)
+      shapemask = shapemask&(np.arange(nrows)<maxrows)
     else:
-      shapemask = (np.arange(len(nrows))<maxrows)
+      shapemask = (np.arange(nrows)<maxrows)
       print '!!!!! insert precut on non-sheared bits of select_flags?'
 
     print 'shape cuts done',time.time()-t0
