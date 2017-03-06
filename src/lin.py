@@ -312,7 +312,7 @@ class linear_methods(object):
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
       y_mean1=np.append(y_mean1,mean1)
       y_mean2=np.append(y_mean2,mean2)
-      if cat.cat!='mcal':
+      if cat.cat=='mcal':
         y_err1=np.append(y_err1,std1/np.sqrt(len(mask0[0])))
         y_err2=np.append(y_err2,std2/np.sqrt(len(mask0[0])))
         print 'e means',i,mean1,mean2,std1/np.sqrt(len(mask0[0])),std2/np.sqrt(len(mask0[0]))
