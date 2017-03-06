@@ -293,7 +293,6 @@ class linear_methods(object):
 
     if isinstance(cat,catalog.CatalogStore):
       if cat.cat!='mcal':
-        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
         mask=np.where(mask)[0]
 
     y_mean1=[]
@@ -311,12 +310,11 @@ class linear_methods(object):
         print len(mask0[0]), len(mask0[1]), len(mask0[2]), len(mask0[3]), len(mask0[4]), len(mask0[5])
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       mean1,mean2,std1,std2,rms1,rms2=linear_methods.calc_mean_stdev_rms_e(cat,mask0,mock=mock)
-      print 'std',std1,len(mask0),mask0
-      print 'e means',i,mean1,mean2,std1/np.sqrt(len(mask0)),std2/np.sqrt(len(mask0))
+      print 'e means',i,mean1,mean2,std1/np.sqrt(len(mask0[0])),std2/np.sqrt(len(mask0[0]))
       y_mean1=np.append(y_mean1,mean1)
-      y_err1=np.append(y_err1,std1/np.sqrt(len(mask0)))
+      y_err1=np.append(y_err1,std1/np.sqrt(len(mask0[0])))
       y_mean2=np.append(y_mean2,mean2)
-      y_err2=np.append(y_err2,std2/np.sqrt(len(mask0)))
+      y_err2=np.append(y_err2,std2/np.sqrt(len(mask0[0])))
 
     return y_mean1,y_err1,y_mean2,y_err2
 
@@ -324,10 +322,7 @@ class linear_methods(object):
   def binned_mean_x(bin,x,cat,mask=None,mock=False):
 
     if hasattr(cat,'cat'):
-      if cat.cat=='mcal':
-        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-      else:
-        mask=catalog.CatalogMethods.check_mask(cat.coadd,mask)
+      if cat.cat!='mcal':
         mask=np.where(mask)[0]
 
     x_mean=[]
@@ -336,9 +331,9 @@ class linear_methods(object):
     for i in xrange(config.cfg.get('lbins',10)):
       mask0=mask[np.in1d(mask,np.where(bin==i)[0])]
       mean,std,rms=linear_methods.calc_mean_stdev_rms(cat,x,mask0,mock=mock)
-      print 'end mean x',mean,std/np.sqrt(np.sum(mask0))
+      print 'end mean x',mean,std/np.sqrt(len(mask0))
       x_mean=np.append(x_mean,mean)
-      x_err=np.append(x_err,std/np.sqrt(np.sum(mask0)))
+      x_err=np.append(x_err,std/np.sqrt(len(mask0)))
 
     return x_mean,x_err
 
