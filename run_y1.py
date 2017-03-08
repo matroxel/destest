@@ -17,9 +17,10 @@ import src.txt as txt
 #400 seconds to read mcal
 #250 seconds to read i3
 
-goldfile  = '/global/cscratch1/sd/troxel/Y1A1_GOLD_tilename_1_0_3_match_v3.fits'
-i3file    = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_im3shape_3_psfex_2_nbc_2_match_2.fits'
-mcalfile  = '/global/cscratch1/sd/troxel/DES-y1a1-main-001-blind-v3-matched.fits'
+goldfile  = '/global/cscratch1/sd/troxel/y1a1-gold-mof-badregion.fits'
+i3file    = '/global/cscratch1/sd/troxel/y1a1-im3shape_v4-nbc_v2_matched_v3.fits'
+mcalfile  = '/global/cscratch1/sd/troxel/mcal-y1a1-combined-riz-blind-v2-matched.fits'
+bpzfile   = '/global/cscratch1/sd/troxel/BPZ_ngmix_mof_slr_HiZ_combined_matched.fits'
 i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
 mcalepoch = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
 rmfile    = '/global/cscratch1/sd/troxel/redmagicv6.4.11/y1a1_gold_1.0.2c-full_redmapper_v6.4.11_redmagic_combined_troxel.fit'
@@ -27,15 +28,13 @@ psfdir    = '/global/cscratch1/sd/troxel/psf_cats/'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
 i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile)
-rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
-mcal.m1=np.ones(len(mcal.coadd))
-mcal.m2=np.ones(len(mcal.coadd))
-special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
+# rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
+# special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
 
 
-i3epoch = catalog.CatalogStore("i3epoch", 
-    cattype="i3epoch", catdir=i3epochdir, 
-    maxiter=10, cols=["coadd", "row", "col",  "e1", "e2"])
+# i3epoch = catalog.CatalogStore("i3epoch", 
+#     cattype="i3epoch", catdir=i3epochdir, 
+#     maxiter=10, cols=["coadd", "row", "col",  "e1", "e2"])
 
 
 def add_i3_cal_to_epoch(epoch, i3):
@@ -78,18 +77,19 @@ def make_randoms(name, cat, rans_per_object):
 
 
 
-add_i3_cal_to_epoch(i3epoch, i3)
+# add_i3_cal_to_epoch(i3epoch, i3)
 
-add_randoms(i3, 1)
-add_randoms(metacal, 1)
+# add_randoms(i3, 1)
+# add_randoms(metacal, 1)
 
 
 txt.write_methods.heading('---------------',mcal,label='y1_paper',create=True)
 
 y1.y1_plots.mean_e(i3,mcal)
+
 # psf  = y1.y1.load_psf_data(psfdir)
 # y1.y1_plots.psf_whisker(psf)
 # y1.y1_plots.e_whisker(i3epoch,i3,mcalepoch,mcal)
-print "Warning: no metacal epoch file yet!"
-y1.y1_plots.mean_e_epoch(i3epoch, i3epoch)
+# print "Warning: no metacal epoch file yet!"
+# y1.y1_plots.mean_e_epoch(i3epoch, i3epoch)
 

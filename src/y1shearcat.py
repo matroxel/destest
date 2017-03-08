@@ -24,22 +24,21 @@ class y1(object):
     @staticmethod
     def load_data(i3file,mcalfile,goldfile):
 
-        mcal = catalog.CatalogStore('matched_metacal',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cutfunclive=catalog.CatalogMethods.matched_metacal_cut_live(),cattype='mcal',catfile=mcalfile,goldfile=goldfile)
-        mask = mcal.size/mcal.psffwhm>0.5
-        catalog.CatalogMethods.match_cat(mcal,mask)
+        goldcols = []
+
+        mcal = catalog.CatalogStore('matched_metacal',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cutfunclive=catalog.CatalogMethods.matched_metacal_cut_live(),cattype='mcal',catfile=mcalfile,goldfile=goldfile,goldcols=goldcols)
 
         mcal.bs    = True
-        mcal.wt    = True
+        mcal.wt    = False
         mcal.lbins = 20
 
         #np.save('mcal_coadds.npy',np.vstack((mcal.coadd,np.ones(len(mcal.coadd)),np.ones(len(mcal.coadd)),np.zeros(len(mcal.coadd)),np.zeros(len(mcal.coadd)),mcal.w)).T)
 
-        i3 = catalog.CatalogStore('matched_i3',cutfunc=catalog.CatalogMethods.matched_i3_cut(),cattype='i3',catfile=i3file,goldfile=goldfile)
+        i3 = catalog.CatalogStore('matched_i3',cutfunc=catalog.CatalogMethods.matched_i3_cut(),cattype='i3',catfile=i3file,goldfile=goldfile,goldcols=goldcols)
 
         i3.bs    = True
         i3.wt    = True
         i3.lbins = 20
-        i3.w     = 1./(2*0.22**2+i3.cov11+i3.cov22)
 
         #np.save('i3_coadds.npy',np.vstack((i3.coadd,i3.m1,i3.m2,i3.c1,i3.c2,i3.w)).T)
 
