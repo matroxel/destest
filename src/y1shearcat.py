@@ -81,7 +81,7 @@ class y1_plots(object):
         name=fig0.plot_methods.get_filename_str(cat)
         if isinstance(cat,catalog.CatalogStore):
             mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
-        tmp,tmp,arr2,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base([cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,cat.m1,cat.m2,cat.c1,cat.c2,cat.w],val,array,mask,name,log=config.log_val.get(val,False),plot=False)
+        tmp,tmp,arr2,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base(cat,val,array,mask,name,log=config.log_val.get(val,False),plot=False)
 
         if config.log_val.get(val,False):
             arr1=10**arr2
@@ -125,7 +125,7 @@ class y1_plots(object):
 
         plt.figure(2)
 
-        y1_plots.mean_e_subplot(cat1,0,'rgp',2)
+        y1_plots.mean_e_subplot(cat1,0,'rgpp_rp',2)
         y1_plots.mean_e_subplot(cat2,1,'size',2)
 
         plt.tight_layout()
