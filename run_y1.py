@@ -19,7 +19,7 @@ import src.txt as txt
 
 goldfile  = '/global/cscratch1/sd/troxel/y1a1-gold-mof-badregion.fits'
 i3file    = '/global/cscratch1/sd/troxel/y1a1-im3shape_v4-nbc_v2_matched_v5.fits'
-mcalfile  = '/global/cscratch1/sd/troxel/mcal-y1a1-combined-riz-blind-v3-matched.fits'
+mcalfile  = '/global/cscratch1/sd/troxel/mcal-y1a1-combined-riz-blind-v4-matched.fits'
 bpzfile   = '/global/cscratch1/sd/troxel/BPZ_ngmix_mof_slr_HiZ_combined_matched.fits'
 i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
 mcalepoch = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
