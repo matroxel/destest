@@ -55,7 +55,6 @@ class pz_methods(object):
       return
 
     mask0=(pointz>=pzlow)&(pointz<=pzhigh)
-    print pointz,pointw
 
     if nztype=='mean':
       pzdist=pz0.z_mean_full
@@ -189,7 +188,6 @@ class pz_methods(object):
       return hermval(x-m,[1.,0.,0.,ds/6.,dk/24.,0.,ds**2./72.])*pdf
     else:
       return hermval(x-m,[1.,0.,0.,ds/6.,dk/24.])*pdf
-
 
 class pz_spec_validation(object):
 

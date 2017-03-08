@@ -756,7 +756,6 @@ class CatalogMethods(object):
     if shapecuts is not None:
       cutcols=shapecuts['col']
       tmpcols=col_list(cutcols,shapetable,shapetablesheared)
-      print tmpcols
       colex,colist=CatalogMethods.col_exists(tmpcols,shapefits[hdu].get_colnames())
       if colex<1:
         cutcols=[shapetable.get(x,None).lower() for x in shapecuts['col']]

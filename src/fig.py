@@ -1073,3 +1073,128 @@ class plot_methods(object):
     plt.close()
 
     return
+
+
+  @staticmethod
+  def cov_from_fits(fits):
+    import twopoint as tp
+
+    cov = tp.TwoPointFile.from_fits(fits).covmat_info
+    corr = np.zeros_like(cov.covmat)
+    for i in range(0,len(cov.covmat)):
+      for j in range(0,len(cov.covmat)):
+        corr[i,j] = cov.covmat[i,j]/np.sqrt(cov.covmat[i,i]*cov.covmat[j,j])
+
+    cov_eig = np.linalg.eigvals(cov.covmat)
+    corr_eig = np.linalg.eigvals(corr)
+    print 'total cov min, max eigenvalue:',cov_eig.min(),cov_eig.max()
+    print 'total corr min, max eigenvalue:',corr_eig.min(),corr_eig.max()
+    for i,name in enumerate(cov.names):
+      cov_eig = np.linalg.eigvals(cov.covmat[cov.starts[0]:cov.starts[0]+cov.lengths[0],cov.starts[0]:cov.starts[0]+cov.lengths[0]])
+      corr_eig = np.linalg.eigvals(corr[cov.starts[0]:cov.starts[0]+cov.lengths[0],cov.starts[0]:cov.starts[0]+cov.lengths[0]])
+      print name+' cov min, max eigenvalue:',cov_eig.min(),cov_eig.max()
+      print name+' corr min, max eigenvalue:',corr_eig.min(),corr_eig.max()
+      for j in np.where(cov_eig<0)[0]:
+        print name+'neg cov eigenvalues (#,value)',j,cov_eig[j]
+      for j in np.where(corr_eig<0)[0]:
+        print name+'neg corr eigenvalues (#,value)',j,corr_eig[j]
+
+    plt.imshow(cov.covmat,interpolation='nearest',origin='lower',norm=LogNorm())
+    for i in range(len(cov.names)-1):
+      plt.axvline(x=cov.starts[i+1],linestyle='-',color='k')
+      plt.axhline(y=cov.starts[i+1],linestyle='-',color='k')
+    plt.xticks([cov.starts[i]+cov.lengths[i]/2 for i in range(len(cov.names))], (name for name in cov.names))
+    plt.yticks([cov.starts[i]+cov.lengths[i]/2 for i in range(len(cov.names))], (name for name in cov.names))
+    plt.tick_params(axis = 'x',length = 0, pad = 15)
+    plt.tick_params(axis = 'y',length = 0, pad = 5)
+    plt.colorbar(orientation='vertical')
+    plt.savefig('cov.png')
+    plt.close()
+
+    plt.imshow(corr,interpolation='nearest',origin='lower')
+    for i in range(len(cov.names)-1):
+      plt.axvline(x=cov.starts[i+1],linestyle='-',color='k')
+      plt.axhline(y=cov.starts[i+1],linestyle='-',color='k')
+    plt.xticks([cov.starts[i]+cov.lengths[i]/2 for i in range(len(cov.names))], (name for name in cov.names))
+    plt.yticks([cov.starts[i]+cov.lengths[i]/2 for i in range(len(cov.names))], (name for name in cov.names))
+    plt.tick_params(axis = 'x',length = 0, pad = 15)
+    plt.tick_params(axis = 'y',length = 0, pad = 5)
+    plt.colorbar(orientation='vertical')
+    plt.savefig('corr.png')
+    plt.close()
+
+    return
+
+
+  @staticmethod
+  def xi_from_fits(fits,fits2=None):
+    import twopoint as tp
+
+    tpspec = tp.TwoPointFile.from_fits(fits).spectra
+    for l in range(len(tpspec)):
+      name = tpspec[l].name
+      xi0 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
+      pairs0 = xi0.bin_pairs
+      if fits2 is not None:
+        xi1 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
+        pairs1 = xi1.bin_pairs
+
+      for i,j in pairs0:
+        theta = xi0.get_pair(i+1,j+1)[0]
+        xi = xi0.get_pair(i+1,j+1)[1]
+        err = xi0.get_error(i+1,j+1)
+        plt.errorbar(theta,theta*xi,yerr=err,ls='',marker='.')
+        if fits2 is not None:
+          if (i,j) in pairs1:
+            theta1 = xi1.get_pair(i+1,j+1)[0]
+            xi1 = xi1.get_pair(i+1,j+1)[1]
+            err1 = xi1.get_error(i+1,j+1)
+            plt.errorbar(theta1,theta1*xi1,yerr=err1,ls='',marker='.')
+
+        plt.xscale('log')
+        plt.ylabel(name)
+        plt.xlabel('theta')
+        plt.savefig('xi_'+name+'_'+str(i)+'_'+str(j)+'.png')
+        plt.close()
+
+    return
+
+  @staticmethod
+  def nofz_from_fits(fits,fits2=None):
+    import twopoint as tp
+
+    tpspec = tp.TwoPointFile.from_fits(fits).kernels
+    for l in range(len(tpspec)):
+      name = tpspec[l].name
+      z = tpspec[l].z
+      nz = tpspec[l].nbin
+      nofz = tpspec[l].nzs
+
+      if fits2 is not None:
+        tpspec = tp.TwoPointFile.from_fits(fits).kernels
+        name2 = tpspec[l].name
+        z2 = tpspec[l].z
+        nz2 = tpspec[l].nbin
+        nofz2 = tpspec[l].nzs
+
+      plt.figure(figsize=(14,16))
+      for i in range(len(nofz)):
+        ax=plt.subplot(len(nofz),1,i+1)
+        plt.plot(z,nofz[i],color='k',linestyle='-',drawstyle='steps-mid',label=name.replace('_','-'))
+        plt.axvline(x=np.average(z,weights=nofz[i]), linestyle='-',color='k')
+        if fits2 is not None:
+          plt.plot(z2,nofz2[i],color='k',linestyle='-',drawstyle='steps-mid',label=name2.replace('_','-'))
+          plt.axvline(x=np.average(z2,weights=nofz2[i]), linestyle='-',color='k')
+        props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
+        ax.text(0.9, 0.95, 'Bin '+str(i), transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+        plt.ylabel(r'$n(z)$')
+        ax.minorticks_on()
+        if i<len(nofz)-1:
+          ax.set_xticklabels([])
+      plt.xlabel(r'$z$')
+      plt.legend(loc='upper left',ncol=2, frameon=True,prop={'size':12})
+      plt.subplots_adjust(hspace=0,wspace=0)
+      plt.savefig('nofz_'+name+'.png',bbox_inches='tight')
+      plt.close()
+
+
