@@ -83,8 +83,6 @@ class y1_plots(object):
 
         y1_plots.evsrow(cat1,cat2)
 
-
-
     @staticmethod
     def mean_e_subplot(cat,n,val,fig,replace=False):
 
@@ -92,6 +90,7 @@ class y1_plots(object):
         name = 'text/lin_'+name+'_'+val+'.pkl'
 
         if replace|(not os.path.exists(name)):
+
             array=getattr(cat,val)
             if isinstance(cat,catalog.CatalogStore):
                 mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
@@ -159,7 +158,7 @@ class y1_plots(object):
 
         plt.figure(2)
 
-        y1_plots.mean_e_subplot(cat1,0,'rgpp_rp',2,replace=replace)
+        y1_plots.mean_e_subplot(cat1,0,'rgp',2,replace=replace)
         y1_plots.mean_e_subplot(cat2,1,'size',2,replace=replace)
 
         plt.tight_layout()
