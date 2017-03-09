@@ -718,8 +718,8 @@ lbl = {
   'desdm_e1':r'desdm_e1',
   'desdm_e2':r'desdm_e2',
   'desdm_size':r'desdm_size',
-  'size':r'$\sqrt(T)$',
-  'psfsize':r'$\sqrt(T_{\textrm{PSF}})$'
+  'size':r'$T^{1/2}$',
+  'psfsize':r'$T^{1/2}_{\textrm{PSF}}$'
 }
 
 map_name_y1 = {
