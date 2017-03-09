@@ -131,11 +131,10 @@ class y1_plots(object):
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
             plt.xscale('log')
-        # plt.axhline(.004,color='k')
-        # plt.axhline(-.004,color='k')
+        plt.axhline(0.,color='k')
         plt.ylim((-0.0015,0.0015))
         plt.xlabel(config.lbl.get(val,val.replace('_','-')))
-        plt.subtitle(cat.name)
+        plt.title(cat.name)
         if n==1:
             plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
 
