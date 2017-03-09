@@ -134,7 +134,7 @@ class y1_plots(object):
             plt.xscale('log')
         # plt.axhline(.004,color='k')
         # plt.axhline(-.004,color='k')
-        plt.ylim((-0.002,0.002))
+        plt.ylim((-0.0015,0.0015))
         plt.xlabel(config.lbl.get(val,val.replace('_','-')))
         if n==1:
             plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
