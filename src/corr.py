@@ -1255,6 +1255,8 @@ class bandpowers(object):
 
   def bandpowers(self,xip,xim,xiperr=None,ximerr=None,blind=True):
 
+    assert len(xip) == self.nt
+
     if len(np.shape(xip))==1:
       cplus=np.zeros(self.nell)
       cminus=np.zeros(self.nell)
@@ -1276,6 +1278,8 @@ class bandpowers(object):
     return cplus,cminus,np.sqrt(cpluserr),np.sqrt(cminuserr)
 
   def bandpowersEB(self,xip,xim,xiperr=None,ximerr=None,blind=True):
+
+    assert len(xip) == self.nt
 
     if len(np.shape(xip))==1:
       cplus=np.zeros(self.nell)
