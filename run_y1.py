@@ -85,7 +85,7 @@ def make_randoms(name, cat, rans_per_object):
 
 txt.write_methods.heading('---------------',mcal,label='y1_paper',create=True)
 
-y1.y1_plots.mean_e(i3,mcal)
+y1.y1_plots.mean_e(i3,mcal,replace=True)
 
 # psf  = y1.y1.load_psf_data(psfdir)
 # y1.y1_plots.psf_whisker(psf)

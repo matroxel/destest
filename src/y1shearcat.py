@@ -91,7 +91,7 @@ class y1_plots(object):
         name=fig0.plot_methods.get_filename_str(cat)
         name = 'text/lin_'+name+'_'+val+'.pkl'
 
-        if replace|(os.path.exists(name)):
+        if replace|(not os.path.exists(name)):
             array=getattr(cat,val)
             if isinstance(cat,catalog.CatalogStore):
                 mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
