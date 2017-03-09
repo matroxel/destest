@@ -55,6 +55,16 @@ class y1(object):
 class y1_plots(object):
 
     @staticmethod
+    def save_obj(obj, name ):
+        with open('obj/'+ name + '.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def load_obj(name ):
+        with open('obj/' + name + '.pkl', 'rb') as f:
+            return pickle.load(f)
+
+    @staticmethod
     def mean_e(cat1,cat2):
 
         txt.write_methods.heading('Linear Splits',cat1,label='y1_paper',create=False)
@@ -75,25 +85,48 @@ class y1_plots(object):
 
 
     @staticmethod
-    def mean_e_subplot(cat,n,val,fig):
+    def mean_e_subplot(cat,n,val,fig,replace=False):
 
-        array=getattr(cat,val)
         name=fig0.plot_methods.get_filename_str(cat)
-        if isinstance(cat,catalog.CatalogStore):
-            mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
-        tmp,tmp,arr2,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base(cat,val,array,mask,name,log=config.log_val.get(val,False),plot=False)
+        name = '/text/lin_'+name+'_'+val+'.txt'
 
-        if config.log_val.get(val,False):
-            arr1=10**arr2
+        if replace|(os.path.exists(name)):
+            array=getattr(cat,val)
+            if isinstance(cat,catalog.CatalogStore):
+                mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
+            tmp,tmp,arr2,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base(cat,val,array,mask,name,log=config.log_val.get(val,False),plot=False)
+
+            if config.log_val.get(val,False):
+                arr1=10**arr2
+            else:
+                arr1=arr2
+
+            d = {
+
+            'arr1' : arr1,
+            'arr2' : arr2,
+            'e1' : e1,
+            'e2' : e2,
+            'e1err' : e1err,
+            'e2err' : e2err,
+            'm1' : m1,
+            'm2' : m2,
+            'b1' : b1,
+            'b2' : b2
+            }
+
+            y1_plots.save_obj(d,name)
+ 
         else:
-            arr1=arr2
+
+            d = y1_plots.load_obj(name)
 
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
-        plt.errorbar(arr1,e1,yerr=e1err,marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
-        plt.errorbar(arr1,m1*arr2+b1,marker='',linestyle='-',color='r')
-        plt.errorbar(arr1+(arr1[1]-arr1[0])/5.,e2,yerr=e2err,marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
-        plt.errorbar(arr1,m2*arr2+b2,marker='',linestyle='-',color='b')
+        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
+        plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
+        plt.errorbar(d['arr1']+(d['arr1'][1]-d['arr1'][0])/5.,d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
+        plt.errorbar(d['arr1'],d['m2']*d['arr2']+d['b2'],marker='',linestyle='-',color='b')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
