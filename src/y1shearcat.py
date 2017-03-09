@@ -57,8 +57,8 @@ class y1_plots(object):
 
     x_lims = {
     'snr' : (8,400),
-    'psf1': (-0.024,0.44),
-    'psf2': (-0.024,0.44),
+    'psf1': (-0.024,0.044),
+    'psf2': (-0.024,0.044),
     'psfsize': None,
     'psffwhm': (3.,4.8),
     'size': None,
