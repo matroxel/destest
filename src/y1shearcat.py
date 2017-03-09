@@ -55,6 +55,16 @@ class y1(object):
 
 class y1_plots(object):
 
+    x_lims = {
+    'snr' : (8,400),
+    'psf1': (-0.024,0.44),
+    'psf2': (-0.024,0.44),
+    'psfsize': None,
+    'psffwhm': (3.,4.8),
+    'size': None,
+    'rgp': (1.,2.2)
+    }
+
     @staticmethod
     def save_obj(obj, name ):
         with open(name, 'wb') as f:
@@ -121,11 +131,14 @@ class y1_plots(object):
 
             d = y1_plots.load_obj(name)
 
+        if val in ['size','psfsize']:
+            arr1=np.sqrt(arr1)
+
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
         plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
         plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
-        plt.errorbar(d['arr1']+(d['arr1'][1]-d['arr1'][0])/5.,d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
+        plt.errorbar(d['arr1']*1.1,d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
         plt.errorbar(d['arr1'],d['m2']*d['arr2']+d['b2'],marker='',linestyle='-',color='b')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
@@ -133,6 +146,8 @@ class y1_plots(object):
             plt.xscale('log')
         plt.axhline(0.,color='k')
         plt.ylim((-0.0015,0.0015))
+        if xlims[val] is not None:
+            plt.xlim(xlims[val])
         plt.xlabel(config.lbl.get(val,val.replace('_','-')))
         plt.title(cat.name)
         if n==1:

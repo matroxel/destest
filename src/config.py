@@ -717,7 +717,9 @@ lbl = {
   'erin_size':r'erin_size',
   'desdm_e1':r'desdm_e1',
   'desdm_e2':r'desdm_e2',
-  'desdm_size':r'desdm_size'
+  'desdm_size':r'desdm_size',
+  'size':r'$\sqrt(T)$',
+  'psfsize':r'$\sqrt(T_{\textrm{PSF}})$'
 }
 
 map_name_y1 = {
