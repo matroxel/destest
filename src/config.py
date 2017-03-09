@@ -613,7 +613,7 @@ log_val = {
   'psfrec_g_2':False,
   'psfrec_T':False,
   'time_last_fit':True,
-  'size':Fales
+  'size':False
 
 }
 
