@@ -65,15 +65,15 @@ class y1_plots(object):
             return pickle.load(f)
 
     @staticmethod
-    def mean_e(cat1,cat2):
+    def mean_e(cat1,cat2,replace=False):
 
         txt.write_methods.heading('Linear Splits',cat1,label='y1_paper',create=False)
 
-        y1_plots.evspsf1(cat1,cat2)
-        y1_plots.evspsf2(cat1,cat2)
-        y1_plots.evssnr(cat1,cat2)
-        y1_plots.evsradius(cat1,cat2)
-        y1_plots.evspsfsize(cat1,cat2)
+        y1_plots.evspsf1(cat1,cat2,replace=replace)
+        y1_plots.evspsf2(cat1,cat2,replace=replace)
+        y1_plots.evssnr(cat1,cat2,replace=replace)
+        y1_plots.evsradius(cat1,cat2,replace=replace)
+        y1_plots.evspsfsize(cat1,cat2,replace=replace)
 
     @staticmethod
     def mean_e_epoch(cat1,cat2):
@@ -140,12 +140,12 @@ class y1_plots(object):
 
 
     @staticmethod
-    def evssnr(cat1,cat2):
+    def evssnr(cat1,cat2,replace=False):
 
         plt.figure(1)
 
-        y1_plots.mean_e_subplot(cat1,0,'snr',1)
-        y1_plots.mean_e_subplot(cat2,1,'snr',1)
+        y1_plots.mean_e_subplot(cat1,0,'snr',1,replace=replace)
+        y1_plots.mean_e_subplot(cat2,1,'snr',1,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_snr.pdf', bbox_inches='tight')
@@ -154,12 +154,12 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def evsradius(cat1,cat2):
+    def evsradius(cat1,cat2,replace=False):
 
         plt.figure(2)
 
-        y1_plots.mean_e_subplot(cat1,0,'rgpp_rp',2)
-        y1_plots.mean_e_subplot(cat2,1,'size',2)
+        y1_plots.mean_e_subplot(cat1,0,'rgpp_rp',2,replace=replace)
+        y1_plots.mean_e_subplot(cat2,1,'size',2,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_radius.pdf', bbox_inches='tight')
@@ -168,12 +168,12 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def evspsf1(cat1,cat2):
+    def evspsf1(cat1,cat2,replace=False):
 
         plt.figure(3)
 
-        y1_plots.mean_e_subplot(cat1,0,'psf1',3)
-        y1_plots.mean_e_subplot(cat2,1,'psf1',3)
+        y1_plots.mean_e_subplot(cat1,0,'psf1',3,replace=replace)
+        y1_plots.mean_e_subplot(cat2,1,'psf1',3,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psf1.pdf', bbox_inches='tight')
@@ -182,12 +182,12 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def evspsf2(cat1,cat2):
+    def evspsf2(cat1,cat2,replace=False):
 
         plt.figure(4)
 
-        y1_plots.mean_e_subplot(cat1,0,'psf2',4)
-        y1_plots.mean_e_subplot(cat2,1,'psf2',4)
+        y1_plots.mean_e_subplot(cat1,0,'psf2',4,replace=replace)
+        y1_plots.mean_e_subplot(cat2,1,'psf2',4,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psf2.pdf', bbox_inches='tight')
@@ -196,12 +196,12 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def evspsfsize(cat1,cat2):
+    def evspsfsize(cat1,cat2,replace=False):
 
         plt.figure(5)
 
-        y1_plots.mean_e_subplot(cat1,0,'psffwhm',5)
-        y1_plots.mean_e_subplot(cat2,1,'psffwhm',5)
+        y1_plots.mean_e_subplot(cat1,0,'psffwhm',5,replace=replace)
+        y1_plots.mean_e_subplot(cat2,1,'psffwhm',5,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
@@ -210,12 +210,12 @@ class y1_plots(object):
         return
 
 
-    def evsrow(i3epoch,mcepoch):
+    def evsrow(i3epoch,mcepoch,replace=False):
 
         plt.figure(6)
 
-        y1_plots.mean_e_subplot(i3epoch,0,'row',6)
-        y1_plots.mean_e_subplot(mcepoch,1,'row',6)
+        y1_plots.mean_e_subplot(i3epoch,0,'row',6,replace=replace)
+        y1_plots.mean_e_subplot(mcepoch,1,'row',6,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_ccdrow.pdf', bbox_inches='tight')
@@ -223,18 +223,18 @@ class y1_plots(object):
 
 
     @staticmethod
-    def psf_whisker(psf):
+    def psf_whisker(psf,replace=False):
 
         psf.dpsf1 = psf.psf1-psf.e1
         psf.dpsf2 = psf.psf2-psf.e2
 
-        y1_plots.whiskerplot(psf,'psf',6)
-        y1_plots.whiskerplot(psf,'dpsf',7)
+        y1_plots.whiskerplot(psf,'psf',6,replace=replace)
+        y1_plots.whiskerplot(psf,'dpsf',7,replace=replace)
 
         return
 
     @staticmethod
-    def e_whisker(cat1dir,cat1,cat2dir,cat2):
+    def e_whisker(cat1dir,cat1,cat2dir,cat2,replace=False):
 
         cols=['coadd','expnum','ccd','row','col']
         epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
@@ -247,7 +247,7 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def whiskerplot(cat,col,fig):
+    def whiskerplot(cat,col,fig,replace=False):
 
         if col == 'psf':
             key = r'e_{PSF}'
