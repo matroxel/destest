@@ -88,7 +88,7 @@ class y1_plots(object):
     def mean_e_subplot(cat,n,val,fig,replace=False):
 
         name=fig0.plot_methods.get_filename_str(cat)
-        name = '/text/lin_'+name+'_'+val+'.pkl'
+        name = 'text/lin_'+name+'_'+val+'.pkl'
 
         if replace|(os.path.exists(name)):
             array=getattr(cat,val)
