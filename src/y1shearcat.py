@@ -138,7 +138,7 @@ class y1_plots(object):
         ax=plt.subplot(2,1,n)
         plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
         plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
-        plt.errorbar(d['arr1']*1.1,d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
+        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
         plt.errorbar(d['arr1'],d['m2']*d['arr2']+d['b2'],marker='',linestyle='-',color='b')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
