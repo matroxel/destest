@@ -27,7 +27,7 @@ class y1(object):
 
         goldcols = []
 
-        mcal = catalog.CatalogStore('matched_metacal',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cutfunclive=catalog.CatalogMethods.matched_metacal_cut_live(),cattype='mcal',catfile=mcalfile,goldfile=goldfile,goldcols=goldcols)
+        mcal = catalog.CatalogStore('metacalibration',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cutfunclive=catalog.CatalogMethods.matched_metacal_cut_live(),cattype='mcal',catfile=mcalfile,goldfile=goldfile,goldcols=goldcols)
 
         mcal.bs    = True
         mcal.wt    = False
@@ -35,7 +35,7 @@ class y1(object):
 
         #np.save('mcal_coadds.npy',np.vstack((mcal.coadd,np.ones(len(mcal.coadd)),np.ones(len(mcal.coadd)),np.zeros(len(mcal.coadd)),np.zeros(len(mcal.coadd)),mcal.w)).T)
 
-        i3 = catalog.CatalogStore('matched_i3',cutfunc=catalog.CatalogMethods.matched_i3_cut(),cattype='i3',catfile=i3file,goldfile=goldfile,goldcols=goldcols)
+        i3 = catalog.CatalogStore('im3shape',cutfunc=catalog.CatalogMethods.matched_i3_cut(),cattype='i3',catfile=i3file,goldfile=goldfile,goldcols=goldcols)
 
         i3.bs    = True
         i3.wt    = True
@@ -135,6 +135,7 @@ class y1_plots(object):
         # plt.axhline(-.004,color='k')
         plt.ylim((-0.0015,0.0015))
         plt.xlabel(config.lbl.get(val,val.replace('_','-')))
+        plt.subtitle(cat.name)
         if n==1:
             plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
 
@@ -201,7 +202,7 @@ class y1_plots(object):
         plt.figure(5)
 
         y1_plots.mean_e_subplot(cat1,0,'psffwhm',5,replace=replace)
-        y1_plots.mean_e_subplot(cat2,1,'psffwhm',5,replace=replace)
+        y1_plots.mean_e_subplot(cat2,1,'psfsize',5,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
