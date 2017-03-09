@@ -132,7 +132,7 @@ class y1_plots(object):
             d = y1_plots.load_obj(name)
 
         if val in ['size','psfsize']:
-            arr1=np.sqrt(arr1)
+            d['arr1']=np.sqrt(d['arr1'])
 
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
