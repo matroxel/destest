@@ -301,7 +301,7 @@ class xi_2pt(object):
       elif cata.cat=='mcal':
         pass
       else:
-        catma=treecorr.Catalog(k=ms, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        catma=treecorr.Catalog(k=m1, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
 
     elif (corr=='NN')|((catb!=None)&(corr in ['NG','NK'])):
       catxa=treecorr.Catalog(w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
@@ -363,7 +363,7 @@ class xi_2pt(object):
         elif catb.cat=='mcal':
           pass
         else:
-          catmb=treecorr.Catalog(k=ms, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+          catmb=treecorr.Catalog(k=m1, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
         catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if ran:
