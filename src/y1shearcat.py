@@ -56,12 +56,12 @@ class y1_plots(object):
 
     @staticmethod
     def save_obj(obj, name ):
-        with open('obj/'+ name + '.pkl', 'wb') as f:
+        with open(name, 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def load_obj(name ):
-        with open('obj/' + name + '.pkl', 'rb') as f:
+        with open(name, 'rb') as f:
             return pickle.load(f)
 
     @staticmethod
@@ -88,7 +88,7 @@ class y1_plots(object):
     def mean_e_subplot(cat,n,val,fig,replace=False):
 
         name=fig0.plot_methods.get_filename_str(cat)
-        name = '/text/lin_'+name+'_'+val+'.txt'
+        name = '/text/lin_'+name+'_'+val+'.pkl'
 
         if replace|(os.path.exists(name)):
             array=getattr(cat,val)
