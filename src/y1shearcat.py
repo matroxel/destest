@@ -146,8 +146,8 @@ class y1_plots(object):
             plt.xscale('log')
         plt.axhline(0.,color='k')
         plt.ylim((-0.0015,0.0015))
-        if xlims[val] is not None:
-            plt.xlim(xlims[val])
+        if y1_plots.x_lims[val] is not None:
+            plt.xlim(y1_plots.x_lims[val])
         plt.xlabel(config.lbl.get(val,val.replace('_','-')))
         plt.title(cat.name)
         if n==1:
