@@ -1208,7 +1208,7 @@ class plot_methods(object):
       nofz = tpspec[l].nzs
 
       if fits2 is not None:
-        tpspec = tp.TwoPointFile.from_fits(fits).kernels
+        tpspec = tp.TwoPointFile.from_fits(fits2).kernels
         name2 = tpspec[l].name
         z2 = tpspec[l].z
         nz2 = tpspec[l].nbin
