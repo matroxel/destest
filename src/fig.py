@@ -1180,7 +1180,7 @@ class plot_methods(object):
             ax.errorbar(theta1,xi1,yerr=err1,ls='',marker='.',color='r')
             ax.axhline(y=0,ls='-',color='k')
         plt.yscale('log')
-        plt.ylims((1e-8,5e-4))
+        plt.ylim((1e-8,5e-4))
         if j!=np.max(xi0.bin1):
           ax.set_xticklabels([])
         else:
