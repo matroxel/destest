@@ -1153,11 +1153,11 @@ class plot_methods(object):
         if i==np.max(xi0.bin1):
           plt.setp(ax[i-1,j-1].get_xticklabels(),visible=False)
         else:
-          ax[i-1,j-1].xlabel('theta')
+          plt.xlabel('theta')
         if j==np.max(xi0.bin2):
           plt.setp(ax[i-1,j-1].get_yticklabels(),visible=False)
         else:
-          ax[i-1,j-1].ylabel(name)
+          plt.ylabel(name)
         ax[i-1,j-1].xscale('log')
       f.subplots_adjust(hspace=0,wspace=0)
       plt.savefig('xi_'+name+'.png')
