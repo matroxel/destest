@@ -1179,6 +1179,8 @@ class plot_methods(object):
             err1 = xi01.get_error(i,j)
             ax.errorbar(theta1,xi1,yerr=err1,ls='',marker='.',color='r')
             ax.axhline(y=0,ls='-',color='k')
+        plt.yscale('log')
+        plt.ylims((1e-8,5e-4))
         if j!=np.max(xi0.bin1):
           ax.set_xticklabels([])
         else:
@@ -1188,7 +1190,6 @@ class plot_methods(object):
         else:
           plt.ylabel(name)
         plt.xscale('log')
-        plt.yscale('log')
       plt.subplots_adjust(hspace=0,wspace=0)
       plt.savefig('xi_'+name+'_log.png')
       plt.close()
