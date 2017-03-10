@@ -1185,6 +1185,8 @@ class plot_methods(object):
         nz2 = tpspec[l].nbin
         nofz2 = tpspec[l].nzs
 
+      print z,nz,nofz
+
       plt.figure(figsize=(14,16))
       for i in range(len(nofz)):
         ax=plt.subplot(len(nofz),1,i+1)
