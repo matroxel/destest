@@ -1185,11 +1185,9 @@ class plot_methods(object):
         nz2 = tpspec[l].nbin
         nofz2 = tpspec[l].nzs
 
-      print z,nz,nofz
-
       plt.figure(figsize=(14,16))
-      for i in range(len(nofz)):
-        ax=plt.subplot(len(nofz),1,i+1)
+      for i in range(nz):
+        ax=plt.subplot(nz,1,i+1)
         plt.plot(z,nofz[i],color='k',linestyle='-',drawstyle='steps-mid',label=name.replace('_','-'))
         plt.axvline(x=np.average(z,weights=nofz[i]), linestyle='-',color='k')
         if fits2 is not None:
@@ -1199,7 +1197,7 @@ class plot_methods(object):
         ax.text(0.9, 0.95, 'Bin '+str(i), transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
         plt.ylabel(r'$n(z)$')
         ax.minorticks_on()
-        if i<len(nofz)-1:
+        if i<nz-1:
           ax.set_xticklabels([])
       plt.xlabel(r'$z$')
       plt.legend(loc='upper left',ncol=2, frameon=True,prop={'size':12})
