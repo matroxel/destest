@@ -1138,28 +1138,28 @@ class plot_methods(object):
         xi01 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
         pairs1 = xi01.bin_pairs
 
-      f, ax = plt.subplots(np.max(xi0.bin1), np.max(xi0.bin2), sharex='col', sharey='row')
       for i,j in pairs0:
-        theta = xi0.get_pair(i+1,j+1)[0]
-        xi = xi0.get_pair(i+1,j+1)[1]
-        err = xi0.get_error(i+1,j+1)
-        ax[i-1,j-1].errorbar(theta,theta*xi,yerr=err,ls='',marker='.')
+        ax=plt.subplot2grid((np.max(xi0.bin1), np.max(xi0.bin2)), (i-1, j-1))
+        theta = xi0.get_pair(i,j)[0]
+        xi = xi0.get_pair(i,j)[1]
+        err = xi0.get_error(i,j)
+        ax.errorbar(theta,theta*xi,yerr=err,ls='',marker='.')
         if fits2 is not None:
           if (i,j) in pairs1:
-            theta1 = xi01.get_pair(i+1,j+1)[0]
-            xi1 = xi01.get_pair(i+1,j+1)[1]
-            err1 = xi01.get_error(i+1,j+1)
-            ax[i-1,j-1].errorbar(theta1,theta1*xi1,yerr=err1,ls='',marker='.')
+            theta1 = xi01.get_pair(i,j)[0]
+            xi1 = xi01.get_pair(i,j)[1]
+            err1 = xi01.get_error(i,j)
+            ax.errorbar(theta1,theta1*xi1,yerr=err1,ls='',marker='.')
         if j==np.max(xi0.bin1):
-          plt.setp(ax[i-1,j-1].get_xticklabels(),visible=False)
+          ax.set_xticklabels([])
         else:
           plt.xlabel('theta')
         if i==np.max(xi0.bin2):
-          plt.setp(ax[i-1,j-1].get_yticklabels(),visible=False)
+          ax.set_yticklabels([])
         else:
           plt.ylabel(name)
         plt.xscale('log')
-      f.subplots_adjust(hspace=0,wspace=0)
+      plt.subplots_adjust(hspace=0,wspace=0)
       plt.savefig('xi_'+name+'.png')
       plt.close()
 
