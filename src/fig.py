@@ -1156,7 +1156,7 @@ class plot_methods(object):
           ax.set_xticklabels([])
         else:
           plt.xlabel('theta')
-        if i-1!=-1:
+        if i-1!=0:
           ax.set_yticklabels([])
         else:
           plt.ylabel(name)
