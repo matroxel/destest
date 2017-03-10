@@ -1143,13 +1143,13 @@ class plot_methods(object):
         theta = xi0.get_pair(i,j)[0]
         xi = xi0.get_pair(i,j)[1]
         err = xi0.get_error(i,j)
-        ax.errorbar(theta,theta*xi,yerr=err*xi,ls='',marker='.',color = 'b')
+        ax.errorbar(theta,theta*xi*1e4,yerr=err*theta*1e4,ls='',marker='.',color = 'b')
         if fits2 is not None:
           if (i,j) in pairs1:
             theta1 = xi01.get_pair(i,j)[0]
             xi1 = xi01.get_pair(i,j)[1]
             err1 = xi01.get_error(i,j)
-            ax.errorbar(theta1,theta1*xi1,yerr=err1*xi1,ls='',marker='.',color='r')
+            ax.errorbar(theta1,theta1*xi1*1e4,yerr=err1*theta1*1e4,ls='',marker='.',color='r')
         if j!=np.max(xi0.bin1):
           ax.set_xticklabels([])
         else:
