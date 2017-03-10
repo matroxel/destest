@@ -83,7 +83,6 @@ class plot_methods(object):
   def plot_2D_hist(x1,y1,bins=config.cfg.get('hbins',500),
     xname='',yname='',xlabel='',ylabel='',xtile='',ytile='',
     do_abs=True, do_save=True
-
     ):
 
     print 'hist 2D',xlabel,ylabel
@@ -1136,26 +1135,28 @@ class plot_methods(object):
       xi0 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
       pairs0 = xi0.bin_pairs
       if fits2 is not None:
-        xi1 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
-        pairs1 = xi1.bin_pairs
+        xi01 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
+        pairs1 = xi01.bin_pairs
 
+      f, ax = plt.subplots(2, 2, sharex='col', sharey='row')
       for i,j in pairs0:
         theta = xi0.get_pair(i+1,j+1)[0]
         xi = xi0.get_pair(i+1,j+1)[1]
         err = xi0.get_error(i+1,j+1)
-        plt.errorbar(theta,theta*xi,yerr=err,ls='',marker='.')
+        ax[i,j].errorbar(theta,theta*xi,yerr=err,ls='',marker='.')
         if fits2 is not None:
           if (i,j) in pairs1:
-            theta1 = xi1.get_pair(i+1,j+1)[0]
-            xi1 = xi1.get_pair(i+1,j+1)[1]
-            err1 = xi1.get_error(i+1,j+1)
-            plt.errorbar(theta1,theta1*xi1,yerr=err1,ls='',marker='.')
-
-        plt.xscale('log')
-        plt.ylabel(name)
-        plt.xlabel('theta')
-        plt.savefig('xi_'+name+'_'+str(i)+'_'+str(j)+'.png')
-        plt.close()
+            theta1 = xi01.get_pair(i+1,j+1)[0]
+            xi1 = xi01.get_pair(i+1,j+1)[1]
+            err1 = xi01.get_error(i+1,j+1)
+            ax[i,j].errorbar(theta1,theta1*xi1,yerr=err1,ls='',marker='.')
+        plt.setp(ax[i,j].get_xticklabels(),visible=False)
+      f.subplots_adjust(hspace=0,wspace=0)
+      plt.xscale('log')
+      plt.ylabel(name)
+      plt.xlabel('theta')
+      plt.savefig('xi_'+name+'_'+str(i)+'_'+str(j)+'.png')
+      plt.close()
 
     return
 
