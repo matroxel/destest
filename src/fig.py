@@ -1135,7 +1135,7 @@ class plot_methods(object):
       xi0 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
       pairs0 = xi0.bin_pairs
       if fits2 is not None:
-        xi01 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
+        xi01 = tp.TwoPointFile.from_fits(fits2).get_spectrum(name)
         pairs1 = xi01.bin_pairs
 
       for i,j in pairs0:
@@ -1150,11 +1150,11 @@ class plot_methods(object):
             xi1 = xi01.get_pair(i,j)[1]
             err1 = xi01.get_error(i,j)
             ax.errorbar(theta1,theta1*xi1,yerr=err1*xi1,ls='',marker='.',color='r')
-        if j==np.max(xi0.bin1):
+        if j!=np.max(xi0.bin1):
           ax.set_xticklabels([])
         else:
           plt.xlabel('theta')
-        if i==np.max(xi0.bin2):
+        if i-1!=0:
           ax.set_yticklabels([])
         else:
           plt.ylabel(name)
