@@ -1138,7 +1138,7 @@ class plot_methods(object):
         xi01 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
         pairs1 = xi01.bin_pairs
 
-      f, ax = plt.subplots(2, 2, sharex='col', sharey='row')
+      f, ax = plt.subplots(np.max(xi0.bin1), np.max(xi0.bin2), sharex='col', sharey='row')
       for i,j in pairs0:
         theta = xi0.get_pair(i+1,j+1)[0]
         xi = xi0.get_pair(i+1,j+1)[1]
