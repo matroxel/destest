@@ -1139,7 +1139,7 @@ class plot_methods(object):
         pairs1 = xi01.bin_pairs
 
       for i,j in pairs0:
-        ax=plt.subplot2grid((np.max(xi0.bin1), np.max(xi0.bin2)), (i-1, j-1))
+        ax=plt.subplot2grid((np.max(xi0.bin1), np.max(xi0.bin2)), (j-1, i-1))
         theta = xi0.get_pair(i,j)[0]
         xi = xi0.get_pair(i,j)[1]
         err = xi0.get_error(i,j)
