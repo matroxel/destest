@@ -1165,6 +1165,34 @@ class plot_methods(object):
       plt.savefig('xi_'+name+'.png')
       plt.close()
 
+      for i,j in pairs0:
+        ax=plt.subplot2grid((np.max(xi0.bin1), np.max(xi0.bin2)), (j-1, i-1))
+        theta = xi0.get_pair(i,j)[0]
+        xi = xi0.get_pair(i,j)[1]
+        err = xi0.get_error(i,j)
+        ax.axhline(y=0,ls='-',color='k')
+        ax.errorbar(theta,xi,yerr=err,ls='',marker='.',color = 'b')
+        if fits2 is not None:
+          if (i,j) in pairs1:
+            theta1 = xi01.get_pair(i,j)[0]
+            xi1 = xi01.get_pair(i,j)[1]
+            err1 = xi01.get_error(i,j)
+            ax.errorbar(theta1,xi1,yerr=err1,ls='',marker='.',color='r')
+            ax.axhline(y=0,ls='-',color='k')
+        if j!=np.max(xi0.bin1):
+          ax.set_xticklabels([])
+        else:
+          plt.xlabel('theta')
+        if i-1!=-1:
+          ax.set_yticklabels([])
+        else:
+          plt.ylabel(name)
+        plt.xscale('log')
+        plt.yscale('log')
+      plt.subplots_adjust(hspace=0,wspace=0)
+      plt.savefig('xi_'+name+'_log.png')
+      plt.close()
+
     return
 
   @staticmethod
