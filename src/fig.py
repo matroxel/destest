@@ -1158,7 +1158,7 @@ class plot_methods(object):
           plt.setp(ax[i-1,j-1].get_yticklabels(),visible=False)
         else:
           plt.ylabel(name)
-        ax[i-1,j-1].xscale('log')
+        plt.xscale('log')
       f.subplots_adjust(hspace=0,wspace=0)
       plt.savefig('xi_'+name+'.png')
       plt.close()
