@@ -1200,6 +1200,7 @@ class plot_methods(object):
       plt.xlabel(r'$z$')
       plt.legend(loc='upper left',ncol=2, frameon=True,prop={'size':12})
       plt.subplots_adjust(hspace=0,wspace=0)
+      plt.figure(figsize=(10,10))
       plt.savefig('nofz_'+name+'.png',bbox_inches='tight')
       plt.close()
 
