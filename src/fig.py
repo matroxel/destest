@@ -1150,11 +1150,11 @@ class plot_methods(object):
             xi1 = xi01.get_pair(i+1,j+1)[1]
             err1 = xi01.get_error(i+1,j+1)
             ax[i-1,j-1].errorbar(theta1,theta1*xi1,yerr=err1,ls='',marker='.')
-        if i==np.max(xi0.bin1):
+        if j==np.max(xi0.bin1):
           plt.setp(ax[i-1,j-1].get_xticklabels(),visible=False)
         else:
           plt.xlabel('theta')
-        if j==np.max(xi0.bin2):
+        if i==np.max(xi0.bin2):
           plt.setp(ax[i-1,j-1].get_yticklabels(),visible=False)
         else:
           plt.ylabel(name)
