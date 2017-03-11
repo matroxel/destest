@@ -1136,13 +1136,12 @@ class plot_methods(object):
         continue
       xi0 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
       pairs0 = xi0.bin_pairs
-      print 'pairs',pairs0
       if fits2 is not None:
         xi01 = tp.TwoPointFile.from_fits(fits2).get_spectrum(name)
         pairs1 = xi01.bin_pairs
 
       for i,j in pairs0:
-        ax=plt.subplot2grid((np.max(xi0.bin1), np.max(xi0.bin2)), (j-1, i-1))
+        ax=plt.subplot2grid((np.max(xi0.bin2), np.max(xi0.bin1)), (j-1, i-1))
         theta = xi0.get_pair(i,j)[0]
         xi = xi0.get_pair(i,j)[1]
         err = xi0.get_error(i,j)
