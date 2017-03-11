@@ -1132,8 +1132,11 @@ class plot_methods(object):
     tpspec = tp.TwoPointFile.from_fits(fits).spectra
     for l in range(len(tpspec)):
       name = tpspec[l].name
+      if name != 'gammat':
+        continue
       xi0 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
       pairs0 = xi0.bin_pairs
+      print 'pairs',pairs0
       if fits2 is not None:
         xi01 = tp.TwoPointFile.from_fits(fits2).get_spectrum(name)
         pairs1 = xi01.bin_pairs
