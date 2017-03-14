@@ -934,15 +934,15 @@ class bandpowers(object):
 
     Mp,Mm=self.M()
 
-    if self.size>1:
+    # if self.size>1:
 
-      x=np.zeros((self.nt*self.nt))
-      y=np.zeros((self.nt*self.nt))
+    #   x=np.zeros((self.nt*self.nt))
+    #   y=np.zeros((self.nt*self.nt))
 
-      self.comm.Reduce([Mp, MPI.DOUBLE],[x, MPI.DOUBLE],op=MPI.SUM,root=0)
-      self.comm.Reduce([Mm, MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM,root=0)
-      Mp=x
-      Mm=y
+    #   self.comm.Reduce([Mp, MPI.DOUBLE],[x, MPI.DOUBLE],op=MPI.SUM,root=0)
+    #   self.comm.Reduce([Mm, MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM,root=0)
+    #   Mp=x
+    #   Mm=y
 
     if self.rank==0:
       self.Mp=Mp.reshape((self.nt,self.nt))
@@ -1064,14 +1064,15 @@ class bandpowers(object):
     def func0(t1,t2,i,j):
       return self.window_theta_geometric(t1,i)*self.window_theta_geometric(t2,j)*(4./t2**2-12.*t1**2/t2**4)*(np.sign(t2-t1)+1)/2.
 
-    def func(i,j):
-      # mathematica output of integral - phi is j (k in paper)
-      if (i==j):
-        return (8.*self.tmax[j]**2*self.tmin[j]**2*(1.-np.log(self.tmax[j]/self.tmin[j]))-2.*self.tmax[j]**4-6.*self.tmin[j]**4)/(self.tmax[j]**3-self.tmax[j]*self.tmin[j]**2)**2
-      elif (j>i):
-        return 8.*np.log(self.tmax[j]/self.tmin[j])/(self.tmax[j]**2-self.tmin[j]**2)-6.*(self.tmax[i]**2+self.tmin[i]**2)/self.tmax[j]**2/self.tmin[j]**2
+    def func(k,i):
+      # mathematica output of integral - phi is k
+      if (i==k):
+        return (-2.*self.tmax[k]**4-6.*self.tmin[k]**4+8*self.tmax[k]**2*self.tmin[k]**2*(1-np.log(self.tmax[k])+np.log(self.tmin[k])))/(self.tmax[k]**3-self.tmax[k]*self.tmin[k]**2)**2
+      elif (k>i):
+        return 8.*(np.log(self.tmax[k])-np.log(self.tmin[k]))/(self.tmax[k]**2-self.tmin[k]**2)-6.*(self.tmax[i]**2+self.tmin[i]**2)/self.tmax[k]**2/self.tmin[k]**2
       else:
         return 0.
+
 
     # def func(i,k):
     #   if k>i:
@@ -1098,19 +1099,19 @@ class bandpowers(object):
     Mp=np.zeros((self.nt*self.nt))
     for k in range(self.nt):
       for i in range(self.nt):
-        Mp[k*self.nt+i]=func(i,k)/self.norm[k]
+        Mp[k*self.nt+i]=func(k,i)/self.norm[k]
         if i==k:
           Mp[k*self.nt+i]+=1.
 
     def func0(t1,t2,i,j):
       return self.window_theta_geometric(t1,i)*self.window_theta_geometric(t2,j)*(4./t1**2-12.*t2**2/t1**4)*(np.sign(t1-t2)+1)/2.
 
-    def func(i,j):
-      # mathematica output of integral
-      if (i==j):
-        return (8.*self.tmax[j]**2*self.tmin[j]**2*(1.-np.log(self.tmax[j]/self.tmin[j]))-2.*self.tmax[j]**4-6.*self.tmin[j]**4)/(self.tmax[j]**3-self.tmax[j]*self.tmin[j]**2)**2
-      elif (j<i):
-        return 8.*np.log(self.tmax[i]/self.tmin[i])/(self.tmax[i]**2-self.tmin[i]**2)-6.*(self.tmax[j]**2+self.tmin[j]**2)/self.tmax[i]**2/self.tmin[i]**2
+    def func(k,i):
+      # mathematica output of integral - phi is k
+      if (i==k):
+        return (-2.*self.tmax[i]**4-6.*self.tmin[i]**4+8*self.tmax[i]**2*self.tmin[i]**2*(1-np.log(self.tmax[i])+np.log(self.tmin[i])))/(self.tmax[i]**3-self.tmax[i]*self.tmin[i]**2)**2
+      elif (k>i):
+        return 8.*(np.log(self.tmax[i])-np.log(self.tmin[i]))/(self.tmax[i]**2-self.tmin[i]**2)-6.*(self.tmax[k]**2+self.tmin[k]**2)/self.tmax[i]**2/self.tmin[i]**2
       else:
         return 0.
 
@@ -1138,7 +1139,7 @@ class bandpowers(object):
     Mm=np.zeros((self.nt*self.nt))
     for k in range(self.nt):
       for i in range(self.nt):
-        Mm[k*self.nt+i]=func(i,k)/self.norm[k]
+        Mm[k*self.nt+i]=func(k,i)/self.norm[k]
         if i==k:
           Mm[k*self.nt+i]+=1.
 
