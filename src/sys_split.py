@@ -366,7 +366,6 @@ class split_methods(object):
     else:
       mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
 
-
     print 'after mask ',time.time()-t0
     if cat.wt:
       edge=lin.linear_methods.find_bin_edges(array[mask],cat.sbins,w=cat.w[mask])
@@ -417,7 +416,12 @@ class split_methods(object):
         nz = cat.pzstore.pz_full
       else:
         nz = cat.pz
-      h0,b0=np.histogram(nz[mask],bins=binnum)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,xi=True)
+      if cat.wt:
+        weights = w * (m1+m2)/2.
+      else:
+        weights = (m1+m2)/2.
+      h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
       w=np.ones(len(nz))
       print 'w0',len(w)
       for j in range(cat.sbins):
@@ -425,7 +429,7 @@ class split_methods(object):
           binmask=(bins==j)&mask
         else:
           binmask=bins[j]
-        h,b=np.histogram(nz[binmask],bins=b0)
+        h,b=np.histogram(nz[binmask],bins=b0,weights=weights[binmask])
         for k in range(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
           if cat.cat!='mcal':

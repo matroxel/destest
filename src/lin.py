@@ -186,14 +186,15 @@ class linear_methods(object):
     print len(e1),len(e2),len(w),m1,m2
     wm1s=np.sum(w*m1)
     wm2s=np.sum(w*m2)
-    ww=np.sum(w**2)
+    wm1s2=np.sum(w*m1**2)
+    wm2s2=np.sum(w*m2**2)
     mean1=np.sum(w*e1)/wm1s
     mean2=np.sum(w*e2)/wm2s
     if full:
-      std1=np.sqrt(np.sum(w*(e1-mean1)**2)/wm1s)
-      std2=np.sqrt(np.sum(w*(e2-mean2)**2)/wm2s)
-      rms1=np.sqrt(np.sum((w*e1)**2)/ww)
-      rms2=np.sqrt(np.sum((w*e2)**2)/ww)
+      std1=np.sqrt(np.sum(w*(e1-mean1)**2)/wm1s2) 
+      std2=np.sqrt(np.sum(w*(e2-mean2)**2)/wm2s2)
+      rms1=np.sqrt(np.sum((w*e1)**2)/wm1s)
+      rms2=np.sqrt(np.sum((w*e2)**2)/wm2s)
 
       return mean1,mean2,std1,std2,rms1,rms2
     else:

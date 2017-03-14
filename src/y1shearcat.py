@@ -23,7 +23,9 @@ import src.corr as corr
 class y1(object):
 
     @staticmethod
-    def load_data(i3file,mcalfile,goldfile):
+    def load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file):
+
+        bpz = catalog.PZStore('bpz',setup=True,pztype='bpz',filetype='fits',file=bpz0file,sheared=True,nofzfile=bpzfile)
 
         goldcols = []
 
@@ -32,6 +34,7 @@ class y1(object):
         mcal.bs    = True
         mcal.wt    = False
         mcal.lbins = 20
+        mcal.add_pz(bpz,sheared=True)
 
         #np.save('mcal_coadds.npy',np.vstack((mcal.coadd,np.ones(len(mcal.coadd)),np.ones(len(mcal.coadd)),np.zeros(len(mcal.coadd)),np.zeros(len(mcal.coadd)),mcal.w)).T)
 
@@ -40,6 +43,7 @@ class y1(object):
         i3.bs    = True
         i3.wt    = True
         i3.lbins = 20
+        i3.add_pz(bpz,sheared=False)
 
         #np.save('i3_coadds.npy',np.vstack((i3.coadd,i3.m1,i3.m2,i3.c1,i3.c2,i3.w)).T)
 

@@ -17,17 +17,18 @@ import src.txt as txt
 #400 seconds to read mcal
 #250 seconds to read i3
 
-goldfile  = '/global/cscratch1/sd/troxel/y1a1-gold-mof-badregion.fits'
-i3file    = '/global/cscratch1/sd/troxel/y1a1-im3shape_v4-nbc_v2_matched_v5.fits'
-mcalfile  = '/global/cscratch1/sd/troxel/mcal-y1a1-combined-riz-blind-v4-matched.fits'
-bpzfile   = '/global/cscratch1/sd/troxel/BPZ_ngmix_mof_slr_HiZ_combined_matched.fits'
+goldfile  = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-gold-mof-badregion.fits'
+i3file    = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-im3shape_v4-nbc_v2_matched_v5.fits'
+mcalfile  = '/global/cscratch1/sd/troxel/finaly1cats/mcal-y1a1-combined-riz-blind-v4-matched.fits'
+bpzfile   = '/global/cscratch1/sd/troxel/finaly1cats/BPZ_ngmix_mof_slr_HiZ_combined_matched.fits'
+bpz0file  = '/global/cscratch1/sd/troxel/finaly1cats/BPZ_ngmix_sheared_matched.fits'
 i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
 mcalepoch = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
 rmfile    = '/global/cscratch1/sd/troxel/redmagicv6.4.11/y1a1_gold_1.0.2c-full_redmapper_v6.4.11_redmagic_combined_troxel.fit'
 psfdir    = '/global/cscratch1/sd/troxel/psf_cats/'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
-i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile)
+i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file)
 # rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
 # special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
 
@@ -93,3 +94,17 @@ y1.y1_plots.mean_e(i3,mcal,replace=True)
 # print "Warning: no metacal epoch file yet!"
 # y1.y1_plots.mean_e_epoch(i3epoch, i3epoch)
 
+tmp = fio.FITS('mcal-y1a1-combined-riz-blind-v4-matched_light.fits')[-1].read()
+tmp2 = fio.FITS('y1a1-im3shape_v4-nbc_v2_matched_v5.fits')[-1].read(columns = ['ra','dec','flags_select'])
+ra=np.copy(tmp['ra'])
+ra[ra>180.]=tmp['ra'][ra>180.]-360.
+tmp['ra']=np.copy(ra)
+ra=np.copy(tmp2['ra'])
+ra[ra>180.]=tmp2['ra'][ra>180.]-360.
+tmp2['ra']=np.copy(ra)
+plt.hist2d(tmp['ra'][tmp['flags_select']>=2**30],tmp['dec'][tmp['flags_select']>=2**30],bins=500)
+plt.savefig('tmp.png')
+plt.close()
+plt.hist2d(tmp2['ra'][tmp2['e1']==-9999],tmp2['dec'][tmp2['e1']==-9999],bins=500)
+plt.savefig('tmp2.png')
+plt.close()

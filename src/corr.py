@@ -292,16 +292,14 @@ class xi_2pt(object):
     print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
-      catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
-      print 'after catxa',time.time()-t0
       if (cata.cat=='mcal')&(cata.bs):
-        #catRga=treecorr.Catalog(k=(m1+m2)/2., w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
-        pass
-        print 'after catRga',time.time()-t0
+        catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       elif cata.cat=='mcal':
-        pass
+        catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       else:
+        catxa=treecorr.Catalog(g1=e1, g2=e2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catma=treecorr.Catalog(k=m1, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+      print 'after catxa',time.time()-t0
 
     elif (corr=='NN')|((catb!=None)&(corr in ['NG','NK'])):
       catxa=treecorr.Catalog(w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
@@ -356,13 +354,12 @@ class xi_2pt(object):
 
       if corr in ['GG','NG','KG']:
         print len(e1/m1),len(w),len(catb.ra),len(catb.dec),np.max(maskb0)
-        catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         if (catb.cat=='mcal')&(catb.bs):
-          #catRgb=treecorr.Catalog(k=(m1+m2)/2., w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
-          pass
+          catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         elif catb.cat=='mcal':
-          pass
+          catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         else:
+          catxb=treecorr.Catalog(g1=e1, g2=e2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catmb=treecorr.Catalog(k=m1, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
         catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
@@ -487,13 +484,10 @@ class xi_2pt(object):
           norm=1.
         elif cata.cat=='mcal':
           norm=1.
-        else:
-          Rgr = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-          Rgr.process(catra,catmb)
 
         xip,xip_im,xiperr=ng.calculateXi(Rg)
         print 'random subtraction with mcal responsivities not finished - disregard this result' 
-        norm,tmp=nk.calculateXi(Rgr)
+        norm,tmp=nk.calculateXi()
         if np.sum(norm)==0:
           norm=np.ones(len(xip))
         xip/=norm

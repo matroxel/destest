@@ -1132,8 +1132,6 @@ class plot_methods(object):
     tpspec = tp.TwoPointFile.from_fits(fits).spectra
     for l in range(len(tpspec)):
       name = tpspec[l].name
-      if name != 'gammat':
-        continue
       xi0 = tp.TwoPointFile.from_fits(fits).get_spectrum(name)
       pairs0 = xi0.bin_pairs
       if fits2 is not None:
@@ -1154,7 +1152,7 @@ class plot_methods(object):
             err1 = xi01.get_error(i,j)
             ax.errorbar(theta1,theta1*xi1*1e4,yerr=err1*theta1*1e4,ls='',marker='.',color='r')
             ax.axhline(y=0,ls='-',color='k')
-        if j!=np.max(xi0.bin1):
+        if j!=np.max(xi0.bin2):
           ax.set_xticklabels([])
         else:
           plt.xlabel('theta')
@@ -1184,7 +1182,7 @@ class plot_methods(object):
         plt.yscale('log')
         if name in ['xip','xim']:
           plt.ylim((1e-8,5e-4))
-        if j!=np.max(xi0.bin1):
+        if j!=np.max(xi0.bin2):
           ax.set_xticklabels([])
         else:
           plt.xlabel('theta')

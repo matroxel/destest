@@ -314,14 +314,14 @@ class CatalogStore(object):
       if len(s1)!=len(self.coadd):
         print 'pz not same lenght as catalog - cutting all but intersection: ',len(s1),' out of ',len(self.coadd)
       CatalogMethods.match_cat(self,s1)
-      CatalogMethods.match_cat(pz,s2)
-      self.pzstore = pz
-      self.pz      = self.pzstore.z_mean_full
+      # CatalogMethods.match_cat(pz,s2)
+      # self.pzstore = pz
+      self.pz      = self.pzstore.z_mean_full[s2]
       if sheared:
-        self.pz_1p   = self.pzstore.z_mean_full_1p
-        self.pz_1m   = self.pzstore.z_mean_full_1m
-        self.pz_2p   = self.pzstore.z_mean_full_2p
-        self.pz_2m   = self.pzstore.z_mean_full_2m
+        self.pz_1p   = self.pzstore.z_mean_full_1p[s2]
+        self.pz_1m   = self.pzstore.z_mean_full_1m[s2]
+        self.pz_2p   = self.pzstore.z_mean_full_2p[s2]
+        self.pz_2m   = self.pzstore.z_mean_full_2m[s2]
     else:
       if len(pz)==len(self.coadd):
         self.pz=pz
@@ -473,7 +473,10 @@ class PZStore(object):
           raise
         # self.z_peak_full=fits[-1].read()['MODE_Z']
         self.z_mean_full=fits[-1].read(columns=['MEAN_Z'])['MEAN_Z'][i]
-        self.pz_full=fits[-1].read(columns=['Z_MC'])['Z_MC'][i]
+        if nofzfile is None:
+          self.pz_full=fits[-1].read(columns=['Z_MC'])['Z_MC'][i]
+        else:
+          self.pz_full=fio.FITS(nofzfile)[-1].read(columns=['Z_MC'])['Z_MC'][i]
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
         self.bins=len(self.bin)
@@ -1027,16 +1030,13 @@ class CatalogMethods(object):
   @staticmethod
   def sort2(x,y):
     """
-    
     Sorts and matches two arrays of unique object ids (in DES this is coadd_objects_id).
     """
-
     xsort = np.argsort(x)
     ysort = np.argsort(y)
     i_xy  = np.intersect1d(x, y, assume_unique=True)
     i_x   = xsort[x[xsort].searchsorted(i_xy)]
     i_y   = ysort[y[ysort].searchsorted(i_xy)]
-
     return i_x, i_y
 
   @staticmethod
@@ -1611,7 +1611,7 @@ class CatalogMethods(object):
   def hpix_to_radec(pix,nside=4096,nest=True):
     import healpy as hp
     theta, phi = hp.pix2ang(nside, pix, nest=nest)
-    return (np.pi/2.0 - theta)/np.pi*180.0*60.0, phi/np.pi*180.0*60.0
+    return phi/np.pi*180.0, (np.pi/2.0 - theta)/np.pi*180.0
 
   @staticmethod
   def remove_duplicates(cat):
