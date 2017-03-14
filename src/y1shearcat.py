@@ -25,7 +25,7 @@ class y1(object):
     @staticmethod
     def load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file):
 
-        bpz = catalog.PZStore('bpz',setup=True,pztype='bpz',filetype='fits',file=bpz0file,sheared=True,nofzfile=bpzfile)
+        bpz = catalog.PZStore('bpz',setup=True,pztype='bpz',filetype='fits',file=bpz0file,sheared=True)
 
         goldcols = []
 
