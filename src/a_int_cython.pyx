@@ -29,7 +29,7 @@ cdef double tint0(double ell, void * params) nogil:
   cdef double tmin = (<double_ptr> params)[4]
   cdef double tmax = (<double_ptr> params)[5]
 
-  return 2.0*tmax*gsl_sf_bessel_J1(tmax*ell)-tmin*gsl_sf_bessel_J1(tmin*ell)/(tmax*tmax-tmin*tmin)
+  return 2.0*(tmax*gsl_sf_bessel_J1(tmax*ell)-tmin*gsl_sf_bessel_J1(tmin*ell))/(tmax*tmax-tmin*tmin)/ell
 
 cdef double tint4(double ell, void * params) nogil:
   cdef double tmin = (<double_ptr> params)[4]
