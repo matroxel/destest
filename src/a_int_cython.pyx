@@ -35,7 +35,7 @@ cdef double tint4(double ell, void * params) nogil:
   cdef double tmin = (<double_ptr> params)[4]
   cdef double tmax = (<double_ptr> params)[5]
 
-  return 2.0*(((ell*ell*tmax-8.0/tmax)*gsl_sf_bessel_J1(tmax*ell)-(ell*ell*tmin-8.0/tmin)*gsl_sf_bessel_J1(tmin*ell)-8.0*ell*(gsl_sf_bessel_Jn(2,tmax*ell)-gsl_sf_bessel_Jn(2,tmin*ell)))/ell/ell)/(tmax*tmax-tmin*tmin)
+  return 2.*((ell*ell*tmax-8.0/tmax)*gsl_sf_bessel_J1(tmax*ell)-(ell*ell*tmin-8.0/tmin)*gsl_sf_bessel_J1(tmin*ell)-8.0*ell*(gsl_sf_bessel_Jn(2,tmax*ell)-gsl_sf_bessel_Jn(2,tmin*ell)))/ell/ell/ell/(tmax*tmax-tmin*tmin)
 
 cdef double A0int(double ell, void * params) nogil:
   cdef double tmin = (<double_ptr> params)[4]
