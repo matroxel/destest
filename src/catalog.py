@@ -468,6 +468,8 @@ class PZStore(object):
         if np.any(np.diff(self.coadd) < 1):
           i=np.argsort(self.coadd)
           self.coadd=self.coadd[i]
+        else:
+          i=np.arange(len(self.coadd))
         if np.any(np.diff(self.coadd)==0):
           print 'non-unique ids in file: ',file
           raise
