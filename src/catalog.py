@@ -464,7 +464,7 @@ class PZStore(object):
         fits=fio.FITS(file)
         #self.bin=fits[1].read()['redshift']
         self.bin=(np.linspace(0,4,400)[:-1]+np.linspace(0,4,400)[1:])/2
-        self.coadd=fits[-1].read(columns=['COADD_OBJECTS_ID'])['COADD_OBJECTS_ID'].astype(int)
+        self.coadd=fits[-1].read(columns=['coadd_objects_id'])['coadd_objects_id'].astype(int)
         if np.any(np.diff(self.coadd) < 1):
           i=np.argsort(self.coadd)
           self.coadd=self.coadd[i]
@@ -472,11 +472,11 @@ class PZStore(object):
           print 'non-unique ids in file: ',file
           raise
         # self.z_peak_full=fits[-1].read()['MODE_Z']
-        self.z_mean_full=fits[-1].read(columns=['MEAN_Z'])['MEAN_Z'][i]
+        self.z_mean_full=fits[-1].read(columns=['mean_z'])['mean_z'][i]
         if nofzfile is None:
-          self.pz_full=fits[-1].read(columns=['Z_MC'])['Z_MC'][i]
+          self.pz_full=fits[-1].read(columns=['z_mc'])['z_mc'][i]
         else:
-          self.pz_full=fio.FITS(nofzfile)[-1].read(columns=['Z_MC'])['Z_MC'][i]
+          self.pz_full=fio.FITS(nofzfile)[-1].read(columns=['z_mc'])['z_mc'][i]
         self.binlow=self.bin-(self.bin[1]-self.bin[0])/2.
         self.binhigh=self.bin+(self.bin[1]-self.bin[0])/2.
         self.bins=len(self.bin)
@@ -486,7 +486,7 @@ class PZStore(object):
           self.sheared=True
           for s in ['_1p','_1m','_2p','_2m']:
             fits=fio.FITS(file.replace('.fits',s+'.fits'))
-            coadd=fits[-1].read(columns=['COADD_OBJECTS_ID'])['COADD_OBJECTS_ID'].astype(int)
+            coadd=fits[-1].read(columns=['coadd_objects_id'])['coadd_objects_id'].astype(int)
 
             if np.any(np.diff(coadd) < 1):
               i=np.argsort(coadd)
@@ -498,7 +498,7 @@ class PZStore(object):
               print 'coadds in sheared file '+file.replace('.fits',s+'.fits')+' mismatch with parent '+file
               raise
 
-            setattr(self,'z_mean_full'+s,fits[-1].read(columns=['MEAN_Z'])['MEAN_Z'][i])
+            setattr(self,'z_mean_full'+s,fits[-1].read(columns=['mean_z'])['mean_z'][i])
 
       self.pztype=pztype
       self.name=name
