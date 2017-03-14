@@ -866,6 +866,7 @@ class _cosmosis(object):
 class bandpowers(object):
 
   def __init__(self, nt=1000,tmin0=1.,tmax0=400.,nell=20,lmin=100.,lmax=3000.,load=True):
+    #python setup.py build in /src
 
     if load==False:
 
@@ -1145,7 +1146,10 @@ class bandpowers(object):
 
   def A(self):
     import time
-    import src.a_int_cython as a_int
+    try:
+      import src.a_int_cython as a_int
+    except ImportError:
+      import a_int_cython as a_int
 
     def func0(t,ell,i,j):
       return self.window_theta_geometric(t,i)*self.window_ell_lognormal(ell,j)*scipy.special.j0(t*ell)*ell
