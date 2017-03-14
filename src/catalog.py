@@ -345,7 +345,7 @@ class PZStore(object):
 
   # This is messy currently due to randomness in catalog formats for photo-z information...
 
-  def __init__(self,name,setup=True,pztype='skynet',filetype=None,file=None,sheared=False):
+  def __init__(self,name,setup=True,pztype='skynet',filetype=None,file=None,sheared=False,nofzfile=None):
 
     if setup:
 
