@@ -934,15 +934,15 @@ class bandpowers(object):
 
     Mp,Mm=self.M()
 
-    # if self.size>1:
+    if self.size>1:
 
-    #   x=np.zeros((self.nt*self.nt))
-    #   y=np.zeros((self.nt*self.nt))
+      x=np.zeros((self.nt*self.nt))
+      y=np.zeros((self.nt*self.nt))
 
-    #   self.comm.Reduce([Mp, MPI.DOUBLE],[x, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   self.comm.Reduce([Mm, MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM,root=0)
-    #   Mp=x
-    #   Mm=y
+      self.comm.Reduce([Mp, MPI.DOUBLE],[x, MPI.DOUBLE],op=MPI.SUM,root=0)
+      self.comm.Reduce([Mm, MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM,root=0)
+      Mp=x
+      Mm=y
 
     if self.rank==0:
       self.Mp=Mp.reshape((self.nt,self.nt))
