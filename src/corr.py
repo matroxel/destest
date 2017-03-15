@@ -1214,14 +1214,20 @@ class bandpowers(object):
     IMM=scipy.linalg.inv(np.identity(self.nt)+np.dot(np.dot(self.Mm,self.Mp),IFF))
 
     fp=np.dot(IMM,self.A0)
-    fp-=np.outer(fpanorm,np.dot(fpanorm,fp))
-    fp-=np.outer(fpbnorm,np.dot(fpbnorm,fp))
+    # fp-=np.outer(fpanorm,np.dot(fpanorm,fp))
+    # fp-=np.outer(fpbnorm,np.dot(fpbnorm,fp))
 
     return fp
 
   def FminusEB(self):
 
-    return np.dot(self.Mp,self.FpEB)
+    fpanorm=self.Fpa/np.sqrt(np.sum(self.Fpa*self.Fpa))
+    fpbnorm=self.Fpb-self.Fpa*np.sum(self.Fpa*self.Fpb)/np.sum(self.Fpa*self.Fpa)
+    fpbnorm/=np.sqrt(np.sum(fpbnorm*fpbnorm))
+
+    IFF=np.identity(self.nt)-np.outer(fpanorm,fpanorm)-np.outer(fpbnorm,fpbnorm)
+
+    return np.dot(np.dot(self.Mp,IFF),self.FpEB)
 
   def Wplus(self,ell):
 
