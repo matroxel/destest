@@ -1096,8 +1096,8 @@ class bandpowers(object):
     #     Mp[k*self.nt+i]/=self.norm[k]
 
     Mp=np.zeros((self.nt*self.nt))
-    for i in range(self.nt):
-      for k in range(self.nt):
+    for k in range(self.nt):
+      for i in range(self.nt):
         Mp[k*self.nt+i]=func(k,i)/self.norm[k]
         if i==k:
           Mp[k*self.nt+i]+=1.
@@ -1136,8 +1136,8 @@ class bandpowers(object):
     #     Mm[k*self.nt+i]/=self.norm[k]
 
     Mm=np.zeros((self.nt*self.nt))
-    for i in range(self.nt):
-      for k in range(self.nt):
+    for k in range(self.nt):
+      for i in range(self.nt):
         Mm[k*self.nt+i]=func(k,i)/self.norm[k]
         if i==k:
           Mm[k*self.nt+i]+=1.
