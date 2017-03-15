@@ -934,15 +934,15 @@ class bandpowers(object):
 
     Mp,Mm=self.M()
 
-    if self.size>1:
+    # if self.size>1:
 
-      x=np.zeros((self.nt*self.nt))
-      y=np.zeros((self.nt*self.nt))
+    #   x=np.zeros((self.nt*self.nt))
+    #   y=np.zeros((self.nt*self.nt))
 
-      self.comm.Reduce([Mp, MPI.DOUBLE],[x, MPI.DOUBLE],op=MPI.SUM,root=0)
-      self.comm.Reduce([Mm, MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM,root=0)
-      Mp=x
-      Mm=y
+    #   self.comm.Reduce([Mp, MPI.DOUBLE],[x, MPI.DOUBLE],op=MPI.SUM,root=0)
+    #   self.comm.Reduce([Mm, MPI.DOUBLE],[y, MPI.DOUBLE],op=MPI.SUM,root=0)
+    #   Mp=x
+    #   Mm=y
 
     if self.rank==0:
       self.Mp=Mp.reshape((self.nt,self.nt))
@@ -1073,7 +1073,6 @@ class bandpowers(object):
       else:
         return 0.
 
-
     # def func(i,k):
     #   if k>i:
     #     return 2.0/(self.tmax[i]*self.tmax[i] - self.tmin[i]*self.tmin[i])*(2.0*(self.tmax[i]*self.tmax[i] - self.tmin[i]*self.tmin[i])*np.log(self.tmax[j]/self.tmin[j]) + 3.0/2.0*(np.power(self.tmax[i],4.0) - np.power(self.tmin[i],4.0))*(1.0/self.tmax[j]/self.tmax[j] - 1.0/self.tmin[j]/self.tmin[j]))
@@ -1110,7 +1109,7 @@ class bandpowers(object):
       # mathematica output of integral - phi is k
       if (i==k):
         return (-2.*self.tmax[i]**4-6.*self.tmin[i]**4+8*self.tmax[i]**2*self.tmin[i]**2*(1-np.log(self.tmax[i])+np.log(self.tmin[i])))/(self.tmax[i]**3-self.tmax[i]*self.tmin[i]**2)**2
-      elif (k>i):
+      elif (k<i):
         return 8.*(np.log(self.tmax[i])-np.log(self.tmin[i]))/(self.tmax[i]**2-self.tmin[i]**2)-6.*(self.tmax[k]**2+self.tmin[k]**2)/self.tmax[i]**2/self.tmin[i]**2
       else:
         return 0.
