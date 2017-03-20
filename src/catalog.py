@@ -323,7 +323,7 @@ class CatalogStore(object):
         self.pz_1m   = np.copy(pz.z_mean_full_1m[s2])
         self.pz_2p   = np.copy(pz.z_mean_full_2p[s2])
         self.pz_2m   = np.copy(pz.z_mean_full_2m[s2])
-        catalog.CatalogMethods.add_cut_sheared(self,'pz',cmin=bounds[0],cmax=bounds[1],remove=False)
+        CatalogMethods.add_cut_sheared(self,'pz',cmin=bounds[0],cmax=bounds[1],remove=False)
       else:
         CatalogMethods.match_cat(self,(self.pz>bounds[0])&(self.pz<bounds[1]))
     else:
