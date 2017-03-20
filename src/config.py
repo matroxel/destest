@@ -377,7 +377,7 @@ matched_ng_col_sheared = {
   'size':True,
   'rgp':True,
   'w':False,
-  'pz':False,
+  'pz':True,
   'flags_select':True,
   'R11':False,
   'R22':False
