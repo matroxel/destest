@@ -316,12 +316,12 @@ class CatalogStore(object):
       CatalogMethods.match_cat(self,s1)
       # CatalogMethods.match_cat(pz,s2)
       # self.pzstore = pz
-      self.pz      = self.pzstore.z_mean_full[s2]
+      self.pz      = pz.z_mean_full[s2]
       if sheared:
-        self.pz_1p   = self.pzstore.z_mean_full_1p[s2]
-        self.pz_1m   = self.pzstore.z_mean_full_1m[s2]
-        self.pz_2p   = self.pzstore.z_mean_full_2p[s2]
-        self.pz_2m   = self.pzstore.z_mean_full_2m[s2]
+        self.pz_1p   = pz.z_mean_full_1p[s2]
+        self.pz_1m   = pz.z_mean_full_1m[s2]
+        self.pz_2p   = pz.z_mean_full_2p[s2]
+        self.pz_2m   = pz.z_mean_full_2m[s2]
     else:
       if len(pz)==len(self.coadd):
         self.pz=pz
