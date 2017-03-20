@@ -20,32 +20,77 @@ import src.fig as fig0
 import src.field as field
 import src.corr as corr
 
+#pzbins = [0.2,0.43,0.63,0.9,1.3]
+
 class y1(object):
 
     @staticmethod
     def load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file):
 
-        bpz = catalog.PZStore('bpz',setup=True,pztype='bpz',filetype='fits',file=bpz0file,sheared=True)
+        bpz = catalog.PZStore('bpz',setup=True,pztype='bpz',filetype='fits',file=bpz0file,sheared=True,nofzfile=bpzfile)
 
         goldcols = []
 
         mcal = catalog.CatalogStore('metacalibration',cutfunc=catalog.CatalogMethods.matched_metacal_cut(),cutfunclive=catalog.CatalogMethods.matched_metacal_cut_live(),cattype='mcal',catfile=mcalfile,goldfile=goldfile,goldcols=goldcols)
 
+        # manually cut out S82
+        catalog.CatalogMethods.match_cat(mcal,mcal.dec<-35)
+
+        # manually cut out parts that don't contribute to selection correction to save memory
+        catalog.CatalogMethods.match_cat(mcal,0==((mcal.flags_select&2**0)
+                                                |(mcal.flags_select&2**1)
+                                                |(mcal.flags_select&2**2)
+                                                |(mcal.flags_select&2**3)
+                                                |(mcal.flags_select&2**6)
+                                                |(mcal.flags_select&2**7)
+                                                |(mcal.flags_select&2**30)))
+        # manually cut out parts that do contribute to selection correction but are never selected to save memory
+        catalog.CatalogMethods.match_cat(mcal,(~((mcal.flags_select&2**4!=0)
+                                                &(mcal.flags_select_1p&2**4!=0)
+                                                &(mcal.flags_select_1m&2**4!=0)
+                                                &(mcal.flags_select_2p&2**4!=0)
+                                                &(mcal.flags_select_2m&2**4!=0)))
+                                                &(~((mcal.flags_select&2**5!=0)
+                                                &(mcal.flags_select_1p&2**5!=0)
+                                                &(mcal.flags_select_1m&2**5!=0)
+                                                &(mcal.flags_select_2p&2**5!=0)
+                                                &(mcal.flags_select_2m&2**5!=0)))
+                                                &(~((mcal.flags_select&2**8!=0)
+                                                &(mcal.flags_select_1p&2**8!=0)
+                                                &(mcal.flags_select_1m&2**8!=0)
+                                                &(mcal.flags_select_2p&2**8!=0)
+                                                &(mcal.flags_select_2m&2**8!=0))))
+        # 'dec_cut':2**0,
+        # 'flags_badregion':2**1,
+        # 'flags_gold':2**2,
+        # 'mcal_flags':2**3,
+        # 'size_cut':2**4,     # used in corrections
+        # 'snr_cut':2**5,      # used in corrections
+        # 'mof_flags':2**6,
+        # 'mof_lowflux':2**7,
+        # 'mcal_lowflux':2**8, # used in corrections
+        # 'not_measured':2**30,
+
         mcal.bs    = True
         mcal.wt    = False
         mcal.lbins = 20
-        mcal.add_pz(bpz,sheared=True)
+        mcal.add_pz(bpz,sheared=True,bounds=[0.2,1.3])
 
         #np.save('mcal_coadds.npy',np.vstack((mcal.coadd,np.ones(len(mcal.coadd)),np.ones(len(mcal.coadd)),np.zeros(len(mcal.coadd)),np.zeros(len(mcal.coadd)),mcal.w)).T)
 
         i3 = catalog.CatalogStore('im3shape',cutfunc=catalog.CatalogMethods.matched_i3_cut(),cattype='i3',catfile=i3file,goldfile=goldfile,goldcols=goldcols)
 
+        # manually cut out S82
+        catalog.CatalogMethods.match_cat(i3,i3.dec<-35)
+
         i3.bs    = True
         i3.wt    = True
         i3.lbins = 20
-        i3.add_pz(bpz,sheared=False)
+        i3.add_pz(bpz,sheared=False,bounds=[0.2,1.3])
 
         #np.save('i3_coadds.npy',np.vstack((i3.coadd,i3.m1,i3.m2,i3.c1,i3.c2,i3.w)).T)
+
+        bpz = None
 
         return i3,mcal
 
