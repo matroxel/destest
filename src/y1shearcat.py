@@ -412,7 +412,16 @@ class y1_plots(object):
         plt.savefig('plots/y1/b_modes.pdf', dpi=500, bbox_inches='tight')
         plt.close()
 
+    @staticmethod
+    def footprint_plot(cat):
 
+        import skymapper as skm
+
+        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+        fig, ax, proj = skm.plotDensity(cat.ra[mask], cat.dec[mask], nside=128, sep=15)
+        skm.addFootprint('DES', proj, ax, zorder=10, edgecolor='#2222B2', facecolor='None', lw=2)
+        plt.savefig('footprint.pdf', bbox_inches='tight')
+        plt.close()
 
 
 
