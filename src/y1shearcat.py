@@ -116,7 +116,7 @@ class y1(object):
     @staticmethod
     def load_psf_data(psfdir):
 
-        cols = ['e1','e2','ccd','col','row','psf1','psf2','mag']
+        cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
         psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
 
         return psf
@@ -452,23 +452,10 @@ class y1_plots(object):
     @staticmethod
     def footprint_plot(cat):
 
-        mask  = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-        mask1 = mask[np.in1d(mask,np.where(cat.dec<-35)[0])]
+        mask1 = mask[np.in1d(mask,np.where((cat.ra>-70)&(cat.ra<100))[0])]
         fig = plt.figure(figsize=(6.5,6))
-        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,5,1024,fig)
-        plt.savefig('plots/y1/footprint_spt.pdf', bbox_inches='tight')
-        plt.close()
-
-        mask1 = mask[np.in1d(mask,np.where((cat.dec>-35)&((cat.ra<15)&(cat.ra>-45)))[0])]
-        fig = plt.figure(figsize=(6.5,6))
-        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],1,10,1024,fig)
-        plt.savefig('plots/y1/footprint_s82.pdf', bbox_inches='tight')
-        plt.close()
-
-        mask1 = mask[np.in1d(mask,np.where((cat.dec<-35)|((cat.dec>-35)&((cat.ra<15)&(cat.ra>-45))))[0])]
-        fig = plt.figure(figsize=(6.5,6))
-        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],1,10,1024,fig)
-        plt.savefig('plots/y1/footprint_s82.pdf', bbox_inches='tight')
+        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,10,1024,fig)
+        plt.savefig('plots/y1/footprint.pdf', bbox_inches='tight')
         plt.close()
 
 
