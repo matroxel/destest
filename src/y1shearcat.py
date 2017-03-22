@@ -437,7 +437,7 @@ class y1_plots(object):
         skm.setParallelLabels(ax, proj, parallels, loc="bottom")
 
         # add vertices as polygons
-        vmin, vmax = np.percentiles(bc,[10,90])
+        vmin, vmax = np.percentile(bc,[10,90])
         poly = skm.addPolygons(vertices, proj, ax, color=bc, vmin=vmin, vmax=vmax, cmap=cmap, zorder=3, rasterized=True)
 
         # add colorbar
