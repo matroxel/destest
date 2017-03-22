@@ -434,7 +434,7 @@ class y1_plots(object):
         skm.setMeridianPatches(ax, proj, meridians, linestyle='-', lw=0.5, alpha=0.3, zorder=2)
         skm.setParallelPatches(ax, proj, parallels, linestyle='-', lw=0.5, alpha=0.3, zorder=2)
         skm.setMeridianLabels(ax, proj, meridians, loc="left", fmt=skm.pmDegFormatter)
-        skm.setParallelLabels(ax, proj, parallels, loc="bottom")
+        skm.setParallelLabels(ax, proj, parallels, loc="top")
 
         # add vertices as polygons
         vmin, vmax = np.percentile(bc,[10,90])
@@ -455,7 +455,7 @@ class y1_plots(object):
 
         mask  = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
         mask1 = mask[np.in1d(mask,np.where(cat.dec<-35)[0])]
-        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,10,1024)
+        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,5,1024)
         plt.savefig('plots/y1/footprint_spt.pdf', bbox_inches='tight')
         plt.close()
 
