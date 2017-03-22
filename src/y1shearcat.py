@@ -413,7 +413,7 @@ class y1_plots(object):
         plt.close()
 
     @staticmethod
-    def footprint_sub(ra,dec,rasep,decsep,nside):
+    def footprint_sub(ra,dec,rasep,decsep,nside,cbarloc,fig):
 
         import skymapper as skm
 
@@ -422,7 +422,6 @@ class y1_plots(object):
         # setup figure
         import matplotlib.cm as cm
         cmap = cm.YlOrRd
-        fig = plt.figure(figsize=(6.5,6))
         ax = fig.add_subplot(111, aspect='equal')
 
         # setup map: define AEA map optimal for given RA/Dec
@@ -443,7 +442,7 @@ class y1_plots(object):
         # add colorbar
         from mpl_toolkits.axes_grid1 import make_axes_locatable
         divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="2%", pad=0.0)
+        cax = divider.append_axes(cbarloc, size="2%", pad=0.0)
         cb = fig.colorbar(poly, cax=cax)
         cb.set_label('$n_g$ [arcmin$^{-2}$]')
         cb.solids.set_edgecolor("face")
@@ -455,12 +454,14 @@ class y1_plots(object):
 
         mask  = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
         mask1 = mask[np.in1d(mask,np.where(cat.dec<-35)[0])]
-        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,5,1024)
+        fig = plt.figure(figsize=(6.5,6))
+        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,5,1024,'right',fig)
         plt.savefig('plots/y1/footprint_spt.pdf', bbox_inches='tight')
         plt.close()
 
-        mask1 = mask[np.in1d(np.where((cat.dec>-35)&((cat.ra<15)|(cat.ra>315)))[0],mask)]
-        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,10,1024)
+        mask1 = mask[np.in1d(mask,np.where((cat.dec>-35)&((cat.ra<15)&(cat.ra>-45)))[0])]
+        fig = plt.figure(figsize=(6.5,6))
+        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],1,10,1024,'bottom',fig)
         plt.savefig('plots/y1/footprint_s82.pdf', bbox_inches='tight')
         plt.close()
 
