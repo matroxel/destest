@@ -415,6 +415,8 @@ class y1_plots(object):
     @staticmethod
     def footprint_sub(ra,dec,rasep,decsep,nside):
 
+        import skymapper as skm
+
         bc, ra, dec, vertices = skm.getCountAtLocations(ra, dec, nside=nside, return_vertices=True)
 
         # setup figure
@@ -451,15 +453,14 @@ class y1_plots(object):
     @staticmethod
     def footprint_plot(cat):
 
-        import skymapper as skm
-
-        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-        footprint_sub(cat.ra[mask&(cat.dec<-35)], cat.dec[mask&(cat.dec<-35)],10,10,1024)
+        mask  = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+        mask1 = mask[np.in1d(mask,np.where(cat.dec<-35)[0])]
+        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,10,1024)
         plt.savefig('plots/y1/footprint_spt.pdf', bbox_inches='tight')
         plt.close()
 
-        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-        footprint_sub(cat.ra[mask&(cat.dec>-35)&((cat.ra<15)|(cat.ra>315))], cat.dec[mask&(cat.dec>-35)&((cat.ra<15)|(cat.ra>315))],10,10,1024)
+        mask1 = mask[np.in1d(np.where((cat.dec>-35)&((cat.ra<15)|(cat.ra>315)))[0],mask)]
+        y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,10,1024)
         plt.savefig('plots/y1/footprint_s82.pdf', bbox_inches='tight')
         plt.close()
 
