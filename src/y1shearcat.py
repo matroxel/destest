@@ -33,10 +33,10 @@ def load_obj(name ):
 class y1(object):
 
     @staticmethod
-    def load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle=None,mcalpickle=None):
+    def load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle,mcalpickle,load_pickle=True):
 
 
-        if i3pickle is not None:
+        if (load_pickle)&(os.path.exists(mcalpickle))&(os.path.exists(i3pickle)):
 
             mcal = load_obj(mcalpickle)
             i3   = load_obj(i3pickle)

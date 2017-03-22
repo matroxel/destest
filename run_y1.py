@@ -18,8 +18,10 @@ import src.txt as txt
 #250 seconds to read i3
 
 goldfile  = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-gold-mof-badregion.fits'
-i3file    = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-im3shape_v4-nbc_v2_matched_v5.fits'
+i3file    = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-im3shape_v5_matched_v6.fits'
 mcalfile  = '/global/cscratch1/sd/troxel/finaly1cats/mcal-y1a1-combined-riz-blind-v4-matched.fits'
+i3pickle  = '/global/cscratch1/sd/troxel/finaly1cats/i3.cpickle'
+mcalpickle= '/global/cscratch1/sd/troxel/finaly1cats/mcal.cpickle'
 bpzfile   = '/global/cscratch1/sd/troxel/finaly1cats/BPZ_ngmix_mof_slr_HiZ_combined_matched.fits'
 bpz0file  = '/global/cscratch1/sd/troxel/finaly1cats/BPZ_ngmix_sheared_matched.fits'
 i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
@@ -28,7 +30,7 @@ rmfile    = '/global/cscratch1/sd/troxel/redmagicv6.4.11/y1a1_gold_1.0.2c-full_r
 psfdir    = '/global/cscratch1/sd/troxel/psf_cats/'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
-i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file)
+i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle=i3pickle,mcalpickle=mcalpickle)
 # rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
 # special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
 
@@ -94,17 +96,5 @@ y1.y1_plots.mean_e(i3,mcal,replace=True)
 # print "Warning: no metacal epoch file yet!"
 # y1.y1_plots.mean_e_epoch(i3epoch, i3epoch)
 
-tmp = fio.FITS('mcal-y1a1-combined-riz-blind-v4-matched_light.fits')[-1].read()
-tmp2 = fio.FITS('y1a1-im3shape_v4-nbc_v2_matched_v5.fits')[-1].read(columns = ['ra','dec','flags_select'])
-ra=np.copy(tmp['ra'])
-ra[ra>180.]=tmp['ra'][ra>180.]-360.
-tmp['ra']=np.copy(ra)
-ra=np.copy(tmp2['ra'])
-ra[ra>180.]=tmp2['ra'][ra>180.]-360.
-tmp2['ra']=np.copy(ra)
-plt.hist2d(tmp['ra'][tmp['flags_select']>=2**30],tmp['dec'][tmp['flags_select']>=2**30],bins=500)
-plt.savefig('tmp.png')
-plt.close()
-plt.hist2d(tmp2['ra'][tmp2['e1']==-9999],tmp2['dec'][tmp2['e1']==-9999],bins=500)
-plt.savefig('tmp2.png')
-plt.close()
+
+
