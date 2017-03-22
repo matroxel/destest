@@ -418,7 +418,7 @@ class y1_plots(object):
         import skymapper as skm
 
         mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-        fig, ax, proj = skm.plotDensity(cat.ra[mask], cat.dec[mask], nside=1028, sep=15)
+        fig, ax, proj = skm.plotDensity(cat.ra[mask], cat.dec[mask], nside=1024, sep=15)
         skm.addFootprint('DES', proj, ax, zorder=10, edgecolor='#2222B2', facecolor='None', lw=2)
         plt.savefig('plots/y1/footprint.pdf', bbox_inches='tight')
         plt.close()
