@@ -413,16 +413,55 @@ class y1_plots(object):
         plt.close()
 
     @staticmethod
+    def footprint_sub(ra,dec,rasep,decsep,nside):
+
+        bc, ra, dec, vertices = skm.getCountAtLocations(ra, dec, nside=nside, return_vertices=True)
+
+        # setup figure
+        import matplotlib.cm as cm
+        cmap = cm.YlOrRd
+        fig = plt.figure(figsize=(6.5,6))
+        ax = fig.add_subplot(111, aspect='equal')
+
+        # setup map: define AEA map optimal for given RA/Dec
+        proj = skm.createConicMap(ax, ra, dec, proj_class=skm.AlbersEqualAreaProjection)
+        # add lines and labels for meridians/parallels (separation 5 deg)
+        sep = 5
+        meridians = np.arange(-90, 90+decsep, decsep)
+        parallels = np.arange(0, 360+rasep, rasep)
+        skm.setMeridianPatches(ax, proj, meridians, linestyle='-', lw=0.5, alpha=0.3, zorder=2)
+        skm.setParallelPatches(ax, proj, parallels, linestyle='-', lw=0.5, alpha=0.3, zorder=2)
+        skm.setMeridianLabels(ax, proj, meridians, loc="left", fmt=skm.pmDegFormatter)
+        skm.setParallelLabels(ax, proj, parallels, loc="bottom")
+
+        # add vertices as polygons
+        vmin, vmax = np.percentiles(bc,[10,90])
+        poly = skm.addPolygons(vertices, proj, ax, color=bc, vmin=vmin, vmax=vmax, cmap=cmap, zorder=3, rasterized=True)
+
+        # add colorbar
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="2%", pad=0.0)
+        cb = fig.colorbar(poly, cax=cax)
+        cb.set_label('$n_g$ [arcmin$^{-2}$]')
+        cb.solids.set_edgecolor("face")
+
+        return
+
+    @staticmethod
     def footprint_plot(cat):
 
         import skymapper as skm
 
         mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-        fig, ax, proj = skm.plotDensity(cat.ra[mask], cat.dec[mask], nside=1024, sep=15)
-        skm.addFootprint('DES', proj, ax, zorder=10, edgecolor='#2222B2', facecolor='None', lw=2)
-        plt.savefig('plots/y1/footprint.pdf', bbox_inches='tight')
+        footprint_sub(cat.ra[mask&(cat.dec<-35)], cat.dec[mask&(cat.dec<-35)],10,10,1024)
+        plt.savefig('plots/y1/footprint_spt.pdf', bbox_inches='tight')
         plt.close()
 
+        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+        footprint_sub(cat.ra[mask&(cat.dec>-35)&((cat.ra<15)|(cat.ra>315))], cat.dec[mask&(cat.dec>-35)&((cat.ra<15)|(cat.ra>315))],10,10,1024)
+        plt.savefig('plots/y1/footprint_s82.pdf', bbox_inches='tight')
+        plt.close()
 
 
 
