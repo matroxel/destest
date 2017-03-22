@@ -217,8 +217,8 @@ class y1_plots(object):
 
         plt.figure(1)
 
-        y1_plots.mean_e_subplot(cat1,0,'snr',1,replace=replace)
-        y1_plots.mean_e_subplot(cat2,1,'snr',1,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'snr',1,replace=replace)
+        y1_plots.mean_e_subplot(cat2,2,'snr',1,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_snr.pdf', bbox_inches='tight')
@@ -231,8 +231,8 @@ class y1_plots(object):
 
         plt.figure(2)
 
-        y1_plots.mean_e_subplot(cat1,0,'rgp',2,replace=replace)
-        y1_plots.mean_e_subplot(cat2,1,'size',2,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'rgp',2,replace=replace)
+        y1_plots.mean_e_subplot(cat2,2,'size',2,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_radius.pdf', bbox_inches='tight')
@@ -245,8 +245,8 @@ class y1_plots(object):
 
         plt.figure(3)
 
-        y1_plots.mean_e_subplot(cat1,0,'psf1',3,replace=replace)
-        y1_plots.mean_e_subplot(cat2,1,'psf1',3,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'psf1',3,replace=replace)
+        y1_plots.mean_e_subplot(cat2,2,'psf1',3,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psf1.pdf', bbox_inches='tight')
@@ -259,8 +259,8 @@ class y1_plots(object):
 
         plt.figure(4)
 
-        y1_plots.mean_e_subplot(cat1,0,'psf2',4,replace=replace)
-        y1_plots.mean_e_subplot(cat2,1,'psf2',4,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'psf2',4,replace=replace)
+        y1_plots.mean_e_subplot(cat2,2,'psf2',4,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psf2.pdf', bbox_inches='tight')
@@ -273,8 +273,8 @@ class y1_plots(object):
 
         plt.figure(5)
 
-        y1_plots.mean_e_subplot(cat1,0,'psffwhm',5,replace=replace)
-        y1_plots.mean_e_subplot(cat2,1,'psfsize',5,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'psffwhm',5,replace=replace)
+        y1_plots.mean_e_subplot(cat2,2,'psfsize',5,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psfsize.pdf', bbox_inches='tight')
@@ -287,8 +287,8 @@ class y1_plots(object):
 
         plt.figure(6)
 
-        y1_plots.mean_e_subplot(i3epoch,0,'row',6,replace=replace)
-        y1_plots.mean_e_subplot(mcepoch,1,'row',6,replace=replace)
+        y1_plots.mean_e_subplot(i3epoch,1,'row',6,replace=replace)
+        y1_plots.mean_e_subplot(mcepoch,2,'row',6,replace=replace)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_ccdrow.pdf', bbox_inches='tight')
