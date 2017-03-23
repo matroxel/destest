@@ -584,7 +584,7 @@ class y1_plots(object):
         return median
 
     @staticmethod
-    def psf_star_fwhm_subplot(cat,exp,mask,band,color):
+    def psf_star_fwhm_subplot(cat,psf_exp,exp,mask,band,color):
 
         flist = exp['exp'][exp['filter']==band]
         flist = np.char.strip(flist,'DECam_').astype(int)
@@ -594,7 +594,6 @@ class y1_plots(object):
         plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.2)
 
         return
-
 
     @staticmethod
     def psf_star_fwhm_dist(cat,expfile):
@@ -606,9 +605,9 @@ class y1_plots(object):
         psf_exp = np.char.strip(psf_exp,'DECam_').astype(int)
         i = np.argsort(psf_exp)
 
-        y1_plots.psf_star_fwhm_subplot(cat,exp,mask,'r','r')
-        y1_plots.psf_star_fwhm_subplot(cat,exp,mask,'i','b')
-        y1_plots.psf_star_fwhm_subplot(cat,exp,mask,'z','k')
+        y1_plots.psf_star_fwhm_subplot(cat,psf_exp,exp,mask,'r','r')
+        y1_plots.psf_star_fwhm_subplot(cat,psf_exp,exp,mask,'i','b')
+        y1_plots.psf_star_fwhm_subplot(cat,psf_exp,exp,mask,'z','k')
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
         plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
