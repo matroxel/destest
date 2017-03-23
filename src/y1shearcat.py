@@ -611,9 +611,9 @@ class y1_plots(object):
         i = np.argsort(psf_exp)
         psf_exp = psf_exp[i]
 
-        rmedian = y1_plots.psf_star_fwhm_subplot(cat.size[mask][i],psf_exp,exp,'r','r')
-        imedian = y1_plots.psf_star_fwhm_subplot(cat.size[mask][i],psf_exp,exp,'i','b')
-        zmedian = y1_plots.psf_star_fwhm_subplot(cat.size[mask][i],psf_exp,exp,'z','k')
+        rmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i].min()/2)*2.355,psf_exp,exp,'r','r')
+        imedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i].min()/2)*2.355,psf_exp,exp,'i','b')
+        zmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i].min()/2)*2.355,psf_exp,exp,'z','k')
         print 'median seeing for riz bands',np.median(np.append(np.append(rmedian,imedian),zmedian))
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
