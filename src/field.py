@@ -463,7 +463,7 @@ class field(object):
 
 class field_methods(object):
   """
-  Utilities for doing pixel and chip calculations.
+  Utilities for doing pixel and chip calculations. Information from Mike Jarvis.
   """
 
   chip_centres = {
@@ -534,8 +534,8 @@ class field_methods(object):
 
   ccdid=['S29','S30','S31','S25','S26','S27','S28','S20','S21','S22','S23','S24','S14','S15','S16','S17','S18','S19','S8','S9','S10','S11','S12','S13','S1','S2','S3','S4','S5','S6','S7','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','N12','N13','N14','N15','N16','N17','N18','N19','N20','N21','N22','N23','N24','N25','N26','N27','N28','N29','N30','N31']
 
-  ccdx=4096.*15.e-6*1000.
-  ccdy=2048.*15.e-6*1000.
+  ccdx=2048.*15.e-6*1000.
+  ccdy=4096.*15.e-6*1000.
 
   @staticmethod
   def ccd_centres():
@@ -574,12 +574,12 @@ class field_methods(object):
     centrex=(centre[:,0])[[ccd]]
     centrey=(centre[:,1])[[ccd]]
 
-    return ccdx*15e-6*1000+centrex,ccdy*15e-6*1000+centrey 
+    return ccdx*15e-6*1000+centrex-field_methods.ccdx/2.,ccdy*15e-6*1000+centrey-field_methods.ccdy/2.
 
   @staticmethod
   def get_field_pos(cat):
 
-    x,y=field_methods.ccd_to_field(cat.ccd,cat.row-field_methods.ccdx/2.,cat.col-field_methods.ccdy/2.)
+    x,y=field_methods.ccd_to_field(cat.ccd,cat.col,cat.row)
 
     return x,y 
 
