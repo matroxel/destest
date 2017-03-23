@@ -480,9 +480,9 @@ class y1_plots(object):
     @staticmethod
     def psf_star_dist(cat):
 
-        mask = psf.flag==0
+        mask = cat.flag==0
 
-        unique_ccd_ids = np.max(psf.ccd[mask])*psf.filenum[mask]+psf.ccd[mask]
+        unique_ccd_ids = np.max(cat.ccd[mask])*cat.filenum[mask]+cat.ccd[mask]
         u,c=np.unique(unique_ccd_ids,return_counts=True)
         plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k')
         plt.ylabel('Number of CCDs')
@@ -566,16 +566,56 @@ class y1_plots(object):
 
         return
 
+    @staticmethod
+    def bin_median(x,y):
+        # I need to fix main destest version to work like this, much faster
+
+        ind0 = 0
+        median = np.zeros(len(np.unique(x)))
+        d = np.diff(x)
+        for j in range(len(np.unique(x))):
+            ind = d[j]
+            if ind == 0:
+                ind = -1
+            median[j] = np.median(y[ind0:ind])
+            ind0 = ind
+
+        return median
 
     @staticmethod
-    def psf_star_fwhm_dist(cat):
+    def psf_star_fwhm_dist(cat,expfile):
 
-        unique_ccd_ids = np.max(psf.ccd)*psf.filenum+psf.ccd
-        u,c=np.unique(unique_ccd_ids,return_counts=True)
-        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k')
-        plt.ylabel('Number of CCDs')
-        plt.xlabel('Number of stars per CCD')
-        plt.savefig('plots/y1/psf_star_dist.pdf', bbox_inches='tight')
+        mask = cat.flag==0
+        exp = fio.FITS(expfile)[-1].read(columns=['filter','exp'])
+
+        rlist = exp['exp'][exp['filter']=='r']
+        ilist = exp['exp'][exp['filter']=='i']
+        zlist = exp['exp'][exp['filter']=='z']
+        rlist = np.char.strip(rlist,'DECam_').astype(int)
+        ilist = np.char.strip(ilist,'DECam_').astype(int)
+        zlist = np.char.strip(zlist,'DECam_').astype(int)
+        rlist = np.unique(rlist)
+        ilist = np.unique(ilist)
+        zlist = np.unique(zlist)
+
+        psf_exp = np.char.strip(cat.filename[mask],'_psf')
+        psf_exp = np.char.strip(psf_exp,'DECam_').astype(int)
+        rmask = np.in1d(psf_exp,rlist,assume_unique=False)
+        imask = np.in1d(psf_exp,ilist,assume_unique=False)
+        zmask = np.in1d(psf_exp,zlist,assume_unique=False)
+
+        i = np.argsort(psf_exp)
+
+        rmedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][rmask[i]])
+        imedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][imask[i]])
+        zmedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][zmask[i]])
+
+        plt.hist(cat.size[],bins=50,histtype='stepfilled',color='r',alpha=0.2)
+        plt.hist(c,bins=50,histtype='stepfilled',color='b',alpha=0.2)
+        plt.hist(c,bins=50,histtype='stepfilled',color='k',alpha=0.2)
+        plt.ylabel('Number of exposures')
+        plt.xlabel('Seeing FWHM (arcsec)')
+        plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
         plt.close()
 
         return
