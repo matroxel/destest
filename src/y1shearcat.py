@@ -14,6 +14,7 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import pylab
 import src.sys_split as sys_split
 import src.config as config
+import src.lin as lin
 import src.catalog as catalog
 import src.txt as txt
 import src.fig as fig0
@@ -115,6 +116,22 @@ class y1(object):
 
     @staticmethod
     def load_psf_data(psfdir):
+
+        # MAX_CENTROID_SHIFT = 1.0
+
+        # NOT_USED = 1
+        # MEAS_BAD_MEASUREMENT = 2
+        # MEAS_CENTROID_SHIFT = 4
+        # PSFEX_BAD_MEASUREMENT = 8
+        # PSFEX_CENTROID_SHIFT = 16
+        # PSFEX_FAILURE = 32
+        # RESERVED = 64
+        # #DESDM_BAD_MEASUREMENT = 64  # Prior to y1a1-v13, this was the meaning of 64-256
+        # #DESDM_CENTROID_SHIFT = 128
+        # #DESDM_FAILURE = 256
+        # #DESDM_FLAG_FACTOR = DESDM_BAD_MEASUREMENT / PSFEX_BAD_MEASUREMENT
+        # BLACK_FLAG_FACTOR = 512 # blacklist flags are this times the original exposure blacklist flag
+        #                         # blacklist flags go up to 64, so this uses up to 1<<15
 
         cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
         psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
@@ -458,4 +475,104 @@ class y1_plots(object):
         plt.savefig('plots/y1/footprint.pdf', bbox_inches='tight')
         plt.close()
 
+        return
 
+    @staticmethod
+    def psf_star_dist(cat):
+
+        mask = psf.flag==0
+
+        unique_ccd_ids = np.max(psf.ccd[mask])*psf.filenum[mask]+psf.ccd[mask]
+        u,c=np.unique(unique_ccd_ids,return_counts=True)
+        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k')
+        plt.ylabel('Number of CCDs')
+        plt.xlabel('Number of stars per CCD')
+        plt.savefig('plots/y1/psf_star_dist.pdf', bbox_inches='tight')
+        plt.close()
+
+        return
+
+    @staticmethod
+    def bin_mean_new(x,y,bins):
+
+        ind0 = 0
+        mean = np.zeros(bins)
+        err = np.zeros(bins)
+        for j in range(bins):
+            ind = np.searchsorted(x, edge[j+1])
+            if ind == 0:
+                ind = -1
+            mean[j] = np.mean(y[ind0:ind])
+            err[j]  = np.std(y[ind0:ind])/np.sqrt(ind-ind0)
+            ind0 = ind
+
+        return mean,err
+
+
+    @staticmethod
+    def psf_mag_res_plot(cat,bins=60):
+
+        name = 'text/psf_resid.pkl'
+
+        if replace|(not os.path.exists(name)):
+
+            edge=lin.linear_methods.find_bin_edges(cat.mag,bins)
+            i = np.argsort(cat.mag)
+
+            arr1, tmp    = bin_mean_new(cat.mag[i],cat.mag[i],bins)
+            dT,   dTerr  = bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],bins)
+            de1,  de1err = bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],bins)
+            de2,  de2err = bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],bins)
+
+            d = {
+
+            'arr1'   : arr1,
+            'dT'     : dT,
+            'de1'    : de1,
+            'de2'    : de2,
+            'dTerr'  : dTerr,
+            'de1err' : de1err,
+            'de2err' : de2err,
+            }
+
+            save_obj(d,name)
+ 
+        else:
+
+            d = load_obj(name)
+
+        plt.figure(fig)
+        ax=plt.subplot(2,1,1)
+        plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='o',linestyle='',color='k')
+        ax.minorticks_on()
+        plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}} (\mathrm{arcsec}^{2})$')
+        plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        ax.set_xticklabels([])
+
+        ax=plt.subplot(2,1,2)
+        plt.errorbar(d['arr1'],d['de1'],yerr=d['de1err'],marker='o',linestyle='',color='r')
+        plt.errorbar(d['arr1'],d['de2'],yerr=d['de2err'],marker='o',linestyle='',color='b')
+        ax.minorticks_on()
+        plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
+        plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        plt.xlabel('Magnitude')
+
+        plt.tight_layout()
+        plt.savefig('plots/y1/psf_res_mag.pdf', bbox_inches='tight')
+        plt.close()
+
+        return
+
+
+    @staticmethod
+    def psf_star_fwhm_dist(cat):
+
+        unique_ccd_ids = np.max(psf.ccd)*psf.filenum+psf.ccd
+        u,c=np.unique(unique_ccd_ids,return_counts=True)
+        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k')
+        plt.ylabel('Number of CCDs')
+        plt.xlabel('Number of stars per CCD')
+        plt.savefig('plots/y1/psf_star_dist.pdf', bbox_inches='tight')
+        plt.close()
+
+        return
