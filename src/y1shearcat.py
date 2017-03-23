@@ -177,13 +177,13 @@ class y1(object):
         mask = catalog.CatalogMethods.get_cuts_mask(mcal,full=False)
         e1,e2,w,m1,m2 = lin.linear_methods.get_lin_e_w_ms(mcal,mask=mask)
         mcal = np.vstack((np.copy(mcal.coadd[mask]),e1/m1,e2/m2,w)).T
-        mask=np.argsort(mcal.coadd)
+        mask=np.argsort(mcal[:,0])
         mcal = mcal[mask]
 
         i3   = load_obj(i3pickle)
         e1,e2,w,m1,m2 = lin.linear_methods.get_lin_e_w_ms(i3)
         i3 = np.vstack((np.copy(i3.coadd[mask]),e1/m1,e2/m2,w)).T
-        mask=np.argsort(i3.coadd)
+        mask=np.argsort(i3[:,0])
         i3 = i3[mask]
 
         return mcal,i3
