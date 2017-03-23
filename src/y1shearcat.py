@@ -643,10 +643,10 @@ class y1_plots(object):
             x=x[mask]
             y=y[mask]
 
-            psf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf1[mask],bins=500)
-            psf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf2[mask],bins=500)
-            dpsf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf1[mask]-cat.e1[mask],bins=500)
-            dpsf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf2[mask]-cat.e2[mask],bins=500)
+            psf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf1[mask],bins=1000)
+            psf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf2[mask],bins=1000)
+            dpsf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf1[mask]-cat.e1[mask],bins=1000)
+            dpsf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf2[mask]-cat.e2[mask],bins=1000)
 
 
             d = {
