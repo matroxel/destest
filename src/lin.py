@@ -83,7 +83,7 @@ class linear_methods(object):
 
     elif cattype=='psf':
 
-      return None, None, np.ones(np.sum(mask)), None, None
+      return None, None, np.ones(len(mask)), None, None
 
     elif cattype=='gal':
 
