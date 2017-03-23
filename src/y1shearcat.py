@@ -163,10 +163,10 @@ class y1(object):
           if lenst==0:
             array=np.empty((500000000), dtype=tmparray.dtype.descr)
             
-          array[lenst:lenst+np.sum(mask)]=tmparray[mask]
+          array[lenst:lenst+len(tmparray)]=tmparray
 
-          lenst+=np.sum(mask)
-          print ifile,np.sum(mask),lenst,file
+          lenst+=len(tmparray)
+          print ifile,len(tmparray),lenst,file
 
         return array
 
