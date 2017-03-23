@@ -784,26 +784,21 @@ class y1_plots(object):
 
             d = load_obj(name)
 
-        plt.figure(figsize=(10,30))
+        plt.figure(figsize=(20,30))
         fig, ax = plt.subplots(nrows=2, ncols=2)
         im = ax[0,0].imshow(d['psf1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        plt.ylabel(r'$e_{1,\mathrm{PSF}}$')
         im = ax[1,0].imshow(d['psf2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        plt.ylabel(r'$e_{2,\mathrm{PSF}}$')
-        plt.xlabel(r'Mean')
-
         im = ax[0,1].imshow(d['dpsf1'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         im = ax[1,1].imshow(d['dpsf2'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.75)
-        plt.xlabel(r'Mean residual')
-
         for ax_ in ax.flat:
             ax_.axis('off')
-            ax_.get_xaxis().set_visible(False)
-            ax_.get_yaxis().set_visible(False)
             ax_.set_aspect(1)
-
-        plt.subplots_adjust(wspace=0.1, hspace=0.1)
+        ax[0,0].text(-100,250, r'$e_{1}^{\mathrm{PSF}}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":16})
+        ax[0,0].text(250,575, 'Mean', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
+        ax[1,0].text(-100,250, r'$e_{2}^{\mathrm{PSF}}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":16})
+        ax[0,1].text(250,575, 'Mean residual', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
+        plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/psf_focal.pdf', bbox_inches='tight')
         plt.close()
 
