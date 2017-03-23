@@ -201,10 +201,9 @@ class y1(object):
             mcal,i3 = get_nonepoch(i3pickle,mcalpickle)
 
             mcalepoch0 = y1.epoch_data_dump(mcaldir,['coadd_objects_id','ccd','orig_row','orig_col'],-1)
-            if np.any(~np.in1d(mcal.coadd,mcalepoch0['coadd_objects_id'],assume_unique=False)):
-                print 'Missing coadds in mcal epoch files'
-                return
-            mask = np.where(mcalepoch0['coadd_objects_id'],mcal[:,0],assume_unique=False)
+            mask = np.where(np.in1d(mcal[:,0],mcalepoch0['coadd_objects_id'],assume_unique=False))[0]
+            mcal = mcal[mask]
+            mask = np.where(np.in1d(mcalepoch0['coadd_objects_id'],mcal[:,0],assume_unique=False))[0]
             mcalepoch0 = mcalepoch0[mask]
 
             mcalepoch=catalog.CatalogStore('mcal',setup=False,cattype='mcal',release='y1')
@@ -225,17 +224,16 @@ class y1(object):
             mcalepoch.e2=np.zeros(len(mcalepoch.coadd))
             mcalepoch.w=np.zeros(len(mcalepoch.coadd))
             for i in xrange(len(diff)-1):
-                mcalepoch.e1[diff[i]:diff[i+1]]=mcal.e1[i]
-                mcalepoch.e2[diff[i]:diff[i+1]]=mcal.e2[i]
-                mcalepoch.w[diff[i]:diff[i+1]]=mcal.w[i]
+                mcalepoch.e1[diff[i]:diff[i+1]]=mcal[i,1]
+                mcalepoch.e2[diff[i]:diff[i+1]]=mcal[i,2]
+                mcalepoch.w[diff[i]:diff[i+1]]=mcal[i,3]
 
             save_obj(mcalepoch,mcalepochpickle)
 
             i3epoch0 = y1.epoch_data_dump(i3dir,['coadd_objects_id','ccd','orig_row','orig_col'],-1)
-            if np.any(~np.in1d(i3.coadd,i3epoch0['coadd_objects_id'],assume_unique=False)):
-                print 'Missing coadds in i3 epoch files'
-                return
-            mask = np.where(i3epoch0['coadd_objects_id'],i3[:,0],assume_unique=False)
+            mask = np.where(np.in1d(i3[:,0],i3epoch0['coadd_objects_id'],assume_unique=False))[0]
+            i3 = i3[mask]
+            mask = np.where(np.in1d(i3epoch0['coadd_objects_id'],i3[:,0],assume_unique=False))[0]
             i3epoch0 = i3epoch0[mask]
 
             i3epoch=catalog.CatalogStore('i3',setup=False,cattype='i3',release='y1')
@@ -256,9 +254,9 @@ class y1(object):
             i3epoch.e2=np.zeros(len(i3epoch.coadd))
             i3epoch.w=np.zeros(len(i3epoch.coadd))
             for i in xrange(len(diff)-1):
-                i3epoch.e1[diff[i]:diff[i+1]]=i3.e1[i]
-                i3epoch.e2[diff[i]:diff[i+1]]=i3.e2[i]
-                i3epoch.w[diff[i]:diff[i+1]]=i3.w[i]
+                i3epoch.e1[diff[i]:diff[i+1]]=i3[i,1]
+                i3epoch.e2[diff[i]:diff[i+1]]=i3[i,2]
+                i3epoch.w[diff[i]:diff[i+1]]=i3[i,3]
 
             save_obj(i3epoch,i3epochpickle)
 
