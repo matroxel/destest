@@ -155,7 +155,7 @@ class y1(object):
           # Dump the requested columns into memory if everything is there
           try:
             tmparray=fits[hdu].read(columns=cols)
-          except IOError:
+          except ValueError:
             print 'error loading fits file: ',file
           fits.close()
 
@@ -200,15 +200,15 @@ class y1(object):
 
             mcal,i3 = get_nonepoch(i3pickle,mcalpickle)
 
-            mcalepoch0 = y1.epoch_data_dump(mcaldir,['coadd_objects_id','ccd','orig_row','orig_col'],-1)
-            mask = np.where(np.in1d(mcal[:,0],mcalepoch0['coadd_objects_id'],assume_unique=False))[0]
+            mcalepoch0 = y1.epoch_data_dump(mcaldir,['id','orig_row','orig_col','file_id'],-2)
+            mask = np.where(np.in1d(mcal[:,0],mcalepoch0['id'],assume_unique=False))[0]
             mcal = mcal[mask]
-            mask = np.where(np.in1d(mcalepoch0['coadd_objects_id'],mcal[:,0],assume_unique=False))[0]
+            mask = np.where(np.in1d(mcalepoch0['id'],mcal[:,0],assume_unique=False))[0]
             mcalepoch0 = mcalepoch0[mask]
 
             mcalepoch=catalog.CatalogStore('mcal',setup=False,cattype='epoch',release='y1')
-            mcalepoch.coadd = mcalepoch0['coadd_objects_id']
-            mcalepoch.ccd = mcalepoch0['ccd']
+            mcalepoch.coadd = mcalepoch0['id']
+            mcalepoch.ccd = mcalepoch0['file_id']
             mcalepoch.row = mcalepoch0['orig_row']
             mcalepoch.col = mcalepoch0['orig_col']
             mcalepoch0 = None
@@ -837,13 +837,63 @@ class y1_plots(object):
         plt.errorbar(d['arr1'],d['e1'],marker='.',linestyle='',color='r',label=r'$e_1$')
         plt.errorbar(d['arr1'],d['e2'],marker='.',linestyle='',color='b',label=r'$e_2$')
         plt.minorticks_on()
-        plt.ylabel(r'Mean $e$')
+        plt.ylabel(r'$\langle e \rangle$')
         plt.axhline(0.,color='k')
         # plt.fill_between([0.,15.],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
         plt.xlabel('CCD pixel column')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
         plt.savefig('plots/y1/mean_e_row.pdf', bbox_inches='tight')
+        plt.close()
+
+        return
+
+
+    @staticmethod
+    def mean_e_fov(mcal,i3,replace=False):
+        import scipy.stats as stats
+
+        name = 'text/mean_e_focal.pkl'
+
+        if replace|(not os.path.exists(name)):
+
+            x,y=field.field_methods.get_field_pos(mcal)
+            cate1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e1,bins=1000)
+            cate2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e2,bins=1000)
+
+            x,y=field.field_methods.get_field_pos(i3)
+            cat2e1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e1,bins=1000)
+            cat2e2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e2,bins=1000)
+
+            d = {
+            'cate1'  : cate1,
+            'cate2'  : cate2,
+            'cat2e1'  : cat2e1,
+            'cat2e2'  : cat2e2
+            }
+
+            save_obj(d,name)
+ 
+        else:
+
+            d = load_obj(name)
+
+        plt.figure(figsize=(20,30))
+        fig, ax = plt.subplots(nrows=2, ncols=2)
+        im = ax[0,0].imshow(d['cate1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        im = ax[1,0].imshow(d['cate2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        im = ax[0,1].imshow(d['cat2e1'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        im = ax[1,1].imshow(d['cat2e2'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.75)
+        for ax_ in ax.flat:
+            ax_.axis('off')
+            ax_.set_aspect(1)
+        ax[0,0].text(-100,250, r'$e_{1}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":16})
+        ax[0,0].text(250,575, '\textsc{metacal}', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
+        ax[1,0].text(-100,250, r'$e_{2}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":16})
+        ax[0,1].text(250,575, '\textsc{im3shape}', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
+        plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
+        plt.savefig('plots/y1/mean_e_focal.pdf', bbox_inches='tight')
         plt.close()
 
         return
