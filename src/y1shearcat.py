@@ -574,6 +574,7 @@ class y1_plots(object):
         ind0 = 0
         median = np.zeros(len(np.unique(x)))
         d = np.diff(x)
+        d = np.where(d>0)[0]
         for j in range(len(np.unique(x))):
             ind = d[j]
             if j%100==0:
