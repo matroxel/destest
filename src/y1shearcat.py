@@ -518,13 +518,15 @@ class y1_plots(object):
 
         if replace|(not os.path.exists(name)):
 
-            edge=lin.linear_methods.find_bin_edges(cat.mag,bins)
-            i = np.argsort(cat.mag)
+            mask = cat.flag==0
+            edge=lin.linear_methods.find_bin_edges(cat.mag[mask],bins)
+            i = np.argsort(cat.mag[mask])
+            mag = cat.mag[mask][i]
 
-            arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
-            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(cat.psf_size-cat.size)[i],edge)
-            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
-            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
+            arr1, tmp    = y1_plots.bin_mean_new(mag,mag,edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(mag,(cat.psf_size-cat.size)[i],edge)
+            de1,  de1err = y1_plots.bin_mean_new(mag,(cat.psf1-cat.e1)[i],edge)
+            de2,  de2err = y1_plots.bin_mean_new(mag,(cat.psf2-cat.e2)[i],edge)
 
             d = {
 
@@ -611,13 +613,14 @@ class y1_plots(object):
         i = np.argsort(psf_exp)
         psf_exp = psf_exp[i]
 
-        f,ax = plt.subplot()
-        zmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i]/2)*2.355,psf_exp,exp,'z','k')
-        imedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i]/2)*2.355,psf_exp,exp,'i','b')
-        rmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i]/2)*2.355,psf_exp,exp,'r','r')
+        ax = plt.subplot()
+        fwhm = np.sqrt(cat.size[mask][i]/2)*2.355
+        zmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'z','k')
+        imedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'i','b')
+        rmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'r','r')
         print 'median seeing for riz bands',np.median(np.append(np.append(rmedian,imedian),zmedian))
         handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[::-1], labels[::-1], title='Line', loc='upper right')
+        ax.legend(handles[::-1], labels[::-1], loc='upper right')
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
         plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
