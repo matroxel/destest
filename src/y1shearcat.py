@@ -494,6 +494,7 @@ class y1_plots(object):
 
     @staticmethod
     def bin_mean_new(x,y,bins):
+        # I need to fix main destest version to work like this, much faster
 
         ind0 = 0
         mean = np.zeros(bins)
@@ -519,10 +520,10 @@ class y1_plots(object):
             edge=lin.linear_methods.find_bin_edges(cat.mag,bins)
             i = np.argsort(cat.mag)
 
-            arr1, tmp    = bin_mean_new(cat.mag[i],cat.mag[i],bins)
-            dT,   dTerr  = bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],bins)
-            de1,  de1err = bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],bins)
-            de2,  de2err = bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],bins)
+            arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],bins)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],bins)
+            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],bins)
+            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],bins)
 
             d = {
 
