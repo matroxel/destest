@@ -584,16 +584,17 @@ class y1_plots(object):
         return median
 
     @staticmethod
-    def psf_star_fwhm_subplot(cat,psf_exp,exp,mask,band,color):
+    def psf_star_fwhm_subplot(size,psf_exp,exp,mask,band,color):
 
         flist = exp['exp'][exp['filter']==band]
         flist = np.char.strip(flist,'DECam_').astype(int)
         flist = np.unique(flist)
         fmask = np.in1d(psf_exp,flist,assume_unique=False)
-        median = y1_plots.bin_median(psf_exp[i],cat.size[mask][i][fmask[i]])
+        median = y1_plots.bin_median(psf_exp[i],size[fmask])
+        print 'median seeing for '+band+' band',np.median(median)
         plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.2)
 
-        return
+        return median
 
     @staticmethod
     def psf_star_fwhm_dist(cat,expfile):
@@ -604,10 +605,12 @@ class y1_plots(object):
         psf_exp = np.char.strip(cat.filename[mask],'_psf')
         psf_exp = np.char.strip(psf_exp,'DECam_').astype(int)
         i = np.argsort(psf_exp)
+        psf_exp = psf_exp[i]
 
-        y1_plots.psf_star_fwhm_subplot(cat,psf_exp,exp,mask,'r','r')
-        y1_plots.psf_star_fwhm_subplot(cat,psf_exp,exp,mask,'i','b')
-        y1_plots.psf_star_fwhm_subplot(cat,psf_exp,exp,mask,'z','k')
+        rmedian = y1_plots.psf_star_fwhm_subplot(cat.size[mask][i],psf_exp,exp,mask,'r','r')
+        imedian = y1_plots.psf_star_fwhm_subplot(cat.size[mask][i],psf_exp,exp,mask,'i','b')
+        zmedian = y1_plots.psf_star_fwhm_subplot(cat.size[mask][i],psf_exp,exp,mask,'z','k')
+        print 'median seeing for riz bands',np.median(np.append(np.append(rmedian,imedian),zmedian))
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
         plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
