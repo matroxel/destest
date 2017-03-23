@@ -12,6 +12,7 @@ from matplotlib.colors import LogNorm
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import pylab
+import fitsio as fio
 import src.sys_split as sys_split
 import src.config as config
 import src.lin as lin
