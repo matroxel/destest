@@ -843,6 +843,8 @@ class y1_plots(object):
         plt.axhline(0.,color='k')
         plt.fill_between([0.,30.],-0.004*np.ones(2),0.004*np.ones(2),interpolate=True,color='k',alpha=0.2)
         plt.fill_between([2017.,2048.],-0.004*np.ones(2),0.004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.xlim((0.,2048.))
+        plt.ylim((-0.0015,0.0015))
         plt.xlabel('CCD pixel column')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
