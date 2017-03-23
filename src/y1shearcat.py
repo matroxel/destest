@@ -522,7 +522,7 @@ class y1_plots(object):
             i = np.argsort(cat.mag)
 
             arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
-            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(cat.psf_size-cat.size)[i],edge)
             de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
             de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
 
@@ -596,7 +596,7 @@ class y1_plots(object):
         median = y1_plots.bin_median(psf_exp[fmask],size[fmask])
         print median,np.max(median),np.min(median)
         print 'median seeing for '+band+' band',np.median(median)
-        plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.2)
+        plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.5,label=band)
 
         return median
 
@@ -611,10 +611,13 @@ class y1_plots(object):
         i = np.argsort(psf_exp)
         psf_exp = psf_exp[i]
 
-        rmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i].min()/2)*2.355,psf_exp,exp,'r','r')
-        imedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i].min()/2)*2.355,psf_exp,exp,'i','b')
-        zmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i].min()/2)*2.355,psf_exp,exp,'z','k')
+        f,ax = plt.subplot()
+        zmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i]/2)*2.355,psf_exp,exp,'z','k')
+        imedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i]/2)*2.355,psf_exp,exp,'i','b')
+        rmedian = y1_plots.psf_star_fwhm_subplot(np.sqrt(cat.size[mask][i]/2)*2.355,psf_exp,exp,'r','r')
         print 'median seeing for riz bands',np.median(np.append(np.append(rmedian,imedian),zmedian))
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[::-1], labels[::-1], title='Line', loc='upper right')
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
         plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
