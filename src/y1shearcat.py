@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pickle
+import glob
 import matplotlib
 matplotlib.use ('agg')
 import matplotlib.pyplot as plt
@@ -91,7 +92,6 @@ class y1(object):
 
             mcal.bs    = True
             mcal.wt    = False
-            mcal.lbins = 20
             mcal.add_pz(bpz,sheared=True,bounds=[0.2,1.3])
 
             #np.save('mcal_coadds.npy',np.vstack((mcal.coadd,np.ones(len(mcal.coadd)),np.ones(len(mcal.coadd)),np.zeros(len(mcal.coadd)),np.zeros(len(mcal.coadd)),mcal.w)).T)
@@ -103,7 +103,6 @@ class y1(object):
 
             i3.bs    = True
             i3.wt    = True
-            i3.lbins = 20
             i3.add_pz(bpz,sheared=False,bounds=[0.2,1.3])
 
             #np.save('i3_coadds.npy',np.vstack((i3.coadd,i3.m1,i3.m2,i3.c1,i3.c2,i3.w)).T)
@@ -139,6 +138,131 @@ class y1(object):
         psf.ccd-=1
 
         return psf
+
+
+    @staticmethod
+    def epoch_data_dump(epochdir,cols,hdu):
+
+        lenst=0
+        # Loop over file(s) [in directory]
+        for ifile,file in enumerate(glob.glob(epochdir+'*')):
+          # File format may not be readable
+          try:
+            fits=fio.FITS(file)
+          except IOError:
+            print 'error loading fits file: ',file
+
+          # Dump the requested columns into memory if everything is there
+          try:
+            tmparray=fits[hdu].read(columns=cols)
+          except IOError:
+            print 'error loading fits file: ',file
+          fits.close()
+
+          # If first file, generate storage array to speed up reading in of data
+          if lenst==0:
+            array=np.empty((500000000), dtype=tmparray.dtype.descr)
+            
+          array[lenst:lenst+len(tmparray)]=tmparray
+
+          lenst+=len(tmparray)
+          print ifile,len(tmparray),lenst,file
+
+        return array
+
+    @staticmethod
+    def get_nonepoch(i3pickle,mcalpickle):
+
+        mcal = load_obj(mcalpickle)
+        mask = catalog.CatalogMethods.get_cuts_mask(mcal,full=False)
+        e1,e2,w,m1,m2 = lin.linear_methods.get_lin_e_w_ms(mcal,mask=mask)
+        mcal = np.vstack((np.copy(mcal.coadd[mask]),e1/m1,e2/m2,w)).T
+        mask=np.argsort(mcal[:,0])
+        mcal = mcal[mask]
+
+        i3   = load_obj(i3pickle)
+        e1,e2,w,m1,m2 = lin.linear_methods.get_lin_e_w_ms(i3)
+        i3 = np.vstack((np.copy(i3.coadd),e1/m1,e2/m2,w)).T
+        mask=np.argsort(i3[:,0])
+        i3 = i3[mask]
+
+        return mcal,i3
+
+    @staticmethod
+    def load_epoch_data(i3dir,mcaldir,i3pickle,mcalpickle,i3epochpickle,mcalepochpickle,load_pickle=True):
+
+        if (load_pickle)&(os.path.exists(mcalepochpickle))&(os.path.exists(i3epochpickle)):
+
+            mcal = load_obj(mcalepochpickle)
+            i3   = load_obj(i3epochpickle)
+
+        else:
+
+            mcal,i3 = get_nonepoch(i3pickle,mcalpickle)
+
+            mcalepoch0 = y1.epoch_data_dump(mcaldir,['coadd_objects_id','ccd','orig_row','orig_col'],-1)
+            if np.any(~np.in1d(mcal.coadd,mcalepoch0['coadd_objects_id'],assume_unique=False)):
+                print 'Missing coadds in mcal epoch files'
+                return
+            mask = np.where(mcalepoch0['coadd_objects_id'],mcal[:,0],assume_unique=False)
+            mcalepoch0 = mcalepoch0[mask]
+
+            mcalepoch=catalog.CatalogStore('mcal',setup=False,cattype='mcal',release='y1')
+            mcalepoch.coadd = mcalepoch0['coadd_objects_id']
+            mcalepoch.ccd = mcalepoch0['ccd']
+            mcalepoch.row = mcalepoch0['orig_row']
+            mcalepoch.col = mcalepoch0['orig_col']
+            mcalepoch0 = None
+
+            mask=np.argsort(mcalepoch.coadd)
+            catalog.CatalogMethods.match_cat(mcalepoch,mask)
+            diff=np.diff(mcalepoch.coadd)
+            diff=np.where(diff!=0)[0]+1
+            diff=np.append([0],diff)
+            diff=np.append(diff,[None])
+
+            mcalepoch.e1=np.zeros(len(mcalepoch.coadd))
+            mcalepoch.e2=np.zeros(len(mcalepoch.coadd))
+            mcalepoch.w=np.zeros(len(mcalepoch.coadd))
+            for i in xrange(len(diff)-1):
+                mcalepoch.e1[diff[i]:diff[i+1]]=mcal.e1[i]
+                mcalepoch.e2[diff[i]:diff[i+1]]=mcal.e2[i]
+                mcalepoch.w[diff[i]:diff[i+1]]=mcal.w[i]
+
+            save_obj(mcalepoch,mcalepochpickle)
+
+            i3epoch0 = y1.epoch_data_dump(i3dir,['coadd_objects_id','ccd','orig_row','orig_col'],-1)
+            if np.any(~np.in1d(i3.coadd,i3epoch0['coadd_objects_id'],assume_unique=False)):
+                print 'Missing coadds in i3 epoch files'
+                return
+            mask = np.where(i3epoch0['coadd_objects_id'],i3[:,0],assume_unique=False)
+            i3epoch0 = i3epoch0[mask]
+
+            i3epoch=catalog.CatalogStore('i3',setup=False,cattype='i3',release='y1')
+            i3epoch.coadd = i3epoch0['coadd_objects_id']
+            i3epoch.ccd = i3epoch0['ccd']
+            i3epoch.row = i3epoch0['orig_row']
+            i3epoch.col = i3epoch0['orig_col']
+            i3epoch0 = None
+
+            mask=np.argsort(i3epoch.coadd)
+            catalog.CatalogMethods.match_cat(i3epoch,mask)
+            diff=np.diff(i3epoch.coadd)
+            diff=np.where(diff!=0)[0]+1
+            diff=np.append([0],diff)
+            diff=np.append(diff,[None])
+
+            i3epoch.e1=np.zeros(len(i3epoch.coadd))
+            i3epoch.e2=np.zeros(len(i3epoch.coadd))
+            i3epoch.w=np.zeros(len(i3epoch.coadd))
+            for i in xrange(len(diff)-1):
+                i3epoch.e1[diff[i]:diff[i+1]]=i3.e1[i]
+                i3epoch.e2[diff[i]:diff[i+1]]=i3.e2[i]
+                i3epoch.w[diff[i]:diff[i+1]]=i3.w[i]
+
+            save_obj(i3epoch,i3epochpickle)
+
+        return mcalepoch, i3epoch
 
 class y1_plots(object):
 
@@ -471,6 +595,7 @@ class y1_plots(object):
     @staticmethod
     def footprint_plot(cat):
 
+        mask = catalog.CatalogMethods.get_cuts_mask(cat,full=False)
         mask1 = mask[np.in1d(mask,np.where((cat.ra>-70)&(cat.ra<100))[0])]
         fig = plt.figure(figsize=(6.5,6))
         y1_plots.footprint_sub(cat.ra[mask1], cat.dec[mask1],10,10,1024,fig)
@@ -647,7 +772,6 @@ class y1_plots(object):
             psf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf2[mask],bins=1000)
             dpsf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf1[mask]-cat.e1[mask],bins=1000)
             dpsf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,cat.psf2[mask]-cat.e2[mask],bins=1000)
-
 
             d = {
             'psf1'  : psf1,
