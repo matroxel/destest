@@ -542,7 +542,6 @@ class y1_plots(object):
 
             d = load_obj(name)
 
-        plt.figure(fig)
         ax=plt.subplot(2,1,1)
         plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='o',linestyle='',color='k')
         ax.minorticks_on()
