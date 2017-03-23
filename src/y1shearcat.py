@@ -650,10 +650,10 @@ class y1_plots(object):
 
 
             d = {
-            'psf1'  : arr1,
-            'psf2'  : dT,
-            'dpsf1' : de1,
-            'dpsf2' : de2
+            'psf1'  : psf1,
+            'psf2'  : psf2,
+            'dpsf1' : dpsf1,
+            'dpsf2' : dpsf2
             }
 
             save_obj(d,name)
