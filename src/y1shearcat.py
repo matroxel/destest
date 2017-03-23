@@ -579,7 +579,7 @@ class y1_plots(object):
             ind = d[j]
             if j%100==0:
                 print j, ind
-            if ind == 0:
+            if j==len(np.unique(x))-1:
                 ind = -1
             median[j] = np.median(y[ind0:ind])
             ind0 = ind
