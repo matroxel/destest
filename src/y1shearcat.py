@@ -572,15 +572,16 @@ class y1_plots(object):
         # I need to fix main destest version to work like this, much faster
 
         ind0 = 0
-        median = np.zeros(len(np.unique(x)))
+        jmax = len(np.unique(x))
+        median = np.zeros(jmax)
         d = np.diff(x)
         d = np.where(d>0)[0]
-        for j in range(len(np.unique(x))):
+        for j in range(jmax):
             ind = d[j]
             if j%100==0:
                 print j, ind
-            if j==len(np.unique(x))-1:
-                ind = -1
+            if j==-1:
+                ind = jmax-1
             median[j] = np.median(y[ind0:ind])
             ind0 = ind
 
