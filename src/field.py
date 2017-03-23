@@ -579,7 +579,7 @@ class field_methods(object):
   @staticmethod
   def get_field_pos(cat):
 
-    x,y=field_methods.ccd_to_field(cat.ccd,cat.row,cat.col)
+    x,y=field_methods.ccd_to_field(cat.ccd,cat.col,cat.row)
 
     return x,y 
 
