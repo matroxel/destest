@@ -630,7 +630,7 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def psf_e_fov(cat,expfile,replace=False):
+    def psf_e_fov(cat,replace=False):
         import scipy.stats as stats
 
         name = 'text/psf_focal.pkl'
