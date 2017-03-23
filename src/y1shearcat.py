@@ -584,36 +584,31 @@ class y1_plots(object):
         return median
 
     @staticmethod
+    def psf_star_fwhm_subplot(cat,exp,mask,band,color):
+
+        flist = exp['exp'][exp['filter']==band]
+        flist = np.char.strip(flist,'DECam_').astype(int)
+        flist = np.unique(flist)
+        fmask = np.in1d(psf_exp,flist,assume_unique=False)
+        median = y1_plots.bin_median(psf_exp[i],cat.size[mask][i][fmask[i]])
+        plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.2)
+
+        return
+
+
+    @staticmethod
     def psf_star_fwhm_dist(cat,expfile):
 
         mask = cat.flag==0
         exp = fio.FITS(expfile)[-1].read(columns=['filter','exp'])
 
-        rlist = exp['exp'][exp['filter']=='r']
-        ilist = exp['exp'][exp['filter']=='i']
-        zlist = exp['exp'][exp['filter']=='z']
-        rlist = np.char.strip(rlist,'DECam_').astype(int)
-        ilist = np.char.strip(ilist,'DECam_').astype(int)
-        zlist = np.char.strip(zlist,'DECam_').astype(int)
-        rlist = np.unique(rlist)
-        ilist = np.unique(ilist)
-        zlist = np.unique(zlist)
-
         psf_exp = np.char.strip(cat.filename[mask],'_psf')
         psf_exp = np.char.strip(psf_exp,'DECam_').astype(int)
-        rmask = np.in1d(psf_exp,rlist,assume_unique=False)
-        imask = np.in1d(psf_exp,ilist,assume_unique=False)
-        zmask = np.in1d(psf_exp,zlist,assume_unique=False)
-
         i = np.argsort(psf_exp)
 
-        rmedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][rmask[i]])
-        imedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][imask[i]])
-        zmedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][zmask[i]])
-
-        plt.hist(rmedian,bins=50,histtype='stepfilled',color='r',alpha=0.2)
-        plt.hist(imedian,bins=50,histtype='stepfilled',color='b',alpha=0.2)
-        plt.hist(zmedian,bins=50,histtype='stepfilled',color='k',alpha=0.2)
+        y1_plots.psf_star_fwhm_subplot(cat,exp,mask,'r','r')
+        y1_plots.psf_star_fwhm_subplot(cat,exp,mask,'i','b')
+        y1_plots.psf_star_fwhm_subplot(cat,exp,mask,'z','k')
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
         plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
