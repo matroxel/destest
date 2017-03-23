@@ -610,9 +610,9 @@ class y1_plots(object):
         imedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][imask[i]])
         zmedian = y1_plots.bind_median(psf_exp[i],cat.size[mask][i][zmask[i]])
 
-        plt.hist(cat.size[],bins=50,histtype='stepfilled',color='r',alpha=0.2)
-        plt.hist(c,bins=50,histtype='stepfilled',color='b',alpha=0.2)
-        plt.hist(c,bins=50,histtype='stepfilled',color='k',alpha=0.2)
+        plt.hist(rmedian,bins=50,histtype='stepfilled',color='r',alpha=0.2)
+        plt.hist(imedian,bins=50,histtype='stepfilled',color='b',alpha=0.2)
+        plt.hist(zmedian,bins=50,histtype='stepfilled',color='k',alpha=0.2)
         plt.ylabel('Number of exposures')
         plt.xlabel('Seeing FWHM (arcsec)')
         plt.savefig('plots/y1/psf_fwhm_dist.pdf', bbox_inches='tight')
