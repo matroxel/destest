@@ -663,14 +663,14 @@ class y1_plots(object):
 
         plt.figure(figsize=(10,30))
         fig, ax = plt.subplots(nrows=2, ncols=2)
-        im = ax[0,0].imshow(d['psf1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[0,0].imshow(d['psf1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         plt.ylabel(r'$e_{1,\mathrm{PSF}}$')
-        im = ax[1,0].imshow(d['psf2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[1,0].imshow(d['psf2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         plt.ylabel(r'$e_{2,\mathrm{PSF}}$')
         plt.xlabel(r'Mean')
 
-        im = ax[0,1].imshow(d['dpsf1'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
-        im = ax[1,1].imshow(d['dpsf2'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[0,1].imshow(d['dpsf1'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        im = ax[1,1].imshow(d['dpsf2'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.75)
         plt.xlabel(r'Mean residual')
 
