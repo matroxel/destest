@@ -625,6 +625,8 @@ class y1_plots(object):
         mean = np.zeros(len(edge)-1)
         err = np.zeros(len(edge)-1)
         for j in range(len(edge)-1):
+            if j%100==0:
+                print j
             ind = np.searchsorted(x, edge[j+1])
             if ind == 0:
                 ind = -1
