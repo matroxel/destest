@@ -667,7 +667,6 @@ class y1_plots(object):
 
             d = load_obj(name)
 
-        import matplotlib.transforms as mtransforms
         ax=plt.subplot(2,1,1)
         plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='o',linestyle='',color='k')
         ax.minorticks_on()
@@ -800,6 +799,51 @@ class y1_plots(object):
         ax[0,1].text(250,575, 'Mean residual', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
         plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/psf_focal.pdf', bbox_inches='tight')
+        plt.close()
+
+        return
+
+    @staticmethod
+    def mean_e_row_plot(cat,replace=False,bins=60):
+
+        name = 'text/mean_e_row.pkl'
+
+        if replace|(not os.path.exists(name)):
+
+            edge=lin.linear_methods.find_bin_edges(cat.row,bins)
+            i = np.argsort(cat.row)
+
+            arr1, tmp  = y1_plots.bin_mean_new(cat.row[i],cat.row[i],edge)
+            e1,  e1err = y1_plots.bin_mean_new(cat.row[i],cat.e1[i],edge)
+            e2,  e2err = y1_plots.bin_mean_new(cat.row[i],cat.e2[i],edge)
+
+            d = {
+
+            'arr1'   : arr1,
+            'e1'    : e1,
+            'e2'    : e2,
+            'e1err' : e1err,
+            'e2err' : e2err,
+            }
+
+            save_obj(d,name)
+ 
+        else:
+
+            d = load_obj(name)
+
+        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$e_1$')
+        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$e_2$')
+        ax.minorticks_on()
+        plt.ylabel(r'Mean $e$')
+        plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        plt.axhline(0.,color='k')
+        # plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.xlabel('CCD pixel row')
+
+        plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
+        plt.tight_layout()
+        plt.savefig('plots/y1/mean_e_row.pdf', bbox_inches='tight')
         plt.close()
 
         return
