@@ -832,8 +832,10 @@ class y1_plots(object):
 
             d = load_obj(name)
 
-        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='.',linestyle='',color='r',label=r'$e_1$')
-        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='.',linestyle='',color='b',label=r'$e_2$')
+        # plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='.',linestyle='',color='r',label=r'$e_1$')
+        # plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='.',linestyle='',color='b',label=r'$e_2$')
+        plt.errorbar(d['arr1'],d['e1'],marker='.',linestyle='',color='r',label=r'$e_1$')
+        plt.errorbar(d['arr1'],d['e2'],marker='.',linestyle='',color='b',label=r'$e_2$')
         plt.minorticks_on()
         plt.ylabel(r'Mean $e$')
         plt.axhline(0.,color='k')
@@ -841,7 +843,6 @@ class y1_plots(object):
         plt.xlabel('CCD pixel column')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
-        plt.tight_layout()
         plt.savefig('plots/y1/mean_e_row.pdf', bbox_inches='tight')
         plt.close()
 
