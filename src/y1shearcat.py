@@ -592,8 +592,8 @@ class y1_plots(object):
         flist = np.char.strip(flist,'DECam_').astype(int)
         flist = np.unique(flist)
         fmask = np.in1d(psf_exp,flist,assume_unique=False)
-        print psf_exp,size[fmask]
-        median = y1_plots.bin_median(psf_exp,size[fmask])
+        print psf_exp,size[fmask],np.sum(np.isnan(size[fmask]))
+        median = y1_plots.bin_median(psf_exp[fmask],size[fmask])
         print median,np.max(median),np.min(median)
         print 'median seeing for '+band+' band',np.median(median)
         plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.2)
