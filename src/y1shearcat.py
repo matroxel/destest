@@ -630,29 +630,47 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def psf_e_fov(cat,expfile):
+    def psf_e_fov(cat,expfile,replace=False):
         import scipy.stats as stats
 
-        mask = cat.flag==0
-        x,y=field.field_methods.get_field_pos(psf)
-        x=x[mask]
-        y=y[mask]
+        name = 'text/psf_focal.pkl'
 
-        psf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf1[mask],bins=500)
-        psf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf2[mask],bins=500)
-        dpsf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf1[mask]-psf.e1[mask],bins=500)
-        dpsf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf2[mask]-psf.e2[mask],bins=500)
+        if replace|(not os.path.exists(name)):
+
+            mask = cat.flag==0
+            x,y=field.field_methods.get_field_pos(psf)
+            x=x[mask]
+            y=y[mask]
+
+            psf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf1[mask],bins=500)
+            psf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf2[mask],bins=500)
+            dpsf1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf1[mask]-psf.e1[mask],bins=500)
+            dpsf2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,psf.psf2[mask]-psf.e2[mask],bins=500)
+
+
+            d = {
+            'psf1'  : arr1,
+            'psf2'  : dT,
+            'dpsf1' : de1,
+            'dpsf2' : de2
+            }
+
+            save_obj(d,name)
+ 
+        else:
+
+            d = load_obj(name)
 
         plt.figure(figsize=(10,30))
         fig, ax = plt.subplots(nrows=2, ncols=2)
-        im = ax[0,0].imshow(psf1.T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[0,0].imshow(d['psf1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
         plt.ylabel(r'$e_{1,\mathrm{PSF}}$')
-        im = ax[1,0].imshow(psf2.T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[1,0].imshow(d['psf2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
         plt.ylabel(r'$e_{2,\mathrm{PSF}}$')
         plt.xlabel(r'Mean')
 
-        im = ax[0,1].imshow(dpsf1.T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
-        im = ax[1,1].imshow(dpsf2.T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[0,1].imshow(d['dpsf1'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
+        im = ax[1,1].imshow(d['dpsf2'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('viridis'))
         fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.75)
         plt.xlabel(r'Mean residual')
 
