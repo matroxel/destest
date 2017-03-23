@@ -136,6 +136,7 @@ class y1(object):
 
         cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
         psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
+        psf.ccd-=1
 
         return psf
 
