@@ -834,7 +834,7 @@ class y1_plots(object):
 
         plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$e_1$')
         plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$e_2$')
-        ax.minorticks_on()
+        plt.minorticks_on()
         plt.ylabel(r'Mean $e$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
