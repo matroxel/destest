@@ -206,7 +206,7 @@ class y1(object):
             mask = np.where(np.in1d(mcalepoch0['coadd_objects_id'],mcal[:,0],assume_unique=False))[0]
             mcalepoch0 = mcalepoch0[mask]
 
-            mcalepoch=catalog.CatalogStore('mcal',setup=False,cattype='mcal',release='y1')
+            mcalepoch=catalog.CatalogStore('mcal',setup=False,cattype='epoch',release='y1')
             mcalepoch.coadd = mcalepoch0['coadd_objects_id']
             mcalepoch.ccd = mcalepoch0['ccd']
             mcalepoch.row = mcalepoch0['orig_row']
@@ -236,7 +236,7 @@ class y1(object):
             mask = np.where(np.in1d(i3epoch0['coadd_objects_id'],i3[:,0],assume_unique=False))[0]
             i3epoch0 = i3epoch0[mask]
 
-            i3epoch=catalog.CatalogStore('i3',setup=False,cattype='i3',release='y1')
+            i3epoch=catalog.CatalogStore('i3',setup=False,cattype='epoch',release='y1')
             i3epoch.coadd = i3epoch0['coadd_objects_id']
             i3epoch.ccd = i3epoch0['ccd']
             i3epoch.row = i3epoch0['orig_row']
