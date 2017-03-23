@@ -493,13 +493,13 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def bin_mean_new(x,y,bins):
+    def bin_mean_new(x,y,edge):
         # I need to fix main destest version to work like this, much faster
 
         ind0 = 0
-        mean = np.zeros(bins)
-        err = np.zeros(bins)
-        for j in range(bins):
+        mean = np.zeros(len(edge)-1)
+        err = np.zeros(len(edge)-1)
+        for j in range(len(edge)-1):
             ind = np.searchsorted(x, edge[j+1])
             if ind == 0:
                 ind = -1
@@ -520,10 +520,10 @@ class y1_plots(object):
             edge=lin.linear_methods.find_bin_edges(cat.mag,bins)
             i = np.argsort(cat.mag)
 
-            arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],bins)
-            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],bins)
-            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],bins)
-            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],bins)
+            arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],edge)
+            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
+            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
 
             d = {
 
@@ -548,6 +548,7 @@ class y1_plots(object):
         ax.minorticks_on()
         plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}} (\mathrm{arcsec}^{2})$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        plt.axhline(0.,color='k')
         ax.set_xticklabels([])
 
         ax=plt.subplot(2,1,2)
@@ -556,6 +557,7 @@ class y1_plots(object):
         ax.minorticks_on()
         plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        plt.axhline(0.,color='k')
         plt.xlabel('Magnitude')
 
         plt.tight_layout()
