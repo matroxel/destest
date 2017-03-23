@@ -668,7 +668,7 @@ class y1_plots(object):
             d = load_obj(name)
 
         ax=plt.subplot(2,1,1)
-        plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='o',linestyle='',color='k')
+        plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='.',linestyle='',color='k')
         ax.minorticks_on()
         plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}}~(\mathrm{arcsec}^{2})$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
@@ -677,8 +677,8 @@ class y1_plots(object):
         ax.set_xticklabels([])
 
         ax=plt.subplot(2,1,2)
-        plt.errorbar(d['arr1'],d['de1'],yerr=d['de1err'],marker='o',linestyle='',color='r',label=r'$e_1$')
-        plt.errorbar(d['arr1'],d['de2'],yerr=d['de2err'],marker='o',linestyle='',color='b',label=r'$e_2$')
+        plt.errorbar(d['arr1'],d['de1'],yerr=d['de1err'],marker='.',linestyle='',color='r',label=r'$e_1$')
+        plt.errorbar(d['arr1'],d['de2'],yerr=d['de2err'],marker='.',linestyle='',color='b',label=r'$e_2$')
         ax.minorticks_on()
         plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
@@ -810,12 +810,12 @@ class y1_plots(object):
 
         if replace|(not os.path.exists(name)):
 
-            edge=lin.linear_methods.find_bin_edges(cat.row,bins)
-            i = np.argsort(cat.row)
+            edge=lin.linear_methods.find_bin_edges(cat.col,bins)
+            i = np.argsort(cat.col)
 
-            arr1, tmp  = y1_plots.bin_mean_new(cat.row[i],cat.row[i],edge)
-            e1,  e1err = y1_plots.bin_mean_new(cat.row[i],cat.e1[i],edge)
-            e2,  e2err = y1_plots.bin_mean_new(cat.row[i],cat.e2[i],edge)
+            arr1, tmp  = y1_plots.bin_mean_new(cat.col[i],cat.col[i],edge)
+            e1,  e1err = y1_plots.bin_mean_new(cat.col[i],cat.e1[i],edge)
+            e2,  e2err = y1_plots.bin_mean_new(cat.col[i],cat.e2[i],edge)
 
             d = {
 
@@ -832,13 +832,13 @@ class y1_plots(object):
 
             d = load_obj(name)
 
-        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$e_1$')
-        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$e_2$')
+        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='.',linestyle='',color='r',label=r'$e_1$')
+        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='.',linestyle='',color='b',label=r'$e_2$')
         plt.minorticks_on()
         plt.ylabel(r'Mean $e$')
         plt.axhline(0.,color='k')
         # plt.fill_between([0.,15.],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
-        plt.xlabel('CCD pixel row')
+        plt.xlabel('CCD pixel column')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
         plt.tight_layout()
