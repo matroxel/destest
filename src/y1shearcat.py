@@ -819,7 +819,7 @@ class y1_plots(object):
 
             d = {
 
-            'arr1'   : arr1,
+            'arr1'  : arr1,
             'e1'    : e1,
             'e2'    : e2,
             'e1err' : e1err,
@@ -839,7 +839,8 @@ class y1_plots(object):
         plt.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         plt.axhline(0.,color='k')
-        # plt.fill_between([0.,15.],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.fill_between([0.,30.],-0.004*np.ones(2),0.004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.fill_between([2017.,2048.],-0.004*np.ones(2),0.004*np.ones(2),interpolate=True,color='k',alpha=0.2)
         plt.xlabel('CCD pixel column')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
