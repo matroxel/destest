@@ -543,8 +543,8 @@ class field_methods(object):
     centrex=[]
     centrey=[]
     for i,x in enumerate(field_methods.ccdid):
-      centrex=np.append(centrex,field_methods.chip_centres.get(x,None)[1])
-      centrey=np.append(centrey,field_methods.chip_centres.get(x,None)[0])
+      centrex=np.append(centrex,field_methods.chip_centres.get(x,None)[0])
+      centrey=np.append(centrey,field_methods.chip_centres.get(x,None)[1])
 
     return np.vstack((centrex,centrey)).T
 
