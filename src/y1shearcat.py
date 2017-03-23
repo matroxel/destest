@@ -577,11 +577,12 @@ class y1_plots(object):
         d = np.diff(x)
         d = np.where(d>0)[0]
         for j in range(jmax):
-            ind = d[j]
+            if j==jmax-1:
+                ind = -1
+            else:
+                ind = d[j]
             if j%100==0:
                 print j, ind
-            if j==-1:
-                ind = jmax-1
             median[j] = np.median(y[ind0:ind])
             ind0 = ind
 
