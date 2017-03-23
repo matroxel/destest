@@ -574,15 +574,12 @@ class y1_plots(object):
         ind0 = 0
         jmax = len(np.unique(x))
         median = np.zeros(jmax)
-        d = np.diff(x)
-        d = np.where(d>0)[0]
+        d = np.where(np.diff(x)>0)[0]
         for j in range(jmax):
             if j==jmax-1:
                 ind = -1
             else:
                 ind = d[j]
-            if j%100==0:
-                print j, ind
             median[j] = np.median(y[ind0:ind])
             ind0 = ind
 
@@ -597,6 +594,7 @@ class y1_plots(object):
         fmask = np.in1d(psf_exp,flist,assume_unique=False)
         print psf_exp,size[fmask]
         median = y1_plots.bin_median(psf_exp,size[fmask])
+        print median,np.max(median),np.min(median)
         print 'median seeing for '+band+' band',np.median(median)
         plt.hist(median,bins=50,histtype='stepfilled',color=color,alpha=0.2)
 
