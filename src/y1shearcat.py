@@ -836,9 +836,8 @@ class y1_plots(object):
         plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$e_2$')
         plt.minorticks_on()
         plt.ylabel(r'Mean $e$')
-        plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        # plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        # plt.fill_between([0.,15.],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
         plt.xlabel('CCD pixel row')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
