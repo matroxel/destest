@@ -510,7 +510,7 @@ class y1_plots(object):
 
 
     @staticmethod
-    def psf_mag_res_plot(cat,bins=60):
+    def psf_mag_res_plot(cat,replace=False,bins=60):
 
         name = 'text/psf_resid.pkl'
 
