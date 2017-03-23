@@ -145,7 +145,7 @@ class y1(object):
 
         lenst=0
         # Loop over file(s) [in directory]
-        for ifile,file in enumerate(glob.glob(epochdir)):
+        for ifile,file in enumerate(glob.glob(epochdir+'*')):
           # File format may not be readable
           try:
             fits=fio.FITS(file)
@@ -182,7 +182,7 @@ class y1(object):
 
         i3   = load_obj(i3pickle)
         e1,e2,w,m1,m2 = lin.linear_methods.get_lin_e_w_ms(i3)
-        i3 = np.vstack((np.copy(i3.coadd[mask]),e1/m1,e2/m2,w)).T
+        i3 = np.vstack((np.copy(i3.coadd),e1/m1,e2/m2,w)).T
         mask=np.argsort(i3[:,0])
         i3 = i3[mask]
 
