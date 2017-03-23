@@ -518,15 +518,13 @@ class y1_plots(object):
 
         if replace|(not os.path.exists(name)):
 
-            mask = cat.flag==0
-            edge=lin.linear_methods.find_bin_edges(cat.mag[mask],bins)
-            i = np.argsort(cat.mag[mask])
-            mag = cat.mag[mask][i]
+            edge=lin.linear_methods.find_bin_edges(cat.mag,bins)
+            i = np.argsort(cat.mag)
 
-            arr1, tmp    = y1_plots.bin_mean_new(mag,mag,edge)
-            dT,   dTerr  = y1_plots.bin_mean_new(mag,(cat.psf_size-cat.size)[i],edge)
-            de1,  de1err = y1_plots.bin_mean_new(mag,(cat.psf1-cat.e1)[i],edge)
-            de2,  de2err = y1_plots.bin_mean_new(mag,(cat.psf2-cat.e2)[i],edge)
+            arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(cat.psf_size-cat.size)[i],edge)
+            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
+            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
 
             d = {
 
@@ -545,12 +543,15 @@ class y1_plots(object):
 
             d = load_obj(name)
 
+        import matplotlib.transforms as mtransforms
         ax=plt.subplot(2,1,1)
         plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='o',linestyle='',color='k')
         ax.minorticks_on()
         plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}}~(\mathrm{arcsec}^{2})$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
+        trans = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+        plt.fill_between([10.,cat.mag[cat.flag==0].min()],np.zeros(2),np.ones(2),interpolate=True,color='k',alpha=0.2,transform=trans)
         ax.set_xticklabels([])
 
         ax=plt.subplot(2,1,2)
@@ -560,6 +561,8 @@ class y1_plots(object):
         plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
+        trans = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+        plt.fill_between([10.,cat.mag[cat.flag==0].min()],np.zeros(2),np.ones(2),interpolate=True,color='k',alpha=0.2,transform=trans)
         plt.xlabel('Magnitude')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
