@@ -300,12 +300,12 @@ class y1_plots(object):
         y1_plots.evsradius(cat1,cat2,replace=replace)
         y1_plots.evspsfsize(cat1,cat2,replace=replace)
 
-    @staticmethod
-    def mean_e_epoch(cat1,cat2):
+    # @staticmethod
+    # def mean_e_epoch(cat1,cat2):
 
-        txt.write_methods.heading('Linear Splits on epoch quantities',cat1,label='y1_paper',create=False)
+    #     txt.write_methods.heading('Linear Splits on epoch quantities',cat1,label='y1_paper',create=False)
 
-        y1_plots.evsrow(cat1,cat2)
+    #     y1_plots.evsrow(cat1,cat2)
 
     @staticmethod
     def mean_e_subplot(cat,n,val,fig,replace=False):
@@ -439,70 +439,70 @@ class y1_plots(object):
         return
 
 
-    def evsrow(i3epoch,mcepoch,replace=False):
+    # def evsrow(i3epoch,mcepoch,replace=False):
 
-        plt.figure(6)
+    #     plt.figure(6)
 
-        y1_plots.mean_e_subplot(i3epoch,1,'row',6,replace=replace)
-        y1_plots.mean_e_subplot(mcepoch,2,'row',6,replace=replace)
+    #     y1_plots.mean_e_subplot(i3epoch,1,'row',6,replace=replace)
+    #     y1_plots.mean_e_subplot(mcepoch,2,'row',6,replace=replace)
 
-        plt.tight_layout()
-        plt.savefig('plots/y1/lin_split_ccdrow.pdf', bbox_inches='tight')
-        plt.close(6)
+    #     plt.tight_layout()
+    #     plt.savefig('plots/y1/lin_split_ccdrow.pdf', bbox_inches='tight')
+    #     plt.close(6)
 
 
-    @staticmethod
-    def psf_whisker(psf,replace=False):
+    # @staticmethod
+    # def psf_whisker(psf,replace=False):
 
-        psf.dpsf1 = psf.psf1-psf.e1
-        psf.dpsf2 = psf.psf2-psf.e2
+    #     psf.dpsf1 = psf.psf1-psf.e1
+    #     psf.dpsf2 = psf.psf2-psf.e2
 
-        y1_plots.whiskerplot(psf,'psf',6,replace=replace)
-        y1_plots.whiskerplot(psf,'dpsf',7,replace=replace)
+    #     y1_plots.whiskerplot(psf,'psf',6,replace=replace)
+    #     y1_plots.whiskerplot(psf,'dpsf',7,replace=replace)
 
-        return
+    #     return
 
-    @staticmethod
-    def e_whisker(cat1dir,cat1,cat2dir,cat2,replace=False):
+    # @staticmethod
+    # def e_whisker(cat1dir,cat1,cat2dir,cat2,replace=False):
 
-        cols=['coadd','expnum','ccd','row','col']
-        epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
-        y1_plots.whiskerplot(epoch1,'e',8)
+    #     cols=['coadd','expnum','ccd','row','col']
+    #     epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
+    #     y1_plots.whiskerplot(epoch1,'e',8)
 
-        cols=['coadd','expnum','ccd','row','col']
-        epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
-        y1_plots.whiskerplot(epoch2,'e',9)
+    #     cols=['coadd','expnum','ccd','row','col']
+    #     epoch1=catalog.CatalogStore('epoch1',cutfunc=None,cattype='i3',cols=cols,catdir=cat1dir,release='y1')
+    #     y1_plots.whiskerplot(epoch2,'e',9)
 
-        return
+    #     return
 
-    @staticmethod
-    def whiskerplot(cat,col,fig,replace=False):
+    # @staticmethod
+    # def whiskerplot(cat,col,fig,replace=False):
 
-        if col == 'psf':
-            key = r'e_{PSF}'
-        if col == 'e':
-            key = r'e'
-        if col == 'dpsf':
-            key = r'\Delta e_{PSF}'
+    #     if col == 'psf':
+    #         key = r'e_{PSF}'
+    #     if col == 'e':
+    #         key = r'e'
+    #     if col == 'dpsf':
+    #         key = r'\Delta e_{PSF}'
 
-        scale=0.02
+    #     scale=0.02
 
-        y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col=col)
-        pos0=0.5*np.arctan2(e2/mw,e1/mw)
-        e/=mw
-        for i in range(len(x)):
-            y[i,:,:],x[i,:,:]=field.field_methods.ccd_to_field(i,y[i,:,:]-2048,x[i,:,:]-1024)
+    #     y,x,mw,e1,e2,e=field.field.whisker_calc(cat,col=col)
+    #     pos0=0.5*np.arctan2(e2/mw,e1/mw)
+    #     e/=mw
+    #     for i in range(len(x)):
+    #         y[i,:,:],x[i,:,:]=field.field_methods.ccd_to_field(i,y[i,:,:]-2048,x[i,:,:]-1024)
 
-        print 'y,x',y[i,:,:],x[i,:,:]
+    #     print 'y,x',y[i,:,:],x[i,:,:]
 
-        plt.figure(fig)
-        print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
-        Q = plt.quiver(np.ravel(y),np.ravel(x),np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
-        plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
-        plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
-        plt.close(fig)
+    #     plt.figure(fig)
+    #     print np.shape(x),np.shape(y),np.shape(np.sin(pos0)*e),np.shape(np.cos(pos0)*e)
+    #     Q = plt.quiver(np.ravel(y),np.ravel(x),np.ravel(np.sin(pos0)*e),np.ravel(np.cos(pos0)*e),units='width',pivot='middle',headwidth=0,width=.0005)
+    #     plt.quiverkey(Q,0.2,0.2,scale,str(scale)+' '+key,labelpos='E',coordinates='figure',fontproperties={'weight': 'bold'})
+    #     plt.savefig('plots/y1/whisker_'+col+'.pdf', dpi=500, bbox_inches='tight')
+    #     plt.close(fig)
 
-        return
+    #     return
 
         
 
@@ -813,7 +813,7 @@ class y1_plots(object):
         ax[0,0].text(-100,250, r'$e_{1}^{\mathrm{PSF}}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":14})
         ax[0,0].text(250,575, 'Mean', verticalalignment='center', horizontalalignment='center', fontdict={"size":12})
         ax[1,0].text(-100,250, r'$e_{2}^{\mathrm{PSF}}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":14})
-        ax[0,1].text(250,575, 'Mean residual (x10)', verticalalignment='center', horizontalalignment='center', fontdict={"size":12})
+        ax[0,1].text(250,575, 'Mean residual ()', verticalalignment='center', horizontalalignment='center', fontdict={"size":12})
         plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/psf_focal.pdf', bbox_inches='tight')
         plt.close()
@@ -821,7 +821,7 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def mean_e_row_plot(cat,replace=False,bins=60):
+    def mean_e_row_plot(cat,replace=False,bins=500):
 
         name = 'text/mean_e_row.pkl'
 
@@ -878,12 +878,12 @@ class y1_plots(object):
         if replace|(not os.path.exists(name)):
 
             x,y=field.field_methods.get_field_pos(mcal)
-            cate1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e1,bins=140)
-            cate2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e2,bins=140)
+            cate1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e1,bins=500)
+            cate2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e2,bins=500)
 
             x,y=field.field_methods.get_field_pos(i3)
-            cat2e1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e1,bins=140)
-            cat2e2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e2,bins=140)
+            cat2e1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e1,bins=500)
+            cat2e2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e2,bins=500)
 
             d = {
             'cate1'  : cate1,

@@ -24,13 +24,21 @@ i3pickle  = '/global/cscratch1/sd/troxel/finaly1cats/i3.cpickle'
 mcalpickle= '/global/cscratch1/sd/troxel/finaly1cats/mcal.cpickle'
 bpzfile   = '/global/cscratch1/sd/troxel/finaly1cats/BPZ_ngmix_mof_slr_HiZ_combined_matched.fits'
 bpz0file  = '/global/cscratch1/sd/troxel/finaly1cats/BPZ_ngmix_sheared_matched.fits'
-i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v3/bord/epoch/'
-mcalepoch = '/global/cscratch1/sd/tvarga/WLCAT/release/Y1A1_GOLD_1_0_3_metacalibration_2_psfex_2_match_2.fits'
+i3epochdir= '/project/projectdirs/des/wl/desdata/wlpipe/im3shape_y1a1_v5/bord/epoch/'
+mcalepochdir = '/global/cscratch1/sd/troxel/finaly1cats/'
+i3epochpickle  = '/global/cscratch1/sd/troxel/finaly1cats/i3epoch.cpickle'
+mcalepochpickle= '/global/cscratch1/sd/troxel/finaly1cats/mcalepoch.cpickle'
 rmfile    = '/global/cscratch1/sd/troxel/redmagicv6.4.11/y1a1_gold_1.0.2c-full_redmapper_v6.4.11_redmagic_combined_troxel.fit'
-psfdir    = '/global/cscratch1/sd/troxel/psf_cats/'
+psfdir    = '/global/cscratch1/sd/troxel/finaly1cats/psf_cats/'
+psfexpinf = '/global/cscratch1/sd/troxel/finaly1cats/exposure_info_y1a1-v02.fits'
+imagefile = '/global/cscratch1/sd/troxel/finaly1cats/y1a1_image_id.fits'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
+# Load various data - Probably don't do this all in same job, lots of memory if you're not loading the pickles, and even then...
 i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle=i3pickle,mcalpickle=mcalpickle)
+psf = y1.y1.load_psf_data(psfdir)
+mcalepoch,i3epoch = y1.y1.load_epoch_data(i3epochdir,mcalepochdir,imagefile,i3pickle,mcalpickle,i3epochpickle,mcalepochpickle)
+
 # rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
 # special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
 
@@ -40,61 +48,67 @@ i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle=i3
 #     maxiter=10, cols=["coadd", "row", "col",  "e1", "e2"])
 
 
-def add_i3_cal_to_epoch(epoch, i3):
-    x=np.in1d(epoch.coadd,i3.coadd,assume_unique=False)
-    catalog.CatalogMethods.match_cat(epoch,x)
-    mask=np.argsort(epoch.coadd)
-    catalog.CatalogMethods.match_cat(epoch,mask)
+# def add_i3_cal_to_epoch(epoch, i3):
+#     x=np.in1d(epoch.coadd,i3.coadd,assume_unique=False)
+#     catalog.CatalogMethods.match_cat(epoch,x)
+#     mask=np.argsort(epoch.coadd)
+#     catalog.CatalogMethods.match_cat(epoch,mask)
 
-    diff=np.diff(epoch.coadd)
-    diff=np.where(diff!=0)[0]+1
-    # diff = np.concatenate([[0], diff, [None]])
-    diff=np.append([0],diff)
-    diff=np.append(diff,[None])
+#     diff=np.diff(epoch.coadd)
+#     diff=np.where(diff!=0)[0]+1
+#     # diff = np.concatenate([[0], diff, [None]])
+#     diff=np.append([0],diff)
+#     diff=np.append(diff,[None])
 
-    epoch.m1=np.zeros(len(epoch.coadd))
-    epoch.m2=np.zeros(len(epoch.coadd))
-    epoch.c1=np.zeros(len(epoch.coadd))
-    epoch.c2=np.zeros(len(epoch.coadd))
-    epoch.w=np.zeros(len(epoch.coadd))
+#     epoch.m1=np.zeros(len(epoch.coadd))
+#     epoch.m2=np.zeros(len(epoch.coadd))
+#     epoch.c1=np.zeros(len(epoch.coadd))
+#     epoch.c2=np.zeros(len(epoch.coadd))
+#     epoch.w=np.zeros(len(epoch.coadd))
 
-    for i in xrange(len(diff)-1):
-        epoch.m1[diff[i]:diff[i+1]]=i3.m1[i]
-        epoch.m2[diff[i]:diff[i+1]]=i3.m2[i]
-        epoch.c1[diff[i]:diff[i+1]]=i3.c1[i]
-        epoch.c2[diff[i]:diff[i+1]]=i3.c2[i]
-        epoch.w[diff[i]:diff[i+1]]=i3.w[i]
+#     for i in xrange(len(diff)-1):
+#         epoch.m1[diff[i]:diff[i+1]]=i3.m1[i]
+#         epoch.m2[diff[i]:diff[i+1]]=i3.m2[i]
+#         epoch.c1[diff[i]:diff[i+1]]=i3.c1[i]
+#         epoch.c2[diff[i]:diff[i+1]]=i3.c2[i]
+#         epoch.w[diff[i]:diff[i+1]]=i3.w[i]
     
 
-def make_randoms(name, cat, rans_per_object):
-    if os.path.exists(name+"_random.fits.gz"):
-        print "Using existing random", name+"_random.fits.gz"
-    else:
-        print "Making new random (one off)"
-        catalog.CatalogMethods.create_random_cat_from_cat(cat, nran=len(cat.e1)*rans_per_object, label=name+"_")
-    f = fitsio.FITS(name+"_random.fits.gz")
-    data = f[1].read_columns(['ra', 'dec'])
-    cat.ran_ra = data['ra']
-    cat.ran_dec = data['dec']
-    f.close()
+# def make_randoms(name, cat, rans_per_object):
+#     if os.path.exists(name+"_random.fits.gz"):
+#         print "Using existing random", name+"_random.fits.gz"
+#     else:
+#         print "Making new random (one off)"
+#         catalog.CatalogMethods.create_random_cat_from_cat(cat, nran=len(cat.e1)*rans_per_object, label=name+"_")
+#     f = fitsio.FITS(name+"_random.fits.gz")
+#     data = f[1].read_columns(['ra', 'dec'])
+#     cat.ran_ra = data['ra']
+#     cat.ran_dec = data['dec']
+#     f.close()
 
 
-
-# add_i3_cal_to_epoch(i3epoch, i3)
 
 # add_randoms(i3, 1)
 # add_randoms(metacal, 1)
 
 
-txt.write_methods.heading('---------------',mcal,label='y1_paper',create=True)
-
-y1.y1_plots.mean_e(i3,mcal,replace=True)
-
-# psf  = y1.y1.load_psf_data(psfdir)
-# y1.y1_plots.psf_whisker(psf)
-# y1.y1_plots.e_whisker(i3epoch,i3,mcalepoch,mcal)
-# print "Warning: no metacal epoch file yet!"
-# y1.y1_plots.mean_e_epoch(i3epoch, i3epoch)
+#txt.write_methods.heading('---------------',mcal,label='y1_paper',create=True)
 
 
+
+# Making all the plots for the paper (should probably not try to run all these at once in same job)
+
+# Normal catalog plots
+y1.y1_plots.mean_e(i3,mcal)
+y1.y1_plots.footprint_plot(mcal)
+
+# psf catalog plots - from Mike's psfex files
+y1.y1_plots.psf_star_dist(psf)
+y1.y1_plots.psf_mag_res_plot(psf)
+y1.y1_plots.psf_star_fwhm_dist(psf,psfexpinf)
+y1.y1_plots.psf_e_fov(psf)
+
+# single-epoch plots
+y1.y1_plots.mean_e_row_plot(mcalepoch)
+y1.y1_plots.mean_e_fov(mcalepoch,i3epoch)
 
