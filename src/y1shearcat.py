@@ -878,12 +878,12 @@ class y1_plots(object):
         if replace|(not os.path.exists(name)):
 
             x,y=field.field_methods.get_field_pos(mcal)
-            cate1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e1,bins=500)
-            cate2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e2,bins=500)
+            cate1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e1,bins=140)
+            cate2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,mcal.e2,bins=140)
 
             x,y=field.field_methods.get_field_pos(i3)
-            cat2e1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e1,bins=500)
-            cat2e2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e2,bins=500)
+            cat2e1,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e1,bins=140)
+            cat2e2,tmp,tmp,tmp = stats.binned_statistic_2d(x,y,i3.e2,bins=140)
 
             d = {
             'cate1'  : cate1,
