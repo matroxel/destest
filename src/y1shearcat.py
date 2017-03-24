@@ -603,6 +603,8 @@ class y1_plots(object):
         cb.set_label('$n_g$ [arcmin$^{-2}$]')
         cb.solids.set_edgecolor("face")
 
+        skm.addFootprint('DES', proj, ax, zorder=10, edgecolor='#2222B2', facecolor='None', lw=2)
+        
         return
 
     @staticmethod
