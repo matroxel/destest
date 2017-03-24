@@ -813,7 +813,7 @@ class y1_plots(object):
         ax[0,0].text(-100,250, r'$e_{1}^{\mathrm{PSF}}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":14})
         ax[0,0].text(250,575, 'Mean', verticalalignment='center', horizontalalignment='center', fontdict={"size":12})
         ax[1,0].text(-100,250, r'$e_{2}^{\mathrm{PSF}}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":14})
-        ax[0,1].text(250,575, 'Mean residual', verticalalignment='center', horizontalalignment='center', fontdict={"size":12})
+        ax[0,1].text(250,575, 'Mean residual (x10)', verticalalignment='center', horizontalalignment='center', fontdict={"size":12})
         plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/psf_focal.pdf', bbox_inches='tight')
         plt.close()
