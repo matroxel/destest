@@ -189,18 +189,18 @@ class y1(object):
         return mcal,i3
 
     @staticmethod
-    def load_epoch_data(i3dir,mcaldir,i3pickle,mcalpickle,i3epochpickle,mcalepochpickle,load_pickle=True):
+    def load_epoch_data(i3dir,mcaldir,imagefile,i3pickle,mcalpickle,i3epochpickle,mcalepochpickle,load_pickle=True):
 
         if (load_pickle)&(os.path.exists(mcalepochpickle))&(os.path.exists(i3epochpickle)):
 
-            mcal = load_obj(mcalepochpickle)
-            i3   = load_obj(i3epochpickle)
+            mcalepoch = load_obj(mcalepochpickle)
+            i3epoch   = load_obj(i3epochpickle)
 
         else:
 
-            mcal,i3 = get_nonepoch(i3pickle,mcalpickle)
+            mcal,i3 = y1.get_nonepoch(i3pickle,mcalpickle)
 
-            mcalepoch0 = y1.epoch_data_dump(mcaldir,['id','orig_row','orig_col','file_id'],-2)
+            mcalepoch0 = y1.epoch_data_dump(mcaldir,['id','orig_row','orig_col','image_id'],-2)
             mask = np.where(np.in1d(mcal[:,0],mcalepoch0['id'],assume_unique=False))[0]
             mcal = mcal[mask]
             mask = np.where(np.in1d(mcalepoch0['id'],mcal[:,0],assume_unique=False))[0]
@@ -208,9 +208,9 @@ class y1(object):
 
             mcalepoch=catalog.CatalogStore('mcal',setup=False,cattype='epoch',release='y1')
             mcalepoch.coadd = mcalepoch0['id']
-            mcalepoch.ccd = mcalepoch0['file_id']
             mcalepoch.row = mcalepoch0['orig_row']
             mcalepoch.col = mcalepoch0['orig_col']
+            mcalepoch.imid = mcalepoch0['image_id']
             mcalepoch0 = None
 
             mask=np.argsort(mcalepoch.coadd)
@@ -228,6 +228,21 @@ class y1(object):
                 mcalepoch.e2[diff[i]:diff[i+1]]=mcal[i,2]
                 mcalepoch.w[diff[i]:diff[i+1]]=mcal[i,3]
 
+            im = fio.FITS(imagefile)[-1].read()
+            im = im[np.argsort(im['id'])]
+            mask=np.argsort(mcalepoch.imid)
+            catalog.CatalogMethods.match_cat(mcalepoch,mask)
+            im = im[np.in1d(im['id'],mcalepoch.imid,assume_unique=False)]
+            catalog.CatalogMethods.match_cat(mcalepoch,np.in1d(mcalepoch.imid,im['id'],assume_unique=False))
+            diff=np.diff(mcalepoch.imid)
+            diff=np.where(diff!=0)[0]+1
+            diff=np.append([0],diff)
+            diff=np.append(diff,[None])
+
+            mcalepoch.ccd=np.zeros(len(mcalepoch.coadd)).astype(int)
+            for i in xrange(len(diff)-1):
+                mcalepoch.ccd[diff[i]:diff[i+1]]=im['ccd'][i]-1
+
             save_obj(mcalepoch,mcalepochpickle)
 
             i3epoch0 = y1.epoch_data_dump(i3dir,['coadd_objects_id','ccd','orig_row','orig_col'],-1)
@@ -238,7 +253,7 @@ class y1(object):
 
             i3epoch=catalog.CatalogStore('i3',setup=False,cattype='epoch',release='y1')
             i3epoch.coadd = i3epoch0['coadd_objects_id']
-            i3epoch.ccd = i3epoch0['ccd']
+            i3epoch.ccd = i3epoch0['ccd']-1
             i3epoch.row = i3epoch0['orig_row']
             i3epoch.col = i3epoch0['orig_col']
             i3epoch0 = None
@@ -887,16 +902,16 @@ class y1_plots(object):
         fig, ax = plt.subplots(nrows=2, ncols=2)
         im = ax[0,0].imshow(d['cate1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         im = ax[1,0].imshow(d['cate2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        im = ax[0,1].imshow(d['cat2e1'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        im = ax[1,1].imshow(d['cat2e2'].T*10,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        im = ax[0,1].imshow(d['cat2e1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
+        im = ax[1,1].imshow(d['cat2e2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
         fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.75)
         for ax_ in ax.flat:
             ax_.axis('off')
             ax_.set_aspect(1)
         ax[0,0].text(-100,250, r'$e_{1}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":16})
-        ax[0,0].text(250,575, '\textsc{metacal}', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
+        ax[0,0].text(250,575, r'$\textsc{metacal}$', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
         ax[1,0].text(-100,250, r'$e_{2}$', verticalalignment='center', horizontalalignment='center', rotation='vertical', fontdict={"size":16})
-        ax[0,1].text(250,575, '\textsc{im3shape}', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
+        ax[0,1].text(250,575, r'$\textsc{im3shape}$', verticalalignment='center', horizontalalignment='center', fontdict={"size":14})
         plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/mean_e_focal.pdf', bbox_inches='tight')
         plt.close()
