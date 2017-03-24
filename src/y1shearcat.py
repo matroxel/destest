@@ -900,11 +900,11 @@ class y1_plots(object):
 
         plt.figure(figsize=(20,30))
         fig, ax = plt.subplots(nrows=2, ncols=2)
-        im = ax[0,0].imshow(d['cate1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        im = ax[1,0].imshow(d['cate2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        im = ax[0,1].imshow(d['cat2e1'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        im = ax[1,1].imshow(d['cat2e2'].T,vmin=-0.06, vmax=0.06, cmap = plt.get_cmap('PuOr'))
-        fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.5,location='bottom')
+        im = ax[0,0].imshow(d['cate1'].T,vmin=-0.02, vmax=0.02, cmap = plt.get_cmap('PuOr'))
+        im = ax[1,0].imshow(d['cate2'].T,vmin=-0.02, vmax=0.02, cmap = plt.get_cmap('PuOr'))
+        im = ax[0,1].imshow(d['cat2e1'].T,vmin=-0.02, vmax=0.02, cmap = plt.get_cmap('PuOr'))
+        im = ax[1,1].imshow(d['cat2e2'].T,vmin=-0.02, vmax=0.02, cmap = plt.get_cmap('PuOr'))
+        fig.colorbar(im, ax=ax.ravel().tolist(), shrink=0.5)
         for ax_ in ax.flat:
             ax_.axis('off')
             ax_.set_aspect(1)
