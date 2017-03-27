@@ -389,7 +389,7 @@ class split_methods(object):
 
     if cat.pzrw:
       print 'before '+str(i)+' weights ',time.time()-t0
-      w=split_methods.pz_weight(cat,mask,bins)
+      w,weights=split_methods.pz_weight(cat,mask,bins)
       #mock.methods.save_weights(cat,val,w,bins)
     else:
       if cat.cat!='mcal':
@@ -400,7 +400,7 @@ class split_methods(object):
     print 'before plots ',time.time()-t0
 
     if plot:
-      fig.plot_methods.plot_pzrw(cat,mask,bins,w,label,edge)
+      fig.plot_methods.plot_pzrw(cat,mask,bins,w,label,edge,weights)
 
     print 'end of wnz ',time.time()-t0
     return bins,w,edge
@@ -447,7 +447,7 @@ class split_methods(object):
 
         print 'max/min/mean weight', k,np.max(w),np.min(w),np.mean(w[binmask])
 
-    return w
+    return w,weights
 
   @staticmethod
   def amp_shift(xip,dxip,dxiperr):

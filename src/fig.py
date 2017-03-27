@@ -939,7 +939,7 @@ class plot_methods(object):
 
 
   @staticmethod
-  def plot_pzrw(cat,mask,bins,w,label,edge):
+  def plot_pzrw(cat,mask,bins,w,label,edge,weights):
 
     plt.figure(0,figsize=(10,5))
     ax=plt.subplot(1,2,1)
@@ -953,11 +953,11 @@ class plot_methods(object):
     plt.hist(pz,bins=100,color='k',linestyle=('solid'),linewidth=1.,label='Full sample',histtype='step',normed=True)
     for i in range(cat.sbins):
       if cat.cat!='mcal':
-        plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i],normed=True)
-        plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
+        plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=np.sqrt(w[bins==i]*weights),normed=True)
+        plt.hist(pz[bins==i],bins=100,weights=weights,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
       else:
-        plt.hist(pz[bins[i]],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins[i]],normed=True)
-        plt.hist(pz[bins[i]],bins=100,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)        
+        plt.hist(pz[bins[i]],bins=100,weights=weights,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=np.sqrt(w[bins[i]]*weights),normed=True)
+        plt.hist(pz[bins[i]],bins=100,weights=weights,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)        
     plt.legend(loc='upper right')
     #plt.ylim((0,2.5))
     plt.xlabel('z')
@@ -972,7 +972,7 @@ class plot_methods(object):
       else:
         plt.hist(w[bins[i]],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled')
     plt.legend(loc='upper right')
-    #plt.xlim((-1,4))
+    plt.xlim((0,10))
     plt.xlabel('w')
     plt.ylabel('n(w)')
     plt.savefig('plots/split/pzrw_'+cat.name+'_'+label.replace('_','-')+'.png', bbox_inches='tight')
