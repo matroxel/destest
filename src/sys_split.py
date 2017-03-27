@@ -421,6 +421,7 @@ class split_methods(object):
         weights = w * (m1+m2)/2.
       else:
         weights = (m1+m2)/2.
+      print nz,weights,mask,binnum
       h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
       w=np.ones(len(nz))
       print 'w0',len(w)
