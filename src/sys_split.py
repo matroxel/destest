@@ -201,7 +201,7 @@ class split_methods(object):
     return arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err
 
   @staticmethod
-  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False,blind=True):
+  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False,blind=True,no2pt=False):
     """
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
@@ -249,6 +249,9 @@ class split_methods(object):
     bins,w,edge=split_methods.get_mask_wnz(cat,array,val,mask=mask,label=val,plot=plot)
     print 'edge',edge
     print 'after wnz',time.time()-t0
+
+    if no2pt:
+      return
 
     theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
     print 'after main 2pt',time.time()-t0
