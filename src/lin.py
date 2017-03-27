@@ -155,6 +155,7 @@ class linear_methods(object):
             w=np.ones(len(e1))
             print '2',w
           # unsheared, 1p, 1m, 2p, 2m
+          print 'bs mask',mask0,mask
           m1=np.mean(cat.R11[mask0]) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
           m2=np.mean(cat.R22[mask0]) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
           m1+=(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
