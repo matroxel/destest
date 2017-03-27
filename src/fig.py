@@ -968,11 +968,11 @@ class plot_methods(object):
     plt.axvline(x=1)
     for i in range(cat.sbins):
       if cat.cat!='mcal':
-        plt.hist(w[bins==i],bins=10,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled',range=(0,10))
+        plt.hist(w[bins==i],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled',range=(0,5))
       else:
-        plt.hist(w[bins[i]],bins=10,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled',range=(0,10))
+        plt.hist(w[bins[i]],bins=50,alpha=.5,color=col[i],label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',normed=True,histtype='stepfilled',range=(0,5))
     plt.legend(loc='upper right')
-    plt.xlim((0,10))
+    plt.xlim((0,5))
     plt.xlabel('w')
     plt.ylabel('n(w)')
     plt.savefig('plots/split/pzrw_'+cat.name+'_'+label.replace('_','-')+'.png', bbox_inches='tight')
