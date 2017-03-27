@@ -947,7 +947,7 @@ class plot_methods(object):
     if hasattr(cat,'pzstore'):
       pz = cat.pzstore.pz_full
     else:
-      pz = cat.pz
+      pz = cat.pz_full
 
     col=['r','b','g']
     plt.hist(pz,bins=100,color='k',linestyle=('solid'),linewidth=1.,label='Full sample',histtype='step',normed=True)
@@ -1235,4 +1235,7 @@ class plot_methods(object):
       plt.savefig('nofz_'+name+'.png',bbox_inches='tight')
       plt.close()
 
+
+i3   = ../des-mpp/y1_i3/2pt_fits/2pt_G.fits
+mcal = ../des-mpp/y1_mcal/2pt_fits/2pt_G.fits
 
