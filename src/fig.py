@@ -956,7 +956,7 @@ class plot_methods(object):
         plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=np.sqrt(w[bins==i]*weights),normed=True)
         plt.hist(pz[bins==i],bins=100,weights=weights,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
       else:
-        plt.hist(pz[bins[i]],bins=100,weights=weights,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=np.sqrt(w[bins[i]]*weights),normed=True)
+        plt.hist(pz[bins[i]],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=np.sqrt(w[bins[i]]*weights),normed=True)
         plt.hist(pz[bins[i]],bins=100,weights=weights,color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)        
     plt.legend(loc='upper right')
     #plt.ylim((0,2.5))
