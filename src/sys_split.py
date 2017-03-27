@@ -416,7 +416,7 @@ class split_methods(object):
         nz = cat.pzstore.pz_full
       else:
         nz = cat.pz
-      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,xi=True)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask,xi=True)
       if cat.wt:
         weights = w * (m1+m2)/2.
       else:
