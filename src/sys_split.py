@@ -415,7 +415,7 @@ class split_methods(object):
       if hasattr(cat,'pzstore'):
         nz = cat.pzstore.pz_full
       else:
-        nz = cat.pz
+        nz = cat.pz_full
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask,xi=True)
       if cat.wt:
         weights = w * (m1+m2)/2.
