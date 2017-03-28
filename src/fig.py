@@ -956,6 +956,7 @@ class plot_methods(object):
         plt.hist(pz[bins==i],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins==i]*weights[bins==i],normed=True)
         plt.hist(pz[bins==i],bins=100,weights=weights[bins==i],color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)
       else:
+        print np.max(pz[bins[i]]),np.min(pz[bins[i]]),pz[bins[i]]
         plt.hist(pz[bins[i]],bins=100,color=col[i],linestyle=('solid'),linewidth=1.,label=r'$'+"{0:.2f}".format(edge[i])+'<$'+label.replace('_','-')+'$<'+"{0:.2f}".format(edge[i+1])+'$',histtype='step',weights=w[bins[i]]*weights[bins[i]],normed=True)
         plt.hist(pz[bins[i]],bins=100,weights=weights[bins[i]],color=col[i],linestyle=('dashed'),linewidth=1.,label='',histtype='step',normed=True)        
     plt.legend(loc='upper right')
