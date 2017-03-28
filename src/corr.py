@@ -297,6 +297,7 @@ class xi_2pt(object):
       elif cata.cat=='mcal':
         catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       else:
+        print len(e1),len(e2),len(w),len(cata.ra),len(maska0),maska0
         catxa=treecorr.Catalog(g1=e1, g2=e2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catma=treecorr.Catalog(k=m1, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       print 'after catxa',time.time()-t0
