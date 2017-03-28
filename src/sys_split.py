@@ -423,7 +423,7 @@ class split_methods(object):
         mask1=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
       else:
         mask1=mask
-      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask,xi=True)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask1,xi=True)
       if cat.wt:
         weights = w * (m1+m2)/2.
       else:
