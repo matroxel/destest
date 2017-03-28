@@ -211,7 +211,7 @@ class split_methods(object):
     def get_a_st(cat, theta, out, err):
 
       a=[]
-      derr=[]v
+      derr=[]
       for i in xrange(cat.sbins+1):
         if ~jkon:
           derr.append(err[i])
