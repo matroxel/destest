@@ -133,7 +133,7 @@ class y1(object):
         # BLACK_FLAG_FACTOR = 512 # blacklist flags are this times the original exposure blacklist flag
         #                         # blacklist flags go up to 64, so this uses up to 1<<15
 
-        if load_pickle:
+        if (load_pickle)&(os.path.exists(psfpickle)):
 
             load_obj(psf,psfpickle)
 
