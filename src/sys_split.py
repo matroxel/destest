@@ -211,7 +211,7 @@ class split_methods(object):
     def get_a_st(cat, theta, out, err):
 
       a=[]
-      derr=[]
+      derr=[]v
       for i in xrange(cat.sbins+1):
         if ~jkon:
           derr.append(err[i])
@@ -419,6 +419,10 @@ class split_methods(object):
         nz = cat.pzstore.pz_full
       else:
         nz = cat.pz_full
+      if cat.cat=='mcal':
+        mask1=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
+      else:
+        mask1=mask
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask,xi=True)
       if cat.wt:
         weights = w * (m1+m2)/2.
