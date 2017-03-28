@@ -270,7 +270,8 @@ class xi_2pt(object):
     else:
       maska=catalog.CatalogMethods.check_mask(cata.coadd,maska)
       jkmask=catalog.CatalogMethods.check_mask(cata.coadd,jkmask)
-      maska0=maska&jkmask
+      maska=maska&jkmask
+      maska0=maska
     if wa is None:
       wa=np.ones(len(cata.coadd))
 
@@ -288,7 +289,7 @@ class xi_2pt(object):
       gb=ga
     if conj:
       e2=-e2
-    e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska0,w1=wa)
+    e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
     print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
