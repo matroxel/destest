@@ -418,7 +418,7 @@ class split_methods(object):
       if hasattr(cat,'pzstore'):
         nz = cat.pzstore.pz_full
       else:
-        nz = cat.pz_full
+        nz = cat.pz
       if cat.cat=='mcal':
         mask1=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
       else:
