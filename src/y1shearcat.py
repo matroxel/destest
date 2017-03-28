@@ -115,7 +115,7 @@ class y1(object):
         return i3,mcal
 
     @staticmethod
-    def load_psf_data(psfdir):
+    def load_psf_data(psfdir,psfpickle,load_pickle=True):
 
         # MAX_CENTROID_SHIFT = 1.0
 
@@ -133,12 +133,19 @@ class y1(object):
         # BLACK_FLAG_FACTOR = 512 # blacklist flags are this times the original exposure blacklist flag
         #                         # blacklist flags go up to 64, so this uses up to 1<<15
 
-        cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
-        psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra_flag(),cols=cols,cattype='psf',catdir=psfdir)
-        psf.ccd-=1
+        if load_pickle:
+
+            load_obj(psf,psfpickle)
+
+        else:
+
+            cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
+            psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cols=cols,cattype='psf',catdir=psfdir)
+            psf.ccd-=1
+
+            save_obj(psf,psfpickle)
 
         return psf
-
 
     @staticmethod
     def epoch_data_dump(epochdir,cols,hdu):
