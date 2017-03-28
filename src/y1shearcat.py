@@ -135,15 +135,17 @@ class y1(object):
 
         if (load_pickle)&(os.path.exists(psfpickle)):
 
-            load_obj(psf,psfpickle)
+            pass
+            #load_obj(psf,psfpickle)
 
         else:
 
             cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
             psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cols=cols,cattype='psf',catdir=psfdir)
             psf.ccd-=1
+            catalog.CatalogMethods.match_cat(psf,psf.flag<2)
 
-            save_obj(psf,psfpickle)
+            #save_obj(psf,psfpickle)
 
         return psf
 
@@ -297,12 +299,12 @@ class y1_plots(object):
     }
 
     @staticmethod
-    def mean_e(cat1,cat2,replace=False):
+    def mean_e(cat1,cat2,psfcat,replace=False):
 
         txt.write_methods.heading('Linear Splits',cat1,label='y1_paper',create=False)
 
-        y1_plots.evspsf1(cat1,cat2,replace=replace)
-        y1_plots.evspsf2(cat1,cat2,replace=replace)
+        y1_plots.evspsf1(cat1,cat2,psfcat,replace=replace)
+        y1_plots.evspsf2(cat1,cat2,psfcat,replace=replace)
         y1_plots.evssnr(cat1,cat2,replace=replace)
         y1_plots.evsradius(cat1,cat2,replace=replace)
         y1_plots.evspsfsize(cat1,cat2,replace=replace)
@@ -315,7 +317,7 @@ class y1_plots(object):
     #     y1_plots.evsrow(cat1,cat2)
 
     @staticmethod
-    def mean_e_subplot(cat,n,val,fig,replace=False):
+    def mean_e_subplot(cat,n,val,fig,replace=False,psf=None):
 
         name=fig0.plot_methods.get_filename_str(cat)
         name = 'text/lin_'+name+'_'+val+'.pkl'
@@ -326,6 +328,20 @@ class y1_plots(object):
             if isinstance(cat,catalog.CatalogStore):
                 mask=catalog.CatalogMethods.check_mask(cat.coadd,None)
             tmp,tmp,arr2,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base(cat,val,array,mask,name,log=config.log_val.get(val,False),plot=False)
+
+            if val in ['psf1','psf2']:
+                edge=lin.linear_methods.find_bin_edges(cat,val,config.cfg.get('lbins',10))
+                i=np.argsort(getattr(psf,val))
+                catalog.CatalogMethods.match_cat(psf,i)
+                if val == 'psf1':
+                    mean,err=y1_plots.bin_mean_new(psf.psf1,psf.e1-psf.psf1,edge)
+                    xmean,xerr=y1_plots.bin_mean_new(psf.psf1,psf.psf1,edge)
+                else:
+                    mean,err=y1_plots.bin_mean_new(psf.psf2,psf.e2-psf.psf2,edge)
+                    xmean,xerr=y1_plots.bin_mean_new(psf.psf2,psf.psf2,edge)
+                m,b,merr,berr = lin.fitting.lin_fit(xmean,mean,err)
+            else:
+                m=b=merr=berr=None
 
             if config.log_val.get(val,False):
                 arr1=10**arr2
@@ -342,8 +358,16 @@ class y1_plots(object):
             'e2err' : e2err,
             'm1' : m1,
             'm2' : m2,
+            'm1err' : m1err,
+            'm2err' : m2err,
             'b1' : b1,
-            'b2' : b2
+            'b2' : b2,
+            'b1err' : b1err,
+            'b2err' : b2err,
+            'm' : m,
+            'b' : b,
+            'merr' : merr,
+            'berr' : berr
             }
 
             save_obj(d,name)
@@ -359,8 +383,12 @@ class y1_plots(object):
         ax=plt.subplot(2,1,n)
         plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
         plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
+        if val == 'psf1':
+            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='-',color='r')
         plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
         plt.errorbar(d['arr1'],d['m2']*d['arr2']+d['b2'],marker='',linestyle='-',color='b')
+        if val == 'psf2':
+            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='-',color='r')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
@@ -404,12 +432,12 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def evspsf1(cat1,cat2,replace=False):
+    def evspsf1(cat1,cat2,psfcat,replace=False):
 
         plt.figure(3)
 
-        y1_plots.mean_e_subplot(cat1,1,'psf1',3,replace=replace)
-        y1_plots.mean_e_subplot(cat2,2,'psf1',3,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'psf1',3,replace=replace,psfcat=psfcat)
+        y1_plots.mean_e_subplot(cat2,2,'psf1',3,replace=replace,psfcat=psfcat)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psf1.pdf', bbox_inches='tight')
@@ -418,12 +446,12 @@ class y1_plots(object):
         return
 
     @staticmethod
-    def evspsf2(cat1,cat2,replace=False):
+    def evspsf2(cat1,cat2,psfcat,replace=False):
 
         plt.figure(4)
 
-        y1_plots.mean_e_subplot(cat1,1,'psf2',4,replace=replace)
-        y1_plots.mean_e_subplot(cat2,2,'psf2',4,replace=replace)
+        y1_plots.mean_e_subplot(cat1,1,'psf2',4,replace=replace,psfcat=psfcat)
+        y1_plots.mean_e_subplot(cat2,2,'psf2',4,replace=replace,psfcat=psfcat)
 
         plt.tight_layout()
         plt.savefig('plots/y1/lin_split_psf2.pdf', bbox_inches='tight')
@@ -645,7 +673,7 @@ class y1_plots(object):
     def bin_mean_new(x,y,edge):
         # I need to fix main destest version to work like this, much faster
 
-        ind0 = 0
+        ind0 = np.searchsorted(x, edge[0])
         mean = np.zeros(len(edge)-1)
         err = np.zeros(len(edge)-1)
         for j in range(len(edge)-1):
