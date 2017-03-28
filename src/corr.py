@@ -288,7 +288,7 @@ class xi_2pt(object):
       gb=ga
     if conj:
       e2=-e2
-    e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska,w1=wa)
+    e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cata,xi=True,mock=mock,mask=maska0,w1=wa)
     print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
@@ -297,8 +297,8 @@ class xi_2pt(object):
       elif cata.cat=='mcal':
         catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       else:
-        print len(e1),len(e2),len(w),len(cata.ra),len(maska0),maska0
-        catxa=treecorr.Catalog(g1=e1, g2=e2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
+        # print len(e1),len(e2),len(w),len(cata.ra),len(maska0),maska0
+        catxa=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
         catma=treecorr.Catalog(k=m1, w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       print 'after catxa',time.time()-t0
 
@@ -360,7 +360,7 @@ class xi_2pt(object):
         elif catb.cat=='mcal':
           catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         else:
-          catxb=treecorr.Catalog(g1=e1, g2=e2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
+          catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
           catmb=treecorr.Catalog(k=m1, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
       elif corr=='NN':
         catxb=treecorr.Catalog(w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
