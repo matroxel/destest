@@ -388,7 +388,7 @@ class split_methods(object):
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
 
     if cat.pzrw:
-      print 'before '+str(i)+' weights ',time.time()-t0
+      print 'before weights ',time.time()-t0
       w,weights=split_methods.pz_weight(cat,mask,bins)
       #mock.methods.save_weights(cat,val,w,bins)
     else:
