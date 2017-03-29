@@ -391,12 +391,12 @@ class y1_plots(object):
         plt.errorbar(np.concatenate(([xmin],d['arr1'],[xmax])),d['m1']*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1'],marker='',linestyle='-',color='r')
         plt.fill_between(np.concatenate(([xmin],d['arr2'],[xmax])),y1min,y1max,interpolate=True,color='r',alpha=0.2)
         if val == 'psf1':
-            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='--',color='r',lw=2)
+            plt.errorbar(np.concatenate(([xmin],d['arr1'],[xmax])),d['m']*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b'],marker='',linestyle=':',color='r',lw=2)
         plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='.',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
         plt.errorbar(np.concatenate(([xmin],d['arr1'],[xmax])),d['m2']*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b2'],marker='',linestyle='-',color='b')
         plt.fill_between(np.concatenate(([xmin],d['arr2'],[xmax])),y2min,y2max,interpolate=True,color='b',alpha=0.2)
         if val == 'psf2':
-            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='--',color='b',lw=2)
+            plt.errorbar(np.concatenate(([xmin],d['arr1'],[xmax])),d['m']*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b'],marker='',linestyle=':',color='b',lw=2)
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
