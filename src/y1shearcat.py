@@ -379,16 +379,27 @@ class y1_plots(object):
         if val in ['size','psfsize']:
             d['arr1']=np.sqrt(d['arr1'])
 
+        xmin,xmax = y1_plots.x_lims[val]
+
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
-        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='o',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
-        plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
+        plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='.',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
+        # plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
+        y1min = (d['m1']+d['m1err'])*xmin+d['b1']-d['b1err']
+        y1max = (d['m1']-d['m1err'])*xmax+d['b1']-d['b1err']
+        y2min = (d['m1']-d['m1err'])*xmin+d['b1']+d['b1err']
+        y2max = (d['m1']+d['m1err'])*xmax+d['b1']+d['b1err']
+        plt.fill_between([xmin,xmax],[y1min,y1max],[y2min,y2max],interpolate=True,color='r',alpha=0.2)
         if val == 'psf1':
-            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='-',color='r')
-        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='o',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
-        plt.errorbar(d['arr1'],d['m2']*d['arr2']+d['b2'],marker='',linestyle='-',color='b')
+            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='.',color='r')
+        plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='.',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
+        y1min = (d['m2']+d['m2err'])*xmin+d['b2']-d['b2err']
+        y1max = (d['m2']-d['m2err'])*xmax+d['b2']-d['b2err']
+        y2min = (d['m2']-d['m2err'])*xmin+d['b2']+d['b2err']
+        y2max = (d['m2']+d['m2err'])*xmax+d['b2']+d['b2err']
+        plt.fill_between([xmin,xmax],[y1min,y1max],[y2min,y2max],interpolate=True,color='b',alpha=0.2)
         if val == 'psf2':
-            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='-',color='r')
+            plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='.',color='b')
         ax.minorticks_on()
         plt.ylabel(r'$\langle e \rangle$')
         if config.log_val.get(val,False):
