@@ -380,24 +380,21 @@ class y1_plots(object):
             d['arr1']=np.sqrt(d['arr1'])
 
         xmin,xmax = y1_plots.x_lims[val]
+        y1min = np.minimum(np.minimum((d['m1']+d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']-d['b1err'],(d['m1']-d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']-d['b1err']),np.minimum((d['m1']-d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']+d['b1err'],(d['m1']+d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']+d['b1err']))
+        y1max = np.maximum(np.maximum((d['m1']+d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']-d['b1err'],(d['m1']-d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']-d['b1err']),np.maximum((d['m1']-d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']+d['b1err'],(d['m1']+d['m1err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b1']+d['b1err']))
+        y1min = np.minimum(np.minimum((d['m2']+d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']-d['b2err'],(d['m2']-d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']-d['b2err']),np.minimum((d['m2']-d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']+d['b2err'],(d['m2']+d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']+d['b2err']))
+        y1max = np.maximum(np.maximum((d['m2']+d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']-d['b2err'],(d['m2']-d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']-d['b2err']),np.maximum((d['m2']-d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']+d['b2err'],(d['m2']+d['m2err'])*np.concatenate(xmin,d['arr2'],xmax)+d['b2']+d['b2err']))
 
         plt.figure(fig)
         ax=plt.subplot(2,1,n)
         plt.errorbar(d['arr1'],d['e1'],yerr=d['e1err'],marker='.',linestyle='',color='r',label=r'$\langle e_1 \rangle$')
-        # plt.errorbar(d['arr1'],d['m1']*d['arr2']+d['b1'],marker='',linestyle='-',color='r')
-        y1min = (d['m1']+d['m1err'])*xmin+d['b1']-d['b1err']
-        y1max = (d['m1']-d['m1err'])*xmax+d['b1']-d['b1err']
-        y2min = (d['m1']-d['m1err'])*xmin+d['b1']+d['b1err']
-        y2max = (d['m1']+d['m1err'])*xmax+d['b1']+d['b1err']
-        plt.fill_between([xmin,xmax],[y1min,y1max],[y2min,y2max],interpolate=True,color='r',alpha=0.2)
+        plt.errorbar(np.concatenate(xmin,d['arr1'],xmax),d['m1']*np.concatenate(xmin,d['arr2'],xmax)+d['b1'],marker='',linestyle='-',color='r')
+        plt.fill_between(np.concatenate(xmin,d['arr2'],xmax),y1min,y1max,interpolate=True,color='r',alpha=0.2)
         if val == 'psf1':
             plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='.',color='r')
         plt.errorbar(d['arr1'],d['e2'],yerr=d['e2err'],marker='.',linestyle='',color='b',label=r'$\langle e_2 \rangle$')
-        y1min = (d['m2']+d['m2err'])*xmin+d['b2']-d['b2err']
-        y1max = (d['m2']-d['m2err'])*xmax+d['b2']-d['b2err']
-        y2min = (d['m2']-d['m2err'])*xmin+d['b2']+d['b2err']
-        y2max = (d['m2']+d['m2err'])*xmax+d['b2']+d['b2err']
-        plt.fill_between([xmin,xmax],[y1min,y1max],[y2min,y2max],interpolate=True,color='b',alpha=0.2)
+        plt.errorbar(np.concatenate(xmin,d['arr1'],xmax),d['m2']*np.concatenate(xmin,d['arr2'],xmax)+d['b2'],marker='',linestyle='-',color='b')
+        plt.fill_between(np.concatenate(xmin,d['arr2'],xmax),y2min,y2max,interpolate=True,color='b',alpha=0.2)
         if val == 'psf2':
             plt.errorbar(d['arr1'],d['m']*d['arr2']+d['b'],marker='',linestyle='.',color='b')
         ax.minorticks_on()
