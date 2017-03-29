@@ -330,7 +330,7 @@ class y1_plots(object):
             tmp,tmp,arr2,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err=sys_split.split_gals_lin_along_base(cat,val,array,mask,name,log=config.log_val.get(val,False),plot=False)
 
             if val in ['psf1','psf2']:
-                edge=lin.linear_methods.find_bin_edges(cat,val,config.cfg.get('lbins',10))
+                edge=lin.linear_methods.find_bin_edges(getattr(psf,val),config.cfg.get('lbins',10))
                 i=np.argsort(getattr(psf,val))
                 catalog.CatalogMethods.match_cat(psf,i)
                 if val == 'psf1':
