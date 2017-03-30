@@ -12,31 +12,31 @@ at Y1 position (with optional pixel-to-pixel weighting).
 '''
 
 neff_mcal = {
-  1 : 1.30157,
-  2 : 1.41888,
-  3 : 1.45387,
-  4 : 0.77419
+  1 : 1.736599,
+  2 : 1.464735,
+  3 : 1.62532,
+  4 : 0.811633
 }
 
 neff_i3 = {
-  1 : 1.30157,
-  2 : 1.41888,
-  3 : 1.45387,
-  4 : 0.77419
+  1 : 1.21746,
+  2 : 0.98196,
+  3 : 0.983865,
+  4 : 0.36885
 }
 
 sig_mcal = {
-  1 : 0.39,
-  2 : 0.39,
-  3 : 0.39,
-  4 : 0.39
+  1 : 0.394925,
+  2 : 0.394925,
+  3 : 0.394925,
+  4 : 0.394925
 }
 
 sig_i3 = {
-  1 : 0.39,
-  2 : 0.39,
-  3 : 0.39,
-  4 : 0.39
+  1 : 0.3867957,
+  2 : 0.3867957,
+  3 : 0.3867957,
+  4 : 0.3867957
 }
 
 euler_angle_1 = {
@@ -74,56 +74,47 @@ class methods(object):
                                   neff_ratio=0.5,       # ratio of original to new neff (default half density)
                                   nside=4096):          # nside of maps (default 4096)
 
-    neff_new = neff_orig[zbin]*neff_ratio
     npix     = hp.nside2npix(nside)
-    map_g1   = np.zeros(npix)
-    map_g2   = np.zeros(npix)
-    map_w    = np.zeros(npix)
-    map_sige = np.zeros(npix)
-    map_g1.fill(-100.)
-    map_g2.fill(-100.)
-    map_w.fill(-100.)
-    map_sige.fill(-100.)
+    neff_pix = 1. / (hp.nside2pixarea(nside, degrees=True)*3600.)
+    neff_new = neff_orig[zbin]*neff_ratio
 
     fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
-    pix  = fmap['PIXEL']
-
-    if wfile is not None:
-      w     = fio.FITS(wfile)[-1].read()
-      wpix  = w['pix']
-      s1,s2 = catalog.CatalogMethods.sort2(pix,wpix) # cut to intersection of data / mock catalogs
-      fmap  = fmap[s1]
-      pix   = pix[s1]
-      wpix  = wpix[s2]
-      w     = w['weight'][s2]
-      w2    = w['weightsq'][s2]
-    else:
-      wpix  = pix
-      w     = np.ones(len(pix))
-      w2    = np.ones(len(pix))
-
-    theta, phi         = hp.pix2ang(nside,pix) #theta and phi of the footprint pixels
+    theta, phi         = hp.pix2ang(nside,fmap['PIXEL']) #theta and phi of the footprint pixels
     pix_rotator        = hp.Rotator(deg=False, rot=[euler_angle_1[int(rlsn)]*np.pi/180., euler_angle_2[int(rlsn)]*np.pi/180.])
     theta_rot, phi_rot = pix_rotator(theta,phi)
     rot_pix            = hp.ang2pix(nside,theta_rot,phi_rot)
 
-    neff_pix          = 1. / (hp.nside2pixarea(nside, degrees=True)*3600.)
-    map_g1[rot_pix]   = fmap['Q_STOKES']
-    map_g2[rot_pix]   = fmap['U_STOKES']
-    map_w[rot_pix]    = w
-    map_sige[rot_pix] = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w))
+    w        = fio.FITS(wfile)[-1].read()
+    s1,s2    = catalog.CatalogMethods.sort2(rot_pix,w['pix']) # cut to intersection of data / mock catalogs
+    rot_pix  = rot_pix[s1]
+
+    wpix     = w['pix'][s2]
+    w1       = w['weight'][s2]
+    w2       = w['weightsq'][s2]
+    w        = None
+
+    mask     = xsorted[np.searchsorted(wpix[np.argsort(wpix,rot_pix)], rot_pix)] # translate wpix to rot_pix
+
+    map_ra   = phi/np.pi[s1]*180.0
+    map_dec  = (np.pi/2.0 - theta[s1])/np.pi*180.0
+    map_g1   = fmap['Q_STOKES'][s1]
+    map_g2   = fmap['U_STOKES'][s1]
+    map_w    = w1[mask]
+    map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))[mask]
+    fmap     = None
 
     n       = np.random.poisson(neff_new/neff_pix,size=len(rot_pix))
     gal_pix = np.repeat(rot_pix,n)
 
     out = np.zeros(len(gal_pix),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
-    out['dec'], out['ra'] = catalog.CatalogMethods.hpix_to_radec(th, ph, nside=nside, nest=False)
-    out['e1'] = map_g1[gal_pix] + np.random.randn(len(gal_pix))*map_sige[gal_pix]
-    out['e2'] = map_g2[gal_pix] + np.random.randn(len(gal_pix))*map_sige[gal_pix]
-    out['w']  = map_w[gal_pix]
-    fio.write(out_file,out,clobber=True)
+    out['ra']  = map_ra[gal_pix]
+    out['dec'] = map_dec[gal_pix]
+    out['e1']  = map_g1[gal_pix] + np.random.randn(len(gal_pix))*map_sige[gal_pix]
+    out['e2']  = map_g2[gal_pix] + np.random.randn(len(gal_pix))*map_sige[gal_pix]
+    out['w']   = map_w[gal_pix]
+    # fio.write(out_file,out,clobber=True)
 
-    return 
+    return out
 
   @staticmethod
   def save_weights(cat,val,w,bins):
