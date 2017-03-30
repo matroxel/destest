@@ -108,8 +108,6 @@ class methods(object):
     fmap     = None
 
     n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
-    print n,n.min(),n.max()
-    print map_sige,map_sige.min(),map_sige.max()
 
     out = np.zeros(len(map_ra),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
     out['ra']  = map_ra
@@ -117,6 +115,7 @@ class methods(object):
     out['e1']  = map_g1 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
     out['e2']  = map_g2 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
     out['w']   = map_w*n
+    out        = out[n!=0]
     # fio.write(out_file,out,clobber=True)
 
     return out # original pixel positions (not DES pixel positions)
