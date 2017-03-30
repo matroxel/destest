@@ -188,9 +188,9 @@ class run(object):
           gg.process(cat)
 
           d = {
-            'theta' : np.exp(gg.meanlogr)
-            'xip' : gg.xip
-            'xim' : gg.xim
+            'theta' : np.exp(gg.meanlogr),
+            'xip' : gg.xip,
+            'xim' : gg.xim,
             'err' : np.sqrt(gg.varxi)
           }
 
