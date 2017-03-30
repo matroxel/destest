@@ -40,25 +40,25 @@ sig_i3 = {
 }
 
 euler_angle_1 = {
-  0 : 0.0,
-  1 : 180.0,
-  2 : 0.0,
-  3 : 90.0,
-  4 : 180.0,
-  5 : 270.0,
-  6 : 0.0,
-  7 : 180.0
+  1 : 0.0,
+  2 : 180.0,
+  3 : 0.0,
+  4 : 90.0,
+  5 : 180.0,
+  6 : 270.0,
+  7 : 0.0,
+  8 : 180.0
 }
 
 euler_angle_2 = {
-  0 : 0.0,
   1 : 0.0,
-  2 : 60.0,
+  2 : 0.0,
   3 : 60.0,
   4 : 60.0,
   5 : 60.0,
-  6 : 120.0,
-  7 : 120.0
+  6 : 60.0,
+  7 : 120.0,
+  8 : 120.0
 }
 
 class methods(object):
@@ -66,9 +66,9 @@ class methods(object):
   @staticmethod
   def rotate_mock_rescale_nsigma( zbin,                 # tomographic bin index - 0 to n
                                   rlsn,                 # mock cutout (realisation)
-                                  mapfile,              # input shear map file name + path
-                                  out_file,             # output file name + path
-                                  wfile=None,           # input weight file (optional)
+                                  seed,                 # mock seed 
+                                  wfile,                # input weight file (optional)
+                                  out_file='tmp.fits',  # output file name + path
                                   neff_orig=neff_mcal,  # dictionary for neff
                                   sig_orig=sig_mcal,    # dictionary for sigma_e
                                   neff_ratio=1.0,       # ratio of original to new neff (default half density)
@@ -78,6 +78,7 @@ class methods(object):
     neff_pix = 1. / (hp.nside2pixarea(nside, degrees=True)*3600.)
     neff_new = neff_orig[zbin]*neff_ratio
 
+    mapfile = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(seed)+'/kgg-s'+str(seed)+'-f2z'+str(zbin)+'_c'+str(rlsn)+'.fits'
     fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
     theta, phi         = hp.pix2ang(nside,fmap['PIXEL']) #theta and phi of the footprint pixels
     pix_rotator        = hp.Rotator(deg=False, rot=[euler_angle_1[int(rlsn)]*np.pi/180., euler_angle_2[int(rlsn)]*np.pi/180.])
@@ -140,3 +141,4 @@ class methods(object):
 
     return
 
+out = mock.methods.rotate_mock_rescale_nsigma(3, 0, , wfile='text/pzrw_metacalibration_snr_0.fits.gz')
