@@ -99,7 +99,7 @@ class methods(object):
     xsorted  = np.argsort(wpix) # translate wpix to rot_pix
     mask     = xsorted[np.searchsorted(wpix[xsorted], rot_pix)]
 
-    map_ra   = phi/np.pi[s1]*180.0
+    map_ra   = phi[s1]/np.pi*180.0
     map_dec  = (np.pi/2.0 - theta[s1])/np.pi*180.0
     map_g1   = fmap['Q_STOKES'][s1]
     map_g2   = fmap['U_STOKES'][s1]
