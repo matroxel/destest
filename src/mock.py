@@ -129,7 +129,11 @@ class methods(object):
   def save_weights(cat,val,w,bins):
 
     for i in xrange(cat.sbins):
-      pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[bins[i]],cat.dec[bins[i]],nside=4096,nest=False)
+      if cat.cat=='mcal':
+        mask = bins[i]
+      else:
+        mask = bins==i
+      pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
       upix = np.unique(pix)
       w0   = w[bins[i]]
       w    = np.bincount(pix,weights=w0)
@@ -145,6 +149,4 @@ class methods(object):
       fio.write('text/pzrw_'+cat.name+'_'+val+'_'+str(i)+'.fits.gz',out,clobber=True)
 
     return
-
-
 
