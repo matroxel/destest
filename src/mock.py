@@ -3,6 +3,8 @@ import healpy as hp
 import fitsio as fio
 import catalog
 import config
+import treecorr
+import time
 
 '''
 Modified code by Oliver to turn flask catalogs by Lucas 
@@ -10,6 +12,14 @@ Modified code by Oliver to turn flask catalogs by Lucas
 at Y1 position (with optional pixel-to-pixel weighting).
 
 '''
+
+def save_obj(obj, name ):
+    with open(name, 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_obj(name ):
+    with open(name, 'rb') as f:
+        return pickle.load(f)
 
 neff_mcal = {
   1 : 1.736599,
@@ -87,26 +97,37 @@ class methods(object):
     theta_rot, phi_rot = pix_rotator(theta,phi)
     rot_pix            = hp.ang2pix(nside,theta_rot,phi_rot)
 
-    w        = fio.FITS(wfile)[-1].read()
-    s1,s2    = catalog.CatalogMethods.sort2(rot_pix,w['pix']) # cut to intersection of data / mock catalogs
-    rot_pix  = rot_pix[s1]
+    if wfile is None:
 
-    wpix     = w['pix'][s2]
-    w1       = w['weight'][s2]
-    w2       = w['weightsq'][s2]
-    w        = None
+      map_ra   = phi/np.pi*180.0
+      map_dec  = (np.pi/2.0 - theta)/np.pi*180.0
+      map_g1   = fmap['Q_STOKES']
+      map_g2   = fmap['U_STOKES']
+      map_w    = np.ones(len(map_ra))
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix))
 
-    xsorted  = np.argsort(wpix) # translate wpix to rot_pix
-    mask     = xsorted[np.searchsorted(wpix[xsorted], rot_pix)]
+    else:
 
-    map_ra   = phi[s1]/np.pi*180.0
-    map_dec  = (np.pi/2.0 - theta[s1])/np.pi*180.0
-    map_g1   = fmap['Q_STOKES'][s1]
-    map_g2   = fmap['U_STOKES'][s1]
-    map_w    = w1[mask]
-    map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))[mask]
+      w        = fio.FITS(wfile)[-1].read()
+      s1,s2    = catalog.CatalogMethods.sort2(rot_pix,w['pix']) # cut to intersection of data / mock catalogs
+      rot_pix  = rot_pix[s1]
+
+      wpix     = w['pix'][s2]
+      w1       = w['weight'][s2]
+      w2       = w['weightsq'][s2]
+      w        = None
+
+      xsorted  = np.argsort(wpix) # translate wpix to rot_pix
+      mask     = xsorted[np.searchsorted(wpix[xsorted], rot_pix)]
+
+      map_ra   = phi[s1]/np.pi*180.0
+      map_dec  = (np.pi/2.0 - theta[s1])/np.pi*180.0
+      map_g1   = fmap['Q_STOKES'][s1]
+      map_g2   = fmap['U_STOKES'][s1]
+      map_w    = w1[mask]
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))[mask]
+
     fmap     = None
-
     n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
 
     out = np.zeros(len(map_ra),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
@@ -144,4 +165,41 @@ class methods(object):
       fio.write('text/pzrw_'+cat.name+'_'+val+'_'+str(i)+'.fits.gz',out,clobber=True)
 
     return
+
+class run(object):
+
+  @staticmethod
+  def loop_2pt(zbin,catname,val):
+
+    t0=time.time()
+
+    for j in range(100):
+      for i in range(8):
+        for k in range(3):
+          print j,i,k,time.time()-t0
+          if k==0:
+            wfile = None
+          else:
+            wfile='text/pzrw_'+catname+'_'+val+'_'+str(k-1)+'.fits.gz'
+
+          out = mock.methods.rotate_mock_rescale_nsigma(zbin, i+1, j+1, wfile=wfile)
+          cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
+          gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
+          gg.process(cat)
+
+          d = {
+            'theta' : np.exp(gg.meanlogr)
+            'xip' : gg.xip
+            'xim' : gg.xim
+            'err' : np.sqrt(gg.varxi)
+          }
+
+          save_obj(d,'flask_GG_'+str(i*j+i)+'_'+str(k)+'.cpickle')
+
+    return
+
+
+
+
+
 
