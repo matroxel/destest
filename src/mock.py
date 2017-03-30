@@ -74,6 +74,8 @@ class methods(object):
                                   neff_ratio=1.0,       # ratio of original to new neff (default half density)
                                   nside=4096):          # nside of maps (default 4096)
 
+    # out = mock.methods.rotate_mock_rescale_nsigma(3, 1, 1, wfile='text/pzrw_metacalibration_snr_0.fits.gz')
+
     npix     = hp.nside2npix(nside)
     neff_pix = 1. / (hp.nside2pixarea(nside, degrees=True)*3600.)
     neff_new = neff_orig[zbin]*neff_ratio
@@ -141,4 +143,3 @@ class methods(object):
 
     return
 
-out = mock.methods.rotate_mock_rescale_nsigma(3, 0, , wfile='text/pzrw_metacalibration_snr_0.fits.gz')
