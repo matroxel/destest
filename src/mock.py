@@ -144,7 +144,7 @@ class methods(object):
 
       out  = np.empty(len(upix),dtype=[('pix',int)]+[('weight','f4')]+[('weightsq','f4')])
       out['pix']      = upix
-      out['weight']   = w
+      out['weight']   = w1
       out['weightsq'] = w2
       fio.write('text/pzrw_'+cat.name+'_'+val+'_'+str(i)+'.fits.gz',out,clobber=True)
 
