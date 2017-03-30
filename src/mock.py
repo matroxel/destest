@@ -5,6 +5,7 @@ import catalog
 import config
 import treecorr
 import time
+import pickle
 
 '''
 Modified code by Oliver to turn flask catalogs by Lucas 
