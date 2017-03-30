@@ -96,7 +96,8 @@ class methods(object):
     w2       = w['weightsq'][s2]
     w        = None
 
-    mask     = xsorted[np.searchsorted(wpix[np.argsort(wpix,rot_pix)], rot_pix)] # translate wpix to rot_pix
+    xsorted  = np.argsort(wpix) # translate wpix to rot_pix
+    mask     = xsorted[np.searchsorted(wpix[xsorted], rot_pix)]
 
     map_ra   = phi/np.pi[s1]*180.0
     map_dec  = (np.pi/2.0 - theta[s1])/np.pi*180.0
