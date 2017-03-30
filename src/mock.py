@@ -182,7 +182,7 @@ class run(object):
           else:
             wfile='text/pzrw_'+catname+'_'+val+'_'+str(k-1)+'.fits.gz'
 
-          out = mock.methods.rotate_mock_rescale_nsigma(zbin, i+1, j+1, wfile=wfile)
+          out = methods.rotate_mock_rescale_nsigma(zbin, i+1, j+1, wfile=wfile)
           cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
           gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
           gg.process(cat)
@@ -194,7 +194,7 @@ class run(object):
             'err' : np.sqrt(gg.varxi)
           }
 
-          save_obj(d,'flask_GG_'+str(i*j+i)+'_'+str(k)+'.cpickle')
+          save_obj(d,'text/flask_GG_'+str(i*j+i)+'_'+str(k)+'.cpickle')
 
     return
 
