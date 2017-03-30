@@ -71,7 +71,7 @@ class methods(object):
                                   wfile=None,           # input weight file (optional)
                                   neff_orig=neff_mcal,  # dictionary for neff
                                   sig_orig=sig_mcal,    # dictionary for sigma_e
-                                  neff_ratio=0.5,       # ratio of original to new neff (default half density)
+                                  neff_ratio=1.0,       # ratio of original to new neff (default half density)
                                   nside=4096):          # nside of maps (default 4096)
 
     npix     = hp.nside2npix(nside)
@@ -103,18 +103,17 @@ class methods(object):
     map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))[mask]
     fmap     = None
 
-    n       = np.random.poisson(neff_new/neff_pix,size=len(rot_pix))
-    gal_pix = np.repeat(rot_pix,n)
+    n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
 
-    out = np.zeros(len(gal_pix),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
-    out['ra']  = map_ra[gal_pix]
-    out['dec'] = map_dec[gal_pix]
-    out['e1']  = map_g1[gal_pix] + np.random.randn(len(gal_pix))*map_sige[gal_pix]
-    out['e2']  = map_g2[gal_pix] + np.random.randn(len(gal_pix))*map_sige[gal_pix]
-    out['w']   = map_w[gal_pix]
+    out = np.zeros(len(map_ra),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
+    out['ra']  = map_ra
+    out['dec'] = map_dec
+    out['e1']  = map_g1 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
+    out['e2']  = map_g2 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
+    out['w']   = map_w*n
     # fio.write(out_file,out,clobber=True)
 
-    return out
+    return out # original pixel positions (not DES pixel positions)
 
   @staticmethod
   def save_weights(cat,val,w,bins):
