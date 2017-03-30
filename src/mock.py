@@ -135,11 +135,11 @@ class methods(object):
         mask = bins==i
       pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
       upix = np.unique(pix)
-      w0   = w[bins[i]]
-      w    = np.bincount(pix,weights=w0)
+      w0   = w[mask]
+      w1   = np.bincount(pix,weights=w0)
       w2   = np.bincount(pix,weights=w0*w0)
-      mask = np.where(w!=0)[0]
-      w    = w[mask]
+      mask = np.where(w1!=0)[0]
+      w1   = w1[mask]
       w2   = w2[mask]
 
       out  = np.empty(len(upix),dtype=[('pix',int)]+[('weight','f4')]+[('weightsq','f4')])
