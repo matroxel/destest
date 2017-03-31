@@ -102,7 +102,7 @@ class methods(object):
     neff_pix = 1. / (hp.nside2pixarea(nside, degrees=True)*3600.)
     neff_new = neff_orig[zbin]*neff_ratio
 
-    mapfile = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(seed)+'/kgg-s'+str(seed)+'-f2z'+str(zbin)+'_c'+str(rlsn)+'.fits'
+    mapfile = '/fs/scratch/cond0083/flask/kgg-s'+str(seed)+'-f2z'+str(zbin)+'_c'+str(rlsn)+'.fits'
     fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
     theta, phi         = hp.pix2ang(nside,fmap['PIXEL']) #theta and phi of the footprint pixels
     pix_rotator        = hp.Rotator(deg=False, rot=[euler_angle_1[int(rlsn)]*np.pi/180., euler_angle_2[int(rlsn)]*np.pi/180.])
