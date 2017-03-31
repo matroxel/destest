@@ -5,7 +5,7 @@ import multiprocessing
 import os
 import numpy.random as ran
 import time
-
+import pickle
 import catalog
 import config
 import fig
@@ -13,6 +13,10 @@ import txt
 import lin
 import corr
 import mock
+
+def save_obj(obj, name ):
+    with open(name, 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 t0=time.time()
 
@@ -201,7 +205,7 @@ class split_methods(object):
     return arr1,arr1err,e1,e2,e1err,e2err,m1,m2,b1,b2,m1err,m2err,b1err,b2err
 
   @staticmethod
-  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False,blind=True,no2pt=False):
+  def split_gals_2pt_along(cat,cat2,val,mask=None,jkon=False,mock=False,log=False,plot=False,blind=True,no2pt=False,zbin=0):
     """
     Calculates xi and tangential shear for halves of catalog split along val. Optionally reweight each half by redshift distribution (cat.pzrw).
     """
@@ -246,27 +250,24 @@ class split_methods(object):
 
     print 'before wnz',time.time()-t0
 
-    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,mask=mask,label=val,plot=plot)
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,mask=mask,label=val,plot=plot,zbin=zbin)
     print 'edge',edge
     print 'after wnz',time.time()-t0
 
-    if no2pt:
+    if no2pt==0:
       return
 
-    theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
-    print 'after main 2pt',time.time()-t0
+    if no2pt==None:
+      theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG')
+      print 'after main 2pt',time.time()-t0
+      xip=[out[0]]
+      xiperr=[err[0]]
+      xim=[out[1]]
+      ximerr=[err[1]]
 
-    xip=[out[0]]
-    xiperr=[err[0]]
-    xim=[out[1]]
-    ximerr=[err[1]]
     for i in xrange(cat.sbins):
       if cat.cat!='mcal':
         theta,out,err,chi2=corr.xi_2pt.xi_2pt(cat,corr='GG',maska=mask&(bins==i),wa=w)
-        xip.append(out[0])
-        xiperr.append(err[0])
-        xim.append(out[1])
-        ximerr.append(err[1])
       else:
         print 'before '+str(i)+' 2pt',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
@@ -275,10 +276,16 @@ class split_methods(object):
         print 'after '+str(i)+' 2pt ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
         print 'after '+str(i)+' 2pt v2',time.time()-t0
+      if no2pt==None:
         xip.append(out[0])
         xiperr.append(err[0])
         xim.append(out[1])
         ximerr.append(err[1])
+      elif (i==0)&(no2pt==1):
+        xip=[out[0]]
+        xiperr=[err[0]]
+        xim=[out[1]]
+        ximerr=[err[1]]
 
     xip=get_a_st(cat, theta, xip, xiperr)
     xim=get_a_st(cat, theta, xim, ximerr)
@@ -310,6 +317,38 @@ class split_methods(object):
 
     if plot:
       fig.plot_methods.plot_2pt_split(xip,xim,gt,cat,val,edge[1],log)
+
+    if no2pt==None:
+      d0 = {
+        'theta' : xip[0]
+        'xip' : xip[1][0]
+        'xim' : xim[1][0]
+        'xiperr' : xip[2][0]
+        'ximerr' : xim[2][0]
+      }
+      ind=0
+      save_obj(d0,'text/data_GG_'+cat.name+'.cpickle')
+    else:
+      ind=-1
+
+    d1 = {
+      'theta' : xip[0]
+      'xip' : xip[1][ind+1]
+      'xim' : xim[1][ind+1]
+      'xiperr' : xip[2][ind+1]
+      'ximerr' : xim[2][ind+1]
+    }
+
+    d2 = {
+      'theta' : xip[0]
+      'xip' : xip[1][ind+2]
+      'xim' : xim[1][ind+2]
+      'xiperr' : xip[2][ind+2]
+      'ximerr' : xim[2][ind+2]
+    }
+
+    save_obj(d1,'text/data_GG_'+cat.name+'_'+val+'_1.cpickle')
+    save_obj(d2,'text/data_GG_'+cat.name+'_'+val+'_2.cpickle')
 
     return xip,xim,gt,split,edge
 
@@ -358,7 +397,7 @@ class split_methods(object):
     return array
 
   @staticmethod
-  def get_mask_wnz(cat,array,val,mask=None,label='',plot=False):
+  def get_mask_wnz(cat,array,val,mask=None,label='',plot=False,zbin=0):
     """
     Calculate splitting and redshift reweighting. 
     """
@@ -390,7 +429,7 @@ class split_methods(object):
     if cat.pzrw:
       print 'before weights ',time.time()-t0
       w,weights=split_methods.pz_weight(cat,mask,bins)
-      mock.methods.save_weights(cat,val,w*weights,bins)
+      mock.methods.save_weights(cat,val,zbin,w,bins)
     else:
       if cat.cat!='mcal':
         w=np.ones(np.sum([mask]))

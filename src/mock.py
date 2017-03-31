@@ -26,6 +26,13 @@ def load_obj(name ):
     with open(name, 'rb') as f:
         return pickle.load(f)
 
+zbounds = {
+  1 : [0.2, 0.43],
+  2 : [0.43,0.63],
+  3 : [0.63,0.9],
+  4 : [0.9,1.3]
+}
+
 neff_mcal = {
   1 : 1.736599,
   2 : 1.464735,
@@ -147,7 +154,7 @@ class methods(object):
     return out # original pixel positions (not DES pixel positions)
 
   @staticmethod
-  def save_weights(cat,val,w,bins):
+  def save_weights(cat,val,zbin,w,bins):
 
     for i in xrange(cat.sbins):
       if cat.cat=='mcal':
@@ -167,11 +174,26 @@ class methods(object):
       out['pix']      = upix
       out['weight']   = w1
       out['weightsq'] = w2
-      fio.write('text/pzrw_'+cat.name+'_'+val+'_'+str(i)+'.fits.gz',out,clobber=True)
+      fio.write('text/pzrw_'+cat.name+'_'+val+'_'+str(zbin+1)+'_'+str(i)+'.fits.gz',out,clobber=True)
 
     return
 
 class run(object):
+
+  @staticmethod
+  def loop_2pt_data(cat,cols):
+
+    for col in cols:
+      if col=='snr':
+        no2pt=None
+      else:
+        no2pt=1
+      for i in range(4):
+        catalog.CatalogMethods.add_cut_sheared(mcal,'pz',cmin=zbounds[i][0],cmax=zbounds[i][1],remove=False)
+        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,blind=False,plot=False,no2pt=no2pt,zbin=i)
+        catalog.CatalogMethods.add_cut_sheared(mcal,'pz',cmin=zbounds[i][0],cmax=zbounds[i][1],remove=True)
+
+    return
 
   @staticmethod
   def loop_2pt(zbin,catname,val):
@@ -272,3 +294,4 @@ class run(object):
     print 'c',np.mean(c),ccov
 
     return
+

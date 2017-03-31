@@ -115,6 +115,50 @@ class y1(object):
         return i3,mcal
 
     @staticmethod
+    def load_extra(goldfile,i3pickle,mcalpickle,fwhmfile,airmassfile,skybritefile,maglimfile):
+
+        def load(cat,goldfile,fwhmfile,airmassfile,skybritefile,maglimfile)
+            ebv = fio.FITS(goldfile)[-1].read(columns=['coadd_objects_id','ebv'])
+            s1,s2 = catalog.CatalogMethods.sort2(cat.coadd,ebv['coadd_objects_id'])
+            catalog.CatalogMethods.match_cat(cat,s1)
+            cat.ebv = ebv['ebv'][s2]
+
+            pix = hp.ang2pix(4096, np.pi/2.-np.radians(cat.dec),np.radians(cat.ra), nest=False)
+            tmp=fio.FITS(fwhmfile)[-1].read()
+            map = np.zeros(12*nside**2)
+            map[tmp['PIXEL']] = tmp['SIGNAL']
+            cat.fwhm = map[pix]
+
+            tmp=fio.FITS(airmassfile)[-1].read()
+            map = np.zeros(12*nside**2)
+            map[tmp['PIXEL']] = tmp['SIGNAL']
+            cat.airmass = map[pix]
+
+            tmp=fio.FITS(skybritefile)[-1].read()
+            map = np.zeros(12*nside**2)
+            map[tmp['PIXEL']] = tmp['SIGNAL']
+            cat.skybrite = map[pix]
+
+            tmp=fio.FITS(maglimfile)[-1].read()
+            map = np.zeros(12*nside**2)
+            map[tmp['PIXEL']] = tmp['SIGNAL']
+            cat.maglim = map[pix]
+
+            return cat
+
+        mcal = load_obj(mcalpickle)
+        mcal = load(mcal,goldfile,fwhmfile,airmassfile,skybritefile,maglimfile)
+        save_obj(mcal,mcalpickle+'_extra')
+        mcal = None
+
+        i3   = load_obj(i3pickle)
+        i3   = load(i3,goldfile,fwhmfile,airmassfile,skybritefile,maglimfile)
+        save_obj(i3,i3pickle+'_extra')
+        i3   = None
+
+        return
+
+    @staticmethod
     def load_psf_data(psfdir,psfpickle,load_pickle=True):
 
         # MAX_CENTROID_SHIFT = 1.0
