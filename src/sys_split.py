@@ -474,9 +474,10 @@ class split_methods(object):
       for j in range(cat.sbins):
         if cat.cat!='mcal':
           binmask=(bins==j)&mask
+          h,b=np.histogram(nz[binmask],bins=b0,weights=weights[bins==j])
         else:
           binmask=bins[j]
-        h,b=np.histogram(nz[binmask],bins=b0,weights=weights[binmask])
+          h,b=np.histogram(nz[binmask],bins=b0,weights=weights[binmask])
         for k in range(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
           if cat.cat!='mcal':
