@@ -485,7 +485,7 @@ class xi_2pt(object):
       else:
         nk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         nk.process(catxa,catma)
-        norm=nk.xi
+        norm,tmp=nk.calculateXi()
 
       xip=ng.xi/norm
       xiperr=np.sqrt(ng.varxi)/norm
@@ -495,7 +495,6 @@ class xi_2pt(object):
         rg.process(catra,catxb)
 
         xip,xip_im,xiperr=ng.calculateXi(rg)
-        print 'random subtraction with mcal responsivities not finished - disregard this result' 
         if np.sum(norm)==0:
           norm=np.ones(len(xip))
         xip/=norm
