@@ -235,7 +235,7 @@ class run(object):
 
     print np.shape(cov),len(x),len(y)
 
-    params=curve_fit(func,x,y,p0=(0.1),sigma=cov,bounds=(-2,2))
+    params=curve_fit(func,x,y,p0=(0.1),sigma=np.diagonal(cov),bounds=(-2,2))
 
     return params[0]
 
