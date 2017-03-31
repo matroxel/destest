@@ -154,19 +154,20 @@ class methods(object):
     return out # original pixel positions (not DES pixel positions)
 
   @staticmethod
-  def save_weights(cat,val,zbin,w,bins):
+  def save_weights(cat,val,zbin,w,bins,mask0):
 
     for i in xrange(cat.sbins):
       if cat.cat=='mcal':
         mask = bins[i]
       else:
-        mask = bins==i
+        mask = (bins==i)&mask0
       pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
       upix = np.unique(pix)
       w0   = w[mask]
       w1   = np.bincount(pix,weights=w0)
       w2   = np.bincount(pix,weights=w0*w0)
       mask = np.where(w1!=0)[0]
+      upix = upix[mask]
       w1   = w1[mask]
       w2   = w2[mask]
 
