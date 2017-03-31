@@ -181,17 +181,16 @@ class methods(object):
 class run(object):
 
   @staticmethod
-  def loop_2pt_data(cat,cols):
+  def loop_2pt_data(cat,col):
 
-    for col in cols:
-      if col=='snr':
-        no2pt=None
-      else:
-        no2pt=1
-      for i in range(4):
-        catalog.CatalogMethods.add_cut_sheared(mcal,'pz',cmin=zbounds[i][0],cmax=zbounds[i][1],remove=False)
-        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,blind=False,plot=False,no2pt=no2pt,zbin=i)
-        catalog.CatalogMethods.add_cut_sheared(mcal,'pz',cmin=zbounds[i][0],cmax=zbounds[i][1],remove=True)
+    if col=='snr':
+      no2pt=None
+    else:
+      no2pt=1
+    for i in range(4):
+      catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i][0],cmax=zbounds[i][1],remove=False)
+      xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,blind=False,plot=False,no2pt=no2pt,zbin=i)
+      catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i][0],cmax=zbounds[i][1],remove=True)
 
     return
 
