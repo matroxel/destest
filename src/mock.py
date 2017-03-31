@@ -206,7 +206,7 @@ class run(object):
     return
 
   @staticmethod
-  def get_data_cov():
+  def get_data_cov(zbin):
 
     if config.cov.get('path') is None:
       return None
@@ -216,8 +216,11 @@ class run(object):
       except:
         return None
 
-      xip = cov.covmat[:cov.lengths[0],:cov.lengths[0]]
-      xim = cov.covmat[cov.lengths[0]:,cov.lengths[0]:]
+      ind0 = {1:0,2:80,3:140,4:180}
+      ind1 = {1:20,2:100,3:160,4:200}
+
+      xip = cov.covmat[ind0[zbin],ind1[zbin],ind0[zbin],ind1[zbin]]
+      xim = cov.covmat[ind0[zbin],ind1[zbin],ind0[zbin],ind1[zbin]]
 
       return xip,xim
 
@@ -237,7 +240,7 @@ class run(object):
     a=[]
     b=[]
     c=[]
-    covp,covm = run.get_data_cov()
+    covp,covm = run.get_data_cov(zbin)
     for i in range(800):
       try:
         d0 = load_obj('text/flask_GG_'+str(i)+'_0.cpickle')
