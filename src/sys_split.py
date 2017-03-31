@@ -457,7 +457,7 @@ class split_methods(object):
       if hasattr(cat,'pzstore'):
         nz = cat.pzstore.pz_full
       else:
-        nz = cat.pz
+        nz = cat.pz_full
       if cat.cat=='mcal':
         mask1=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
       else:
@@ -466,9 +466,9 @@ class split_methods(object):
       if cat.wt:
         weights = w * (m1+m2)/2.
       else:
-        weights = (m1+m2)/2.*np.ones(len(cat.coadd))
+        weights = (m1+m2)/2.*np.ones(np.sum(mask))
       print nz,weights,mask,binnum
-      h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
+      h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights)
       w=np.ones(len(nz))
       print 'w0',len(w)
       for j in range(cat.sbins):
