@@ -422,10 +422,15 @@ class y1_plots(object):
 
             d = load_obj(name)
 
-        if val in ['size','psfsize']:
-            d['arr1']=np.sqrt(d['arr1'])
 
         xmin,xmax = y1_plots.x_lims[val]
+        if val in ['size','psfsize']:
+            d['arr1']=np.sqrt(d['arr1'])
+            xmin=np.sqrt(xmin)
+            xmax=np.sqrt(xmax)
+        if config.log_val.get(val,False):
+            xmin=np.log10(xmin)
+            xmax=np.log10(xmax)
         y1min = np.minimum(np.minimum((d['m1']+d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']-d['b1err'],(d['m1']-d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']-d['b1err']),np.minimum((d['m1']-d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']+d['b1err'],(d['m1']+d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']+d['b1err']))
         y1max = np.maximum(np.maximum((d['m1']+d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']-d['b1err'],(d['m1']-d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']-d['b1err']),np.maximum((d['m1']-d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']+d['b1err'],(d['m1']+d['m1err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b1']+d['b1err']))
         y2min = np.minimum(np.minimum((d['m2']+d['m2err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b2']-d['b2err'],(d['m2']-d['m2err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b2']-d['b2err']),np.minimum((d['m2']-d['m2err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b2']+d['b2err'],(d['m2']+d['m2err'])*np.concatenate(([xmin],d['arr2'],[xmax]))+d['b2']+d['b2err']))
