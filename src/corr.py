@@ -306,7 +306,7 @@ class xi_2pt(object):
     elif (corr=='NN')|((catb!=None)&(corr in ['NG','NK'])):
       catxa=treecorr.Catalog(w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       if ran:
-        catra=treecorr.Catalog(w=w, ra=cata.ran_ra[maska0], dec=cata.ran_dec[maska0], ra_units='deg', dec_units='deg')
+        catra=treecorr.Catalog(w=w, ra=cata.ran_ra, dec=cata.ran_dec, ra_units='deg', dec_units='deg')
 
     elif corr=='KK':
       if k is None:
