@@ -467,14 +467,25 @@ class xi_2pt(object):
       clear_cache(catxa)
       clear_cache(catxb)
 
-      if (catb.cat=='mcal')&(catb.bs):
-        norm=1.
+      if (cata.cat=='mcal')&(cata.bs):
+        if rtype==1:
+          norm=mcal_norm_1(cata,catxa,catRga,w,maska)
+        elif rtype==2:
+          norm=mcal_norm_2(cata,catxa,catRga,w,maska)
+        elif rtype==3:
+          norm=mcal_norm_3(cata,catxa,catRga,w,maska)
+        elif rtype==4:
+          norm=mcal_norm_4(cata,catxa,catRga,w,maska)
+        elif rtype==5:
+          norm=mcal_norm_5(cata,catxa,catRga,w,maska)
+        else:
+          norm=1.
       elif cata.cat=='mcal':
         norm=1.
       else:
-        Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-        Rg.process(catxa,catmb)
-        norm=Rg.xi
+        nk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        nk.process(catxa,catma)
+        norm=nk.xi
 
       xip=ng.xi/norm
       xiperr=np.sqrt(ng.varxi)/norm
@@ -482,14 +493,6 @@ class xi_2pt(object):
       if ran:
         rg = treecorr.NGCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         rg.process(catra,catxb)
-        if (catb.cat=='mcal')&(catb.bs):
-          norm=1.
-        elif cata.cat=='mcal':
-          norm=1.
-        else:
-          Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
-          Rg.process(catra,catmb)
-          norm=Rg.xi
 
         xip,xip_im,xiperr=ng.calculateXi(rg)
         print 'random subtraction with mcal responsivities not finished - disregard this result' 
