@@ -205,7 +205,7 @@ class run(object):
     t0=time.time()
 
     cnt=0
-    for j in range(25):
+    for j in range(36):
       for i in range(8):
         for zbin in range(4):
           for k in range(3):
