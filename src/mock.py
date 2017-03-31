@@ -1,6 +1,7 @@
 import numpy as np
 import healpy as hp
 import fitsio as fio
+import src.sys_split as sys_split
 import catalog
 import config
 import treecorr
