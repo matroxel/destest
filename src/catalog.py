@@ -335,6 +335,10 @@ class CatalogStore(object):
         print 'pz not same length as catalog - not adding'
 
     return
+  def add_pixel(self, nside, nest):
+    if not hasattr(self, 'pix'):
+      self.pix=CatalogMethods.radec_to_hpix(self.ra,self.dec,nside=nside,nest=nest)
+
 
 class PZStore(object):
   """
