@@ -486,10 +486,13 @@ class xi_2pt(object):
           norm=1.
         elif cata.cat=='mcal':
           norm=1.
+        else:
+          Rg = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+          Rg.process(catra,catmb)
+          norm=Rg.xi
 
         xip,xip_im,xiperr=ng.calculateXi(rg)
         print 'random subtraction with mcal responsivities not finished - disregard this result' 
-        norm,tmp=nk.calculateXi()
         if np.sum(norm)==0:
           norm=np.ones(len(xip))
         xip/=norm
