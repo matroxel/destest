@@ -210,11 +210,10 @@ class run(object):
     b=[]
     c=[]
     for i in range(800):
-      print 'text/flask_GG_'+val+'_'+str(i)+'_0.cpickle'
       try:
-        d0 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_0.cpickle')
-        d1 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_1.cpickle')
-        d2 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_2.cpickle')
+        d0 = load_obj('text/flask_GG_'+str(i)+'_0.cpickle')
+        d1 = load_obj('text/flask_GG_'+str(i)+'_1.cpickle')
+        d2 = load_obj('text/flask_GG_'+str(i)+'_2.cpickle')
       except IOError:
         continue
 
