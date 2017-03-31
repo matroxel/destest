@@ -214,21 +214,21 @@ class split_methods(object):
 
     def get_a_st(cat, theta, out, err):
 
-      a=[]
-      derr=[]
-      for i in xrange(cat.sbins+1):
-        if ~jkon:
-          derr.append(err[i])
-      a.append(split_methods.amp_shift(out[0],out[2]-out[1],np.sqrt(err[1]*err[2])))
-      a.append(split_methods.amp_shift(out[0],out[1]-out[0],err[1]))
-      a.append(split_methods.amp_shift(out[0],out[2]-out[0],err[2]))
+      # a=[]
+      # derr=[]
+      # for i in xrange(cat.sbins+1):
+      #   if ~jkon:
+      #     derr.append(err[i])
+      # a.append(split_methods.amp_shift(out[0],out[2]-out[1],np.sqrt(err[1]*err[2])))
+      # a.append(split_methods.amp_shift(out[0],out[1]-out[0],err[1]))
+      # a.append(split_methods.amp_shift(out[0],out[2]-out[0],err[2]))
 
-      if blind:
-        r0=ran.rand()
-        for i in xrange(cat.sbins+1):
-          out[i]*=(r0*0.1+1.)
-          err[i]*=(r0*0.1+1.)
-          derr[i]*=(r0*0.1+1.)
+      # if blind:
+      #   r0=ran.rand()
+      #   for i in xrange(cat.sbins+1):
+      #     out[i]*=(r0*0.1+1.)
+      #     err[i]*=(r0*0.1+1.)
+      #     derr[i]*=(r0*0.1+1.)
 
       return (theta,out,err,derr,a)
 
