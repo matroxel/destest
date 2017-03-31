@@ -119,10 +119,11 @@ class y1(object):
     def load_extra(goldfile,i3pickle,mcalpickle,fwhmfile,airmassfile,skybritefile,maglimfile):
 
         def load(cat,goldfile,fwhmfile,airmassfile,skybritefile,maglimfile):
-            ebv = fio.FITS(goldfile)[-1].read(columns=['coadd_objects_id','ebv'])
-            s1,s2 = catalog.CatalogMethods.sort2(cat.coadd,ebv['coadd_objects_id'])
+            gold = fio.FITS(goldfile)[-1].read(columns=['coadd_objects_id','ebv','mof_flux_r','mof_flux_i'])
+            s1,s2 = catalog.CatalogMethods.sort2(cat.coadd,gold['coadd_objects_id'])
             catalog.CatalogMethods.match_cat(cat,s1)
-            cat.ebv = ebv['ebv'][s2]
+            cat.ebv = gold['ebv'][s2]
+            cat.colour = gold['mof_flux_r'][s2]-gold['mof_flux_i'][s2]
 
             pix = hp.ang2pix(4096, np.pi/2.-np.radians(cat.dec),np.radians(cat.ra), nest=False)
             tmp=fio.FITS(fwhmfile)[-1].read()
