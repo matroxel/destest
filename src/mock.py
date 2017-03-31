@@ -228,16 +228,17 @@ class run(object):
       return xip,xim
 
   @staticmethod
-  def amp_fit(x,y,cov):
+  def amp_fit(xip,dxip,cov):
 
-    def func(x,a):
-      return a*x
+    chi2st=999999
+    amp=0.
+    for a in xrange(-200,200):
+      chi2=(dxip-a*xip/100.).T*np.linalg.inv(cov)*(dxip-a*xip/100.)
+      if chi2<chi2st:
+        chi2st=chi2
+        amp=a/100.
 
-    print np.shape(cov),len(x),len(y)
-
-    params=curve_fit(func,x,y,p0=(0.1),sigma=np.diagonal(cov),bounds=(-2,2))
-
-    return params[0]
+    return amp
 
   @staticmethod
   def get_amp_cov(zbin,catname,val):
@@ -254,9 +255,9 @@ class run(object):
       except IOError:
         continue
 
-      a.append( run.amp_fit(d0['xip'],d1['xip'],covp) )
-      b.append( run.amp_fit(d0['xip'],d2['xip'],covp) )
-      c.append( run.amp_fit(d1['xip'],d2['xip'],covp) )
+      a.append( run.amp_fit(d0['xip'],d2['xip']-d0['xip'],covp) )
+      b.append( run.amp_fit(d0['xip'],d0['xip']-d1['xip'],covp) )
+      c.append( run.amp_fit(d0['xip'],d2['xip']-d1['xip'],covp) )
 
     a=np.array(a)
     b=np.array(b)
