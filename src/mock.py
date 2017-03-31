@@ -231,9 +231,9 @@ class run(object):
   def amp_fit(x,y,cov):
 
     def func(x,a):
-      return a*x
+      return a*x.ravel()
 
-    params=curve_fit(func,np.array(x),np.array(y),p0=(0.1),sigma=np.array(cov),bounds=(-2,2))
+    params=curve_fit(func,x,y,p0=(0.1),sigma=cov,bounds=(-2,2))
 
     return params[0]
 
