@@ -233,7 +233,9 @@ class run(object):
     def func(x,a):
       return a*x
 
-    params=curve_fit(func,x,y,p0=(0.1),sigma=None,bounds=(-2,2))
+    print np.shape(cov),len(x),len(y)
+
+    params=curve_fit(func,x,y,p0=(0.1),sigma=cov,bounds=(-2,2))
 
     return params[0]
 
