@@ -228,8 +228,8 @@ class run(object):
     bcov=np.sum((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1.)/len(b)
     ccov=np.sum((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1.)/len(c)
 
-    print 'a',a,acov
-    print 'b',b,bcov
-    print 'c',c,ccov
+    print 'a',np.mean(a),acov
+    print 'b',np.mean(b),bcov
+    print 'c',np.mean(c),ccov
 
     return
