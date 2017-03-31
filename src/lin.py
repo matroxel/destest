@@ -94,7 +94,7 @@ class linear_methods(object):
     elif cattype=='gal':
 
       if wt:
-        return None, None, w[mask], None
+        return None, None, None, None, None
       else:
         return None, None, np.ones(np.sum(mask)), None, None
 

@@ -306,7 +306,7 @@ class xi_2pt(object):
     elif (corr=='NN')|((catb!=None)&(corr in ['NG','NK'])):
       catxa=treecorr.Catalog(w=w, ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       if ran:
-        catra=treecorr.Catalog(w=w, ra=cata.ran_ra[maska0], dec=cata.ran_dec[maska0], ra_units='deg', dec_units='deg')
+        catra=treecorr.Catalog(w=w, ra=cata.ran_ra, dec=cata.ran_dec, ra_units='deg', dec_units='deg')
 
     elif corr=='KK':
       if k is None:
@@ -483,7 +483,7 @@ class xi_2pt(object):
       elif catb.cat=='mcal':
         norm=1.
       else:
-        nk = treecorr.NKCorrelation(nbins=catab.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        nk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         nk.process(catxa,catmb)
         norm,tmp=nk.calculateXi()
 
