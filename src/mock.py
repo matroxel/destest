@@ -215,7 +215,7 @@ class run(object):
         d1 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_1.cpickle')
         d2 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_2.cpickle')
       except IOError:
-        pass
+        continue
 
       a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip']-d0['xip'],np.sqrt(d0['err']*d1['err'])) )
       b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d0['xip'],np.sqrt(d0['err']*d2['err'])) )
