@@ -276,7 +276,7 @@ class split_methods(object):
         print 'after '+str(i)+' 2pt ',time.time()-t0
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
         print 'after '+str(i)+' 2pt v2',time.time()-t0
-      if no2pt==None:
+      if (no2pt==None)|(i!=0):
         xip.append(out[0])
         xiperr.append(err[0])
         xim.append(out[1])
