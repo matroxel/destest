@@ -17,6 +17,9 @@ import src.txt as txt
 #400 seconds to read mcal
 #250 seconds to read i3
 
+NSIDE_DEFAULT = 4096
+
+
 goldfile  = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-gold-mof-badregion.fits'
 i3file    = '/global/cscratch1/sd/troxel/finaly1cats/y1a1-im3shape_v5_matched_v6.fits'
 mcalfile  = '/global/cscratch1/sd/troxel/finaly1cats/mcal-y1a1-combined-riz-blind-v4-matched.fits'
@@ -34,9 +37,25 @@ psfexpinf = '/global/cscratch1/sd/troxel/finaly1cats/exposure_info_y1a1-v02.fits
 imagefile = '/global/cscratch1/sd/troxel/finaly1cats/y1a1_image_id.fits'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
+rm_maskfile = '/global/cscratch1/sd/troxel/finaly1cats/5bins_hidens_hilum_higherlum_jointmask_0.15-0.9_magauto_mof_combo_removedupes_spt_fwhmi_exptimei_cut_mask.fits.gz'
+rm_randomsfile = '/global/cscratch1/sd/troxel/finaly1cats/5bins_hidens_hilum_higherlum_jointmask_0.15-0.9_magauto_mof_combo_removedupes_spt_fwhmi_exptimei_cut_randoms.fits.gz'
+
+def build_special(special_points_file, rm_maskfile, rm_randomsfile):
+    special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, 
+        cutfunc=catalog.CatalogMethods.final_null_cuts_ra(), ranfile=rm_randomsfile)
+    special.add_pixel(4096, nest=False)
+
+    rm_mask_hpix = fio.FITS(rm_maskfile)[1]['HPIX'][:]
+    inmask=np.in1d(special.pix, rm_mask_hpix)
+    catalog.CatalogMethods.match_cat(special,inmask)
+    return special
+
+special = build_special(special_points_file, rm_maskfile, rm_randomsfile)
+
+
 # Load various data - Probably don't do this all in same job, lots of memory if you're not loading the pickles, and even then...
 i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle=i3pickle,mcalpickle=mcalpickle)
-psf = y1.y1.load_psf_data(psfdir)
+psf = y1.y1.load_psf_data(psfdir,psfpickle)
 mcalepoch,i3epoch = y1.y1.load_epoch_data(i3epochdir,mcalepochdir,imagefile,i3pickle,mcalpickle,i3epochpickle,mcalepochpickle)
 
 # rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
@@ -97,6 +116,9 @@ mcalepoch,i3epoch = y1.y1.load_epoch_data(i3epochdir,mcalepochdir,imagefile,i3pi
 
 
 # Making all the plots for the paper (should probably not try to run all these at once in same job)
+
+y1.y1_plots.tangential_shear_plot(i3,mcal,special)
+
 
 # Normal catalog plots
 y1.y1_plots.mean_e(i3,mcal)
