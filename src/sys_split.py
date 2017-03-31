@@ -327,7 +327,7 @@ class split_methods(object):
         'ximerr' : xim[2][0]
       }
       ind=0
-      save_obj(d0,'text/data_GG_'+cat.name+'.cpickle')
+      save_obj(d0,'text/data_GG_'+cat.name+'_'+str(zbin)+'.cpickle')
     else:
       ind=-1
 
@@ -347,8 +347,8 @@ class split_methods(object):
       'ximerr' : xim[2][ind+2]
     }
 
-    save_obj(d1,'text/data_GG_'+cat.name+'_'+val+'_1.cpickle')
-    save_obj(d2,'text/data_GG_'+cat.name+'_'+val+'_2.cpickle')
+    save_obj(d1,'text/data_GG_'+cat.name+'_'+val+'_'+str(zbin)+'_1.cpickle')
+    save_obj(d2,'text/data_GG_'+cat.name+'_'+val+'_'+str(zbin)+'_2.cpickle')
 
     return xip,xim,gt,split,edge
 
