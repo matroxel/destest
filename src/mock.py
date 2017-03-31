@@ -222,6 +222,9 @@ class run(object):
       xip = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
       xim = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
 
+      print xip
+      print xim
+
       return xip,xim
 
   @staticmethod
@@ -249,9 +252,9 @@ class run(object):
       except IOError:
         continue
 
-      a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip']-d0['xip'],covp) )
-      b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d0['xip'],covp) )
-      c.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d1['xip'],covp) )
+      a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip'],covp) )
+      b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip'],covp) )
+      c.append( sys_split.split_methods.amp_shift(d1['xip'],d2['xip'],covp) )
 
     a=np.array(a)
     b=np.array(b)
