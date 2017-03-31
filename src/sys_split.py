@@ -330,6 +330,7 @@ class split_methods(object):
       save_obj(d0,'text/data_GG_'+cat.name+'_'+str(zbin)+'.cpickle')
     else:
       ind=-1
+    print xip
 
     d1 = {
       'theta' : xip[0],
