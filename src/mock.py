@@ -158,9 +158,9 @@ class methods(object):
 
     for i in xrange(cat.sbins):
       if cat.cat=='mcal':
-        mask = bins[i]
+        mask = bins[i][np.in1d(bins[i],np.where(w!=0)[0],assume_unique=False)]
       else:
-        mask = (bins==i)&mask0
+        mask = (bins==i)&mask0&(w!=0)
       pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
       upix = np.unique(pix)
       w0   = w[mask]
