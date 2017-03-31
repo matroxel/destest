@@ -252,9 +252,9 @@ class run(object):
       except IOError:
         continue
 
-      a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip'],covp) )
-      b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip'],covp) )
-      c.append( sys_split.split_methods.amp_shift(d1['xip'],d2['xip'],covp) )
+      a.append( run.amp_fit(d0['xip'],d1['xip'],covp) )
+      b.append( run.amp_fit(d0['xip'],d2['xip'],covp) )
+      c.append( run.amp_fit(d1['xip'],d2['xip'],covp) )
 
     a=np.array(a)
     b=np.array(b)
