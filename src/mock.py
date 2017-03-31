@@ -1,13 +1,15 @@
 import numpy as np
 import healpy as hp
 import fitsio as fio
-import src.sys_split as sys_split
+import sys_split
 import catalog
 import config
 import treecorr
 import time
 import pickle
 import glob
+import twopoint as tp
+from scipy.optimize import curve_fit
 
 '''
 Modified code by Oliver to turn flask catalogs by Lucas 
@@ -204,11 +206,38 @@ class run(object):
     return
 
   @staticmethod
+  def get_data_cov():
+
+    if config.cov.get('path') is None:
+      return None
+    else:
+      try:
+        cov=tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info
+      except:
+        return None
+
+      xip = cov.covmat[:cov.lengths[0],:cov.lengths[0]]
+      xim = cov.covmat[cov.lengths[0]:,cov.lengths[0]:]
+
+      return xip,xim
+
+  @staticmethod
+  def amp_fit(x,y,cov):
+
+    def func(x,a):
+      return a*x
+
+    params=curve_fit(func,x,y,p0=(0.),sigma=cov)
+
+    return params[0]
+
+  @staticmethod
   def get_amp_cov(zbin,catname,val):
 
     a=[]
     b=[]
     c=[]
+    covp,covm = run.get_data_cov()
     for i in range(800):
       try:
         d0 = load_obj('text/flask_GG_'+str(i)+'_0.cpickle')
@@ -217,9 +246,9 @@ class run(object):
       except IOError:
         continue
 
-      a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip']-d0['xip'],np.sqrt(d0['err']*d1['err'])) )
-      b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d0['xip'],np.sqrt(d0['err']*d2['err'])) )
-      c.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d1['xip'],np.sqrt(d1['err']*d2['err'])) )
+      a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip']-d0['xip'],covp) )
+      b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d0['xip'],covp) )
+      c.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d1['xip'],covp) )
 
     a=np.array(a)
     b=np.array(b)
