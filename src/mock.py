@@ -233,7 +233,8 @@ class run(object):
     chi2st=999999
     amp=0.
     for a in xrange(-200,200):
-      chi2=(dxip-a*xip/100.).T*np.linalg.inv(cov)*(dxip-a*xip/100.)
+      x=dxip-a*xip/100.
+      chi2=np.dot(x,np.dot(np.linalg.inv(cov),x))
       if chi2<chi2st:
         chi2st=chi2
         amp=a/100.
