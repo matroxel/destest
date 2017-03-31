@@ -117,7 +117,7 @@ class y1(object):
     @staticmethod
     def load_extra(goldfile,i3pickle,mcalpickle,fwhmfile,airmassfile,skybritefile,maglimfile):
 
-        def load(cat,goldfile,fwhmfile,airmassfile,skybritefile,maglimfile)
+        def load(cat,goldfile,fwhmfile,airmassfile,skybritefile,maglimfile):
             ebv = fio.FITS(goldfile)[-1].read(columns=['coadd_objects_id','ebv'])
             s1,s2 = catalog.CatalogMethods.sort2(cat.coadd,ebv['coadd_objects_id'])
             catalog.CatalogMethods.match_cat(cat,s1)
