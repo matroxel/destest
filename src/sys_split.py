@@ -470,8 +470,10 @@ class split_methods(object):
           weights = (m1+m2)/2.*np.ones(np.sum(mask))
         else:
           weights = (m1+m2)/2.*np.ones(len(cat.coadd))
-      print nz,weights,mask,binnum
-      h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights)
+      if cat.cat == 'mcal':
+        h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
+      else:
+        h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights)
       w=np.ones(len(nz))
       print 'w0',len(w)
       for j in range(cat.sbins):
