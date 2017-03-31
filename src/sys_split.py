@@ -320,10 +320,10 @@ class split_methods(object):
 
     if no2pt==None:
       d0 = {
-        'theta' : xip[0]
-        'xip' : xip[1][0]
-        'xim' : xim[1][0]
-        'xiperr' : xip[2][0]
+        'theta' : xip[0],
+        'xip' : xip[1][0],
+        'xim' : xim[1][0],
+        'xiperr' : xip[2][0],
         'ximerr' : xim[2][0]
       }
       ind=0
@@ -332,18 +332,18 @@ class split_methods(object):
       ind=-1
 
     d1 = {
-      'theta' : xip[0]
-      'xip' : xip[1][ind+1]
-      'xim' : xim[1][ind+1]
-      'xiperr' : xip[2][ind+1]
+      'theta' : xip[0],
+      'xip' : xip[1][ind+1],
+      'xim' : xim[1][ind+1],
+      'xiperr' : xip[2][ind+1],
       'ximerr' : xim[2][ind+1]
     }
 
     d2 = {
-      'theta' : xip[0]
-      'xip' : xip[1][ind+2]
-      'xim' : xim[1][ind+2]
-      'xiperr' : xip[2][ind+2]
+      'theta' : xip[0],
+      'xip' : xip[1][ind+2],
+      'xim' : xim[1][ind+2],
+      'xiperr' : xip[2][ind+2],
       'ximerr' : xim[2][ind+2]
     }
 
