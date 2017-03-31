@@ -6,6 +6,7 @@ import config
 import treecorr
 import time
 import pickle
+import glob
 
 '''
 Modified code by Oliver to turn flask catalogs by Lucas 
@@ -174,6 +175,7 @@ class run(object):
 
     t0=time.time()
 
+    cnt=0
     for j in range(100):
       for i in range(8):
         for k in range(3):
@@ -195,12 +197,38 @@ class run(object):
             'err' : np.sqrt(gg.varxi)
           }
 
-          save_obj(d,'text/flask_GG_'+str(i*j+i)+'_'+str(k)+'.cpickle')
+          save_obj(d,'text/flask_GG_'+catname+'_'+val+'_'+str(cnt)+'_'+str(k)+'.cpickle')
+        cnt+=1
 
     return
 
+  @staticmethod
+  def get_amp_cov(zbin,catname,val):
 
+    a=[]
+    b=[]
+    c=[]
+    for i in range(800):
+      try:
+        d0 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_0.cpickle')
+        d1 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_1.cpickle')
+        d2 = load_obj('text/flask_GG_'+val+'_'+str(i)+'_2.cpickle')
+      except IOError:
+        pass
 
+      a.append( sys_split.split_methods.amp_shift(d0['xip'],d1['xip']-d0['xip'],np.sqrt(d0['err']*d1['err'])) )
+      b.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d0['xip'],np.sqrt(d0['err']*d2['err'])) )
+      c.append( sys_split.split_methods.amp_shift(d0['xip'],d2['xip']-d1['xip'],np.sqrt(d1['err']*d2['err'])) )
 
+    a=np.array(a)
+    b=np.array(b)
+    c=np.array(c)
+    acov=np.sum((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1.)/len(a)
+    bcov=np.sum((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1.)/len(b)
+    ccov=np.sum((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1.)/len(c)
 
+    print 'a',a,acov
+    print 'b',b,bcov
+    print 'c',c,ccov
 
+    return
