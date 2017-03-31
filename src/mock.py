@@ -231,10 +231,9 @@ class run(object):
   def amp_fit(x,y,cov):
 
     def func(x,a):
-      print a*x
       return a*x
 
-    params=curve_fit(func,x,y,p0=(0.),sigma=cov)
+    params=curve_fit(func,x,y,p0=(0.1),sigma=cov)
 
     return params[0]
 
