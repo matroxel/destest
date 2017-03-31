@@ -200,33 +200,34 @@ class run(object):
     return
 
   @staticmethod
-  def loop_2pt(zbin,catname,val):
+  def loop_2pt(catname,val):
 
     t0=time.time()
 
     cnt=0
-    for j in range(100):
+    for j in range(25):
       for i in range(8):
-        for k in range(3):
-          print j,i,k,time.time()-t0
-          if k==0:
-            wfile = None
-          else:
-            wfile='text/pzrw_'+catname+'_'+val+'_'+str(k-1)+'.fits.gz'
+        for zbin in range(4):
+          for k in range(3):
+            print j,i,k,time.time()-t0
+            if k==0:
+              wfile = None
+            else:
+              wfile='text/pzrw_'+catname+'_'+val+'_'+str(zbin+1)+'_'+str(k-1)+'.fits.gz'
 
-          out = methods.rotate_mock_rescale_nsigma(zbin, i+1, j+1, wfile=wfile)
-          cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
-          gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
-          gg.process(cat)
+            out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile)
+            cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
+            gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
+            gg.process(cat)
 
-          d = {
-            'theta' : np.exp(gg.meanlogr),
-            'xip' : gg.xip,
-            'xim' : gg.xim,
-            'err' : np.sqrt(gg.varxi)
-          }
+            d = {
+              'theta' : np.exp(gg.meanlogr),
+              'xip' : gg.xip,
+              'xim' : gg.xim,
+              'err' : np.sqrt(gg.varxi)
+            }
 
-          save_obj(d,'text/flask_GG_'+catname+'_'+val+'_'+str(cnt)+'_'+str(k)+'.cpickle')
+            save_obj(d,'text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(cnt)+'_'+str(k)+'.cpickle')
         cnt+=1
 
     return
