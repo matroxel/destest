@@ -127,22 +127,22 @@ class y1(object):
 
             pix = hp.ang2pix(4096, np.pi/2.-np.radians(cat.dec),np.radians(cat.ra), nest=False)
             tmp=fio.FITS(fwhmfile)[-1].read()
-            map = np.zeros(12*nside**2)
+            map = np.zeros(12*4096**2)
             map[tmp['PIXEL']] = tmp['SIGNAL']
             cat.fwhm = map[pix]
 
             tmp=fio.FITS(airmassfile)[-1].read()
-            map = np.zeros(12*nside**2)
+            map = np.zeros(12*4096**2)
             map[tmp['PIXEL']] = tmp['SIGNAL']
             cat.airmass = map[pix]
 
             tmp=fio.FITS(skybritefile)[-1].read()
-            map = np.zeros(12*nside**2)
+            map = np.zeros(12*4096**2)
             map[tmp['PIXEL']] = tmp['SIGNAL']
             cat.skybrite = map[pix]
 
             tmp=fio.FITS(maglimfile)[-1].read()
-            map = np.zeros(12*nside**2)
+            map = np.zeros(12*4096**2)
             map[tmp['PIXEL']] = tmp['SIGNAL']
             cat.maglim = map[pix]
 
