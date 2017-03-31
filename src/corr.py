@@ -483,7 +483,7 @@ class xi_2pt(object):
       elif catb.cat=='mcal':
         norm=1.
       else:
-        nk = treecorr.NKCorrelation(nbins=catab.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
+        nk = treecorr.NKCorrelation(nbins=cata.tbins, min_sep=cata.sep[0], max_sep=cata.sep[1], sep_units='arcmin',bin_slop=cata.slop,verbose=0)
         nk.process(catxa,catmb)
         norm,tmp=nk.calculateXi()
 
