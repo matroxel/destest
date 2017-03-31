@@ -4,7 +4,11 @@ import fitsio as fio
 import sys_split
 import catalog
 import config
-import treecorr
+try:
+  import treecorr
+except:
+  print "No treecorr"
+  treecorr=None
 import time
 import pickle
 import glob
