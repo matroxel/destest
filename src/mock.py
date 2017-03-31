@@ -167,7 +167,7 @@ class methods(object):
       w1   = np.bincount(pix,weights=w0)
       w2   = np.bincount(pix,weights=w0*w0)
       mask = np.where(w1!=0)[0]
-      upix = upix[mask]
+      # upix = upix[mask]
       w1   = w1[mask]
       w2   = w2[mask]
 
