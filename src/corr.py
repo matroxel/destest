@@ -487,7 +487,7 @@ class xi_2pt(object):
         elif cata.cat=='mcal':
           norm=1.
 
-        xip,xip_im,xiperr=ng.calculateXi(Rg)
+        xip,xip_im,xiperr=ng.calculateXi(rg)
         print 'random subtraction with mcal responsivities not finished - disregard this result' 
         norm,tmp=nk.calculateXi()
         if np.sum(norm)==0:
