@@ -37,6 +37,7 @@ psfexpinf = '/global/cscratch1/sd/troxel/finaly1cats/exposure_info_y1a1-v02.fits
 imagefile = '/global/cscratch1/sd/troxel/finaly1cats/y1a1_image_id.fits'
 special_points_file = '/global/cscratch1/sd/zuntz/y1a1_special_field_points.fits'
 
+psfpickle = '/global/cscratch1/sd/troxel/finaly1cats/psf.cpickle'
 rm_maskfile = '/global/cscratch1/sd/troxel/finaly1cats/5bins_hidens_hilum_higherlum_jointmask_0.15-0.9_magauto_mof_combo_removedupes_spt_fwhmi_exptimei_cut_mask.fits.gz'
 rm_randomsfile = '/global/cscratch1/sd/troxel/finaly1cats/5bins_hidens_hilum_higherlum_jointmask_0.15-0.9_magauto_mof_combo_removedupes_spt_fwhmi_exptimei_cut_randoms.fits.gz'
 
@@ -55,16 +56,13 @@ special = build_special(special_points_file, rm_maskfile, rm_randomsfile)
 
 # Load various data - Probably don't do this all in same job, lots of memory if you're not loading the pickles, and even then...
 i3,mcal  = y1.y1.load_data(i3file,mcalfile,goldfile,bpzfile,bpz0file,i3pickle=i3pickle,mcalpickle=mcalpickle)
-psf = y1.y1.load_psf_data(psfdir,psfpickle)
+
+print "(Not loading PSF)"
+#psf = y1.y1.load_psf_data(psfdir,psfpickle)
 mcalepoch,i3epoch = y1.y1.load_epoch_data(i3epochdir,mcalepochdir,imagefile,i3pickle,mcalpickle,i3epochpickle,mcalepochpickle)
 
 # rm = catalog.CatalogStore('rm',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cattype='gal',catfile=rmfile,cols=['coadd','ra','dec'])
 # special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1, cutfunc=catalog.CatalogMethods.final_null_cuts_ra())
-
-
-# i3epoch = catalog.CatalogStore("i3epoch", 
-#     cattype="i3epoch", catdir=i3epochdir, 
-#     maxiter=10, cols=["coadd", "row", "col",  "e1", "e2"])
 
 
 # def add_i3_cal_to_epoch(epoch, i3):
@@ -124,13 +122,17 @@ y1.y1_plots.tangential_shear_plot(i3,mcal,special)
 y1.y1_plots.mean_e(i3,mcal)
 y1.y1_plots.footprint_plot(mcal)
 
+
+# single-epoch plots
+y1.y1_plots.mean_e_row_plot(mcalepoch)
+y1.y1_plots.mean_e_fov(mcalepoch,i3epoch)
+
+print "PSF plots disabled for now"
+import sys
+sys.exit(1)
 # psf catalog plots - from Mike's psfex files
 y1.y1_plots.psf_star_dist(psf)
 y1.y1_plots.psf_mag_res_plot(psf)
 y1.y1_plots.psf_star_fwhm_dist(psf,psfexpinf)
 y1.y1_plots.psf_e_fov(psf)
-
-# single-epoch plots
-y1.y1_plots.mean_e_row_plot(mcalepoch)
-y1.y1_plots.mean_e_fov(mcalepoch,i3epoch)
 
