@@ -130,6 +130,7 @@ class methods(object):
         print 'nonunique rot_pix'
       if len(np.unique(w['pix']))!=len(w['pix']):
         print 'nonunique w[pix]'
+      return
       s1,s2    = catalog.CatalogMethods.sort2(rot_pix,w['pix']) # cut to intersection of data / mock catalogs
       rot_pix  = rot_pix[s1]
 
