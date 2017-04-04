@@ -125,29 +125,39 @@ class methods(object):
     else:
 
       w        = fio.FITS(wfile)[-1].read()
-      print wfile
-      if len(np.unique(rot_pix))!=len(rot_pix):
-        print 'nonunique rot_pix',len(np.unique(rot_pix)),len(rot_pix)
-      if len(np.unique(w['pix']))!=len(w['pix']):
-        print 'nonunique w[pix]'
-      return
-      s1,s2    = catalog.CatalogMethods.sort2(rot_pix,w['pix']) # cut to intersection of data / mock catalogs
-      rot_pix  = rot_pix[s1]
+      ind      = np.argsort(w['pix'])
+      w        = w[ind]
+      ind      = np.argsort(rot_pix)
+      rot_pix  = rot_pix[ind]
+      fmap     = fmap[ind]
+      theta    = theta[ind]
+      phi      = phi[ind]
 
-      wpix     = w['pix'][s2]
-      w1       = w['weight'][s2]
-      w2       = w['weightsq'][s2]
+      w        = w[np.in1d(w['pix'],rot_pix,assume_unique=False)]
+      mask     = np.in1d(rot_pix,w['pix'],assume_unique=False)
+      fmap     = fmap[mask]
+      rot_pix  = rot_pix[mask]
+      theta    = theta[mask]
+      phi      = phi[mask]
+
+      diff     = np.diff(rot_pix)
+      diff     = np.where(diff!=0)[0]+1
+      diff     = np.append([0],diff)
+      diff     = np.append(diff,[None])
+
+      w1       = np.zeros(len(rot_pix))
+      w2       = np.zeros(len(rot_pix))
+      for i in xrange(len(diff)-1):
+        w1[diff[i]:diff[i+1]] = w['weight'][i]
+        w2[diff[i]:diff[i+1]] = w['weightsq'][i]
       w        = None
 
-      xsorted  = np.argsort(wpix) # translate wpix to rot_pix
-      mask     = xsorted[np.searchsorted(wpix[xsorted], rot_pix)]
-
-      map_ra   = phi[s1]/np.pi*180.0
-      map_dec  = (np.pi/2.0 - theta[s1])/np.pi*180.0
-      map_g1   = fmap['Q_STOKES'][s1]
-      map_g2   = fmap['U_STOKES'][s1]
-      map_w    = w1[mask]
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))[mask]
+      map_ra   = phi/np.pi*180.0
+      map_dec  = (np.pi/2.0 - theta)/np.pi*180.0
+      map_g1   = fmap['Q_STOKES']
+      map_g2   = fmap['U_STOKES']
+      map_w    = w1
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))
 
     fmap     = None
     n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
