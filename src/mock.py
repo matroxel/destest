@@ -127,7 +127,7 @@ class methods(object):
       w        = fio.FITS(wfile)[-1].read()
       print wfile
       if len(np.unique(rot_pix))!=len(rot_pix):
-        print 'nonunique rot_pix'
+        print 'nonunique rot_pix',len(np.unique(rot_pix)),len(rot_pix)
       if len(np.unique(w['pix']))!=len(w['pix']):
         print 'nonunique w[pix]'
       return
