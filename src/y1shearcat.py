@@ -759,9 +759,9 @@ class y1_plots(object):
             i = np.argsort(cat.mag)
 
             arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
-            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(2.*cat.psf_size**2-2.*cat.size**2)[i],edge)
-            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
-            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],-(2.*cat.psf_size**2-2.*cat.size**2)[i],edge)
+            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],-(cat.psf1-cat.e1)[i],edge)
+            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],-(cat.psf2-cat.e2)[i],edge)
 
             d = {
 
