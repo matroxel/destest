@@ -796,9 +796,9 @@ class y1_plots(object):
             i = np.argsort(cat.mag)
 
             arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
-            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(cat.psf_size-cat.size)[i],edge)
-            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
-            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],-(2.*cat.psf_size**2-2.*cat.size**2)[i],edge)
+            de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],-(cat.psf1-cat.e1)[i],edge)
+            de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],-(cat.psf2-cat.e2)[i],edge)
 
             d = {
 
@@ -823,7 +823,7 @@ class y1_plots(object):
         plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}}~(\mathrm{arcsec}^{2})$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.01*np.ones(2),0.002*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.01*np.ones(2),0.02*np.ones(2),interpolate=True,color='k',alpha=0.2)
         ax.set_xticklabels([])
 
         ax=plt.subplot(2,1,2)
@@ -833,7 +833,7 @@ class y1_plots(object):
         plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.001*np.ones(2),interpolate=True,color='k',alpha=0.2)
         plt.xlabel('Magnitude')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
@@ -888,10 +888,10 @@ class y1_plots(object):
         psf_exp = psf_exp[i]
 
         ax = plt.subplot()
-        fwhm = np.sqrt(cat.size[mask][i]/2)*2.355
-        zmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'z','k')
-        imedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'i','b')
-        rmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'r','r')
+        fwhm = cat.size[mask][i]*2.355
+        zmedian = y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'z','k')
+        imedian = y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'i','b')
+        rmedian = y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'r','r')
         print 'median seeing for riz bands',np.median(np.append(np.append(rmedian,imedian),zmedian))
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles[::-1], labels[::-1], loc='upper right')
@@ -1048,5 +1048,31 @@ class y1_plots(object):
         plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/mean_e_focal.pdf', bbox_inches='tight')
         plt.close()
+
+        return
+
+    @staticmethod
+    def mean_e_mock():
+
+        g = np.zeros((100,8,4,2))
+        for seed in range(100):
+          for rlsn in range(8):
+            for zbin in range(4):
+                f = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(seed+1)+'/kgg-s'+str(seed+1)+'-f2z'+str(zbin+1)+'_c'+str(rlsn+1)+'.fits'
+                print f
+                fmap = fio.FITS(f)[-1].read(columns=['Q_STOKES','U_STOKES'])
+                g[seed,rlsn,zbin,0]=np.mean(fmap['Q_STOKES'])
+                g[seed,rlsn,zbin,1]=np.mean(fmap['U_STOKES'])
+
+        cnt = 0
+        g0 = np.zeros((800,4,2))
+        for seed in range(100):
+          for rlsn in range(8):
+            for zbin in range(4):
+                g0[cnt,zbin,0]=g[seed,rlsn,zbin,0]
+                g0[cnt,zbin,1]=g[seed,rlsn,zbin,1]
+            cnt+=1
+        cov1=np.sum((g0-np.mean(g0,axis=0))*(g0-np.mean(g0,axis=0)),axis=0)*(len(g0)-1.)/len(g0)*(len(g0)-1-1)/(len(g0)-1)
+        np.save('text/mean_e_flask.npy',g0)
 
         return
