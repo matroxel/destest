@@ -759,7 +759,7 @@ class y1_plots(object):
             i = np.argsort(cat.mag)
 
             arr1, tmp    = y1_plots.bin_mean_new(cat.mag[i],cat.mag[i],edge)
-            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(cat.psf_size-cat.size)[i],edge)
+            dT,   dTerr  = y1_plots.bin_mean_new(cat.mag[i],(cat.psf_size**2-cat.size**2)[i],edge)
             de1,  de1err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf1-cat.e1)[i],edge)
             de2,  de2err = y1_plots.bin_mean_new(cat.mag[i],(cat.psf2-cat.e2)[i],edge)
 
@@ -851,7 +851,7 @@ class y1_plots(object):
         psf_exp = psf_exp[i]
 
         ax = plt.subplot()
-        fwhm = np.sqrt(cat.size[mask][i]/2)*2.355
+        fwhm = cat.size[mask][i]*2.355
         zmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'z','k')
         imedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'i','b')
         rmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'r','r')
@@ -1011,5 +1011,33 @@ class y1_plots(object):
         plt.subplots_adjust(wspace=0.1, hspace=0.1, right=0.7, bottom=0.1, top=0.99)
         plt.savefig('plots/y1/mean_e_focal.pdf', bbox_inches='tight')
         plt.close()
+
+        return
+
+
+
+    @staticmethod
+    def mean_e_mock():
+
+        g = np.zeros((100,8,4,2))
+        for seed in range(100):
+          for rlsn in range(8):
+            for zbin in range(4):
+                f = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(seed+1)+'/kgg-s'+str(seed+1)+'-f2z'+str(zbin+1)+'_c'+str(rlsn+1)+'.fits'
+                print f
+                fmap = fio.FITS(f)[-1].read(columns=['Q_STOKES','U_STOKES'])
+                g[seed,rlsn,zbin,0]=np.mean(fmap['Q_STOKES'])
+                g[seed,rlsn,zbin,1]=np.mean(fmap['U_STOKES'])
+
+        cnt = 0
+        g0 = np.zeros((800,4,2))
+        for seed in range(100):
+          for rlsn in range(8):
+            for zbin in range(4):
+                g0[cnt,zbin,0]=g[seed,rlsn,zbin,0]
+                g0[cnt,zbin,1]=g[seed,rlsn,zbin,1]
+            cnt+=1
+        cov1=np.sum((g0-np.mean(g0,axis=0))*(g0-np.mean(g0,axis=0)),axis=0)*(len(g0)-1.)/len(g0)*(len(g0)-1-1)/(len(g0)-1)
+        np.save('text/mean_e_flask.npy',g0)
 
         return
