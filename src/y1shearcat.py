@@ -852,9 +852,9 @@ class y1_plots(object):
 
         ax = plt.subplot()
         fwhm = cat.size[mask][i]*2.355
-        zmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'z','k')
-        imedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'i','b')
-        rmedian = y1.y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'r','r')
+        zmedian = y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'z','k')
+        imedian = y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'i','b')
+        rmedian = y1_plots.psf_star_fwhm_subplot(fwhm,psf_exp,exp,'r','r')
         print 'median seeing for riz bands',np.median(np.append(np.append(rmedian,imedian),zmedian))
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles[::-1], labels[::-1], loc='upper right')
