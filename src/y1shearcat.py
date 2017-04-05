@@ -786,7 +786,7 @@ class y1_plots(object):
         plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}}~(\mathrm{arcsec}^{2})$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.01*np.ones(2),0.002*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.01*np.ones(2),0.02*np.ones(2),interpolate=True,color='k',alpha=0.2)
         ax.set_xticklabels([])
 
         ax=plt.subplot(2,1,2)
@@ -796,7 +796,7 @@ class y1_plots(object):
         plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
         plt.axvline(cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.0004*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.001*np.ones(2),interpolate=True,color='k',alpha=0.2)
         plt.xlabel('Magnitude')
 
         plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
