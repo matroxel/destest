@@ -333,9 +333,9 @@ class run(object):
       for val in vals:
         for zbin in range(4):
           covp,covm = run.get_data_cov(zbin+1)
-          d0 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'.cpickle')
-          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
-          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
+          d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
+          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_1.cpickle')
+          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_2.cpickle')
           a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
           b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
           c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
