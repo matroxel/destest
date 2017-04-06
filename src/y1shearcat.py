@@ -598,6 +598,17 @@ class y1_plots(object):
 
     #     return
 
+
+    @staticmethod 
+    def tangential_psf_data(psf, centers):
+        name = "text/special_psf_gamma.pkl"
+        if os.path.exists(name):
+            return
+        theta,out,err,chi2 = corr.xi_2pt.xi_2pt(centers, psf, corr='NG', 
+                                                maska=None, maskb=None, ran=True)
+    
+        data = theta,out,err,chi2
+        pickle.dump(data, open(name,"w"))
         
 
     @staticmethod 
