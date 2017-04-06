@@ -26,9 +26,7 @@ def save_obj(obj, name ):
     with open(name, 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-def load_obj(name ):
-    with open(name, 'rb') as f:
-        return pickle.load(f)
+i
 
 zbounds = {
   1 : [0.2, 0.43],
@@ -120,7 +118,7 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = np.ones(len(map_ra))
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix))
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.))
 
     else:
 
@@ -157,7 +155,7 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = w1
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(w2/w1))
 
     fmap     = None
     n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
@@ -232,6 +230,8 @@ class run(object):
             print j,i,k,time.time()-t0
             if k==0:
               wfile = None
+              if val!='snr':
+                continue
             else:
               wfile='text/pzrw_'+catname+'_'+val+'_'+str(zbin+1)+'_'+str(k-1)+'.fits.gz'
 
@@ -330,9 +330,9 @@ class run(object):
       for val in vals:
         for zbin in range(4):
           covp,covm = run.get_data_cov(zbin+1)
-          d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
-          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_1.cpickle')
-          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_2.cpickle')
+          dd0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
+          dd1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_1.cpickle')
+          dd2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_2.cpickle')
           a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
           b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
           c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
@@ -342,3 +342,19 @@ class run(object):
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
 
     return
+
+# a = np.zeros((168,20))
+# for i in range(168):
+#   d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+#   a[i,:] = d0['xip']
+
+
+# print np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)*((168)-1.)/(168)*(168-20-1)/(168-1))
+
+
+
+# (np.sum(out['w']**2)/(np.sum(out['w']))**2)**-1/(len(out)*0.73766043036137707)
+
+# (np.sum(out['e1']**2*out['w']**2)/np.sum(out['w']**2))
+
+
