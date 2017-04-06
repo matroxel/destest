@@ -601,8 +601,9 @@ class y1_plots(object):
         
 
     @staticmethod 
-    def tangential_shear_plot(i3, metacal, centers, centers_mask=None, load=True):
-        name = "text/special_gamma.pkl"
+    def tangential_shear_plot(i3, metacal, centers, ran, centers_mask=None, load=True):
+        name = "text/special_gamma_ran_{}.pkl".format(ran)
+
         if os.path.exists(name) and load:
             data = pickle.load(open(name))
             i3_data, mc_data = data
@@ -613,10 +614,10 @@ class y1_plots(object):
             mask = None
 
             i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt.xi_2pt(centers, i3, corr='NG', 
-                                                                maska=centers_mask, maskb=mask, ran=False)
+                                                                maska=centers_mask, maskb=mask, ran=ran)
         
             mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt.xi_2pt(centers, metacal, corr='NG', 
-                                                                maska=centers_mask, maskb=mask, ran=False)
+                                                                maska=centers_mask, maskb=mask, ran=ran)
 
             i3_data = i3_theta,i3_out,i3_err,i3_chi2
             mc_data = mc_theta,mc_out,mc_err,mc_chi2
@@ -657,7 +658,7 @@ class y1_plots(object):
         plt.xlabel(r"$\theta$ / arcmin") 
         plt.ylabel(r"$\gamma_t$") 
         plt.legend()
-        plt.savefig('plots/y1/special_gammat.pdf', dpi=500, bbox_inches='tight')
+        plt.savefig('plots/y1/special_gammat_ran_{}.pdf'.format(ran), dpi=500, bbox_inches='tight')
         plt.close()
         print "We think the imaginary gammat is gammax but not sure!"
         plt.figure()
@@ -668,7 +669,7 @@ class y1_plots(object):
         plt.xlabel(r"$\theta$ / arcmin") 
         plt.ylabel(r"$\gamma_t$") 
         plt.legend()
-        plt.savefig('plots/y1/special_gammax.pdf', dpi=500, bbox_inches='tight')
+        plt.savefig('plots/y1/special_gammax_ran_{}.pdf'.format(ran), dpi=500, bbox_inches='tight')
         plt.close()
 
     @staticmethod
