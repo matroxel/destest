@@ -289,7 +289,7 @@ class run(object):
     return amp
 
   @staticmethod
-  def get_amp_cov(zbin,catname,val):
+  def get_amp_cov(zbin,catname,val,xi):
 
     a=[]
     b=[]
@@ -297,25 +297,51 @@ class run(object):
     covp,covm = run.get_data_cov(zbin)
     for i in range(800):
       try:
-        d0 = load_obj('text/flask_GG_'+str(i)+'_0.cpickle')
-        d1 = load_obj('text/flask_GG_'+str(i)+'_1.cpickle')
-        d2 = load_obj('text/flask_GG_'+str(i)+'_2.cpickle')
+        d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+        d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+        d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
       except IOError:
         continue
 
-      a.append( run.amp_fit(d0['xip'],d2['xip']-d0['xip'],covp) )
-      b.append( run.amp_fit(d0['xip'],d0['xip']-d1['xip'],covp) )
-      c.append( run.amp_fit(d0['xip'],d2['xip']-d1['xip'],covp) )
+      a.append( run.amp_fit(d0[xi],d2[xi]-d0[xi],covp) )
+      b.append( run.amp_fit(d0[xi],d0[xi]-d1[xi],covp) )
+      c.append( run.amp_fit(d0[xi],d2[xi]-d1[xi],covp) )
 
     a=np.array(a)
     b=np.array(b)
     c=np.array(c)
-    acov=np.sum((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1.)/len(a)
-    bcov=np.sum((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1.)/len(b)
-    ccov=np.sum((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1.)/len(c)
+    acov=np.sum((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1.)/len(a)*(len(a)-1-1)/(len(a)-1)
+    bcov=np.sum((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1.)/len(b)*(len(b)-1-1)/(len(b)-1)
+    ccov=np.sum((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1.)/len(c)*(len(c)-1-1)/(len(c)-1)
 
-    print 'a',np.mean(a),acov
-    print 'b',np.mean(b),bcov
-    print 'c',np.mean(c),ccov
+    # print 'a',np.mean(a),acov
+    # print 'b',np.mean(b),bcov
+    # print 'c',np.mean(c),ccov
+
+    return acov, bcov, ccov
+
+  @staticmethod
+  def cat_2pt_results(catname):
+
+    if catname == 'im3shape':
+      vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
+    else:
+      vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
+
+    covp,covm = run.get_data_cov(zbin)
+    print catname
+    for xi in ['xip','xim']:
+      for val in vals:
+        for zbin in range(4):
+          d0 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'.cpickle')
+          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
+          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
+          a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
+          b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
+          c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
+          acov,bcov,ccov = methods.get_amp_cov(zbin+1,catname,val,xi)
+          print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '++str(np.around(np.sqrt(acov),2))
+          print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '++str(np.around(np.sqrt(bcov),2))
+          print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '++str(np.around(np.sqrt(ccov),2))
 
     return
