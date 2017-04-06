@@ -269,9 +269,6 @@ class run(object):
       xip = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
       xim = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
 
-      print xip
-      print xim
-
       return xip,xim
 
   @staticmethod
