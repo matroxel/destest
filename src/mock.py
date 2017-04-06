@@ -332,7 +332,7 @@ class run(object):
     for xi in ['xip','xim']:
       for val in vals:
         for zbin in range(4):
-          covp,covm = run.get_data_cov(zbin)
+          covp,covm = run.get_data_cov(zbin+1)
           d0 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'.cpickle')
           d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
           d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
