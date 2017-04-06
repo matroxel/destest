@@ -601,28 +601,62 @@ class y1_plots(object):
         
 
     @staticmethod 
-    def tangential_shear_plot(i3, metacal, centers, centers_mask=None):
+    def tangential_shear_plot(i3, metacal, centers, centers_mask=None, load=True):
+        name = "text/special_gamma.pkl"
+        if os.path.exists(name) and load:
+            data = pickle.load(open(name))
+            i3_data, mc_data = data
+            i3_theta,i3_out,i3_err,i3_chi2 = i3_data
+            mc_theta,mc_out,mc_err,mc_chi2 = mc_data
+        else:
 
-        mask = None
+            mask = None
 
-        i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt.xi_2pt(centers, i3, corr='NG', 
-                                                            maska=centers_mask, maskb=mask, ran=True)
+            i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt.xi_2pt(centers, i3, corr='NG', 
+                                                                maska=centers_mask, maskb=mask, ran=False)
+        
+            mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt.xi_2pt(centers, metacal, corr='NG', 
+                                                                maska=centers_mask, maskb=mask, ran=False)
+
+            i3_data = i3_theta,i3_out,i3_err,i3_chi2
+            mc_data = mc_theta,mc_out,mc_err,mc_chi2
+            data = (i3_data,mc_data)
+            pickle.dump(data, open(name,"w"))
+
         i3_gammat = i3_out[0]
         i3_gammax = i3_out[2]
         i3_gammat_err = i3_err[0]
         i3_gammax_err = i3_err[2]
-        
-        mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt.xi_2pt(centers, metacal, corr='NG', 
-                                                            maska=centers_mask, maskb=mask, ran=True)
         mc_gammat = mc_out[0]
         mc_gammax = mc_out[2]
         mc_gammat_err = mc_err[0]
         mc_gammax_err = mc_err[2]
+
+        chi2_i3_t = (i3_gammat**2/i3_gammat_err**2).sum()
+        chi2_i3_x = (i3_gammax**2/i3_gammax_err**2).sum()
+        chi2_mc_t = (mc_gammat**2/mc_gammat_err**2).sum()
+        chi2_mc_x = (mc_gammax**2/mc_gammax_err**2).sum()
+
+        print i3_gammat/i3_gammat_err
+        print i3_gammax/i3_gammax_err
+        print mc_gammat/mc_gammat_err
+        print mc_gammax/mc_gammax_err
+
+        print i3_gammat
+
+        print "chi2 i3_t = ", chi2_i3_t
+        print "chi2 i3_x = ", chi2_i3_x
+        print "chi2 mc_t = ", chi2_mc_t
+        print "chi2 mc_x = ", chi2_mc_x
+
         plt.figure()
         plt.errorbar(i3_theta, i3_gammat, i3_gammat_err, fmt='r.', label='Im3shape')
         plt.errorbar(mc_theta, mc_gammat, mc_gammat_err, fmt='b.', label='Metacal')
         plt.xscale('log')
-#        plt.yscale('log', nonposy='clip')
+        plt.axhline()
+        plt.xlabel(r"$\theta$ / arcmin") 
+        plt.ylabel(r"$\gamma_t$") 
+        plt.legend()
         plt.savefig('plots/y1/special_gammat.pdf', dpi=500, bbox_inches='tight')
         plt.close()
         print "We think the imaginary gammat is gammax but not sure!"
@@ -630,7 +664,10 @@ class y1_plots(object):
         plt.errorbar(i3_theta, i3_gammax, i3_gammax_err, fmt='r.', label='Im3shape')
         plt.errorbar(mc_theta, mc_gammax, mc_gammax_err, fmt='b.', label='Metacal')
         plt.xscale('log')
-#        plt.yscale('log', nonposy='clip')
+        plt.axhline()
+        plt.xlabel(r"$\theta$ / arcmin") 
+        plt.ylabel(r"$\gamma_t$") 
+        plt.legend()
         plt.savefig('plots/y1/special_gammax.pdf', dpi=500, bbox_inches='tight')
         plt.close()
 
@@ -1013,8 +1050,6 @@ class y1_plots(object):
         plt.close()
 
         return
-
-
 
     @staticmethod
     def mean_e_mock():
