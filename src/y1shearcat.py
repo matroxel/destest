@@ -182,7 +182,7 @@ class y1(object):
         if (load_pickle)&(os.path.exists(psfpickle)):
 
             #pass
-            load_obj(psf,psfpickle)
+            psf = load_obj(psfpickle)
 
         else:
 
