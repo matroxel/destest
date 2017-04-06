@@ -328,11 +328,11 @@ class run(object):
     else:
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
-    covp,covm = run.get_data_cov(zbin)
     print catname
     for xi in ['xip','xim']:
       for val in vals:
         for zbin in range(4):
+          covp,covm = run.get_data_cov(zbin)
           d0 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'.cpickle')
           d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
           d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
