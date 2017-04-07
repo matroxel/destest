@@ -161,6 +161,22 @@ class y1(object):
         return
 
     @staticmethod
+    def load_field_centers(special_points_file, rm_maskfile, rm_randomsfile, special_pickle, load_pickle=True):
+        if os.path.exists(special_pickle) and load_pickle:
+            special = load_obj(special_pickle)
+        else:
+            special=catalog.CatalogStore("special", catfile=special_points_file, cattype='gal', cols=-1,
+                cutfunc=catalog.CatalogMethods.final_null_cuts_ra(), ranfile=rm_randomsfile)
+            special.add_pixel(4096, nest=False)
+
+            rm_mask_hpix = fio.FITS(rm_maskfile)[1]['HPIX'][:]
+            inmask=np.in1d(special.pix, rm_mask_hpix)
+            catalog.CatalogMethods.match_cat(special,inmask)
+            save_obj(special, special_pickle)
+        return special
+
+
+    @staticmethod
     def load_psf_data(psfdir,psfpickle,load_pickle=True):
 
         # MAX_CENTROID_SHIFT = 1.0
@@ -181,8 +197,8 @@ class y1(object):
 
         if (load_pickle)&(os.path.exists(psfpickle)):
 
-            pass
-            #load_obj(psf,psfpickle)
+            #pass
+            psf = load_obj(psfpickle)
 
         else:
 
@@ -598,11 +614,23 @@ class y1_plots(object):
 
     #     return
 
+
+    @staticmethod 
+    def tangential_psf_data(psf, centers):
+        name = "text/special_psf_gamma.pkl"
+        if os.path.exists(name):
+            return
+        theta,out,err,chi2 = corr.xi_2pt.xi_2pt(centers, psf, corr='NG', 
+                                                maska=None, maskb=None, ran=True)
+    
+        data = theta,out,err,chi2
+        pickle.dump(data, open(name,"w"))
         
 
     @staticmethod 
-    def tangential_shear_plot(i3, metacal, centers, centers_mask=None, load=True):
-        name = "text/special_gamma.pkl"
+    def tangential_shear_plot(i3, metacal, centers, ran, centers_mask=None, load=True):
+        name = "text/special_gamma_ran_{}.pkl".format(ran)
+
         if os.path.exists(name) and load:
             data = pickle.load(open(name))
             i3_data, mc_data = data
@@ -613,10 +641,10 @@ class y1_plots(object):
             mask = None
 
             i3_theta,i3_out,i3_err,i3_chi2 = corr.xi_2pt.xi_2pt(centers, i3, corr='NG', 
-                                                                maska=centers_mask, maskb=mask, ran=False)
+                                                                maska=centers_mask, maskb=mask, ran=ran)
         
             mc_theta,mc_out,mc_err,mc_chi2 = corr.xi_2pt.xi_2pt(centers, metacal, corr='NG', 
-                                                                maska=centers_mask, maskb=mask, ran=False)
+                                                                maska=centers_mask, maskb=mask, ran=ran)
 
             i3_data = i3_theta,i3_out,i3_err,i3_chi2
             mc_data = mc_theta,mc_out,mc_err,mc_chi2
@@ -657,7 +685,7 @@ class y1_plots(object):
         plt.xlabel(r"$\theta$ / arcmin") 
         plt.ylabel(r"$\gamma_t$") 
         plt.legend()
-        plt.savefig('plots/y1/special_gammat.pdf', dpi=500, bbox_inches='tight')
+        plt.savefig('plots/y1/special_gammat_ran_{}.pdf'.format(ran), dpi=500, bbox_inches='tight')
         plt.close()
         print "We think the imaginary gammat is gammax but not sure!"
         plt.figure()
@@ -668,7 +696,7 @@ class y1_plots(object):
         plt.xlabel(r"$\theta$ / arcmin") 
         plt.ylabel(r"$\gamma_t$") 
         plt.legend()
-        plt.savefig('plots/y1/special_gammax.pdf', dpi=500, bbox_inches='tight')
+        plt.savefig('plots/y1/special_gammax_ran_{}.pdf'.format(ran), dpi=500, bbox_inches='tight')
         plt.close()
 
     @staticmethod
