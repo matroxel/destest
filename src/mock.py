@@ -209,7 +209,6 @@ class run(object):
       no2pt=None
     else:
       no2pt=1
-    return
     for i in range(4):
       if cat.cat == 'mcal':
         catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i+1][0],cmax=zbounds[i+1][1],remove=False)
