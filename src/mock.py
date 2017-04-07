@@ -209,8 +209,6 @@ class run(object):
       no2pt=None
     else:
       no2pt=1
-    mask = np.ones(len(cat.coadd)).astype(bool)
-    xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=True,no2pt=no2pt,zbin=i)
     return
     for i in range(4):
       if cat.cat == 'mcal':
