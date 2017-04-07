@@ -26,7 +26,9 @@ def save_obj(obj, name ):
     with open(name, 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-i
+def load_obj(name ):
+    with open(name, 'rb') as f:
+        return pickle.load(f)
 
 zbounds = {
   1 : [0.2, 0.43],
@@ -95,7 +97,7 @@ class methods(object):
                                   out_file='tmp.fits',  # output file name + path
                                   neff_orig=neff_mcal,  # dictionary for neff
                                   sig_orig=sig_mcal,    # dictionary for sigma_e
-                                  neff_ratio=1.0,       # ratio of original to new neff (default half density)
+                                  neff_ratio=0.3,       # ratio of original to new neff (default half density)
                                   nside=4096):          # nside of maps (default 4096)
 
     # out = mock.methods.rotate_mock_rescale_nsigma(3, 1, 1, wfile='text/pzrw_metacalibration_snr_0.fits.gz')
@@ -118,7 +120,8 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = np.ones(len(map_ra))
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.))
+      map_neff = neff_new/neff_pix*map_w/np.mean(map_w)
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))
 
     else:
 
@@ -155,18 +158,18 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = w1
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(w2/w1))
+      map_neff = neff_new/neff_pix*map_w/np.mean(map_w)
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff)*(w2/w1))
 
     fmap     = None
-    n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
+    n        = np.random.poisson(map_neff,size=len(map_ra))
 
-    out = np.zeros(len(map_ra),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
-    out['ra']  = map_ra
-    out['dec'] = map_dec
-    out['e1']  = map_g1 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
-    out['e2']  = map_g2 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
-    out['w']   = map_w*n
-    out        = out[n!=0]
+    out = np.zeros(np.sum(n),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])
+    out['ra']  = np.repeat(map_ra,n)
+    out['dec'] = np.repeat(map_dec,n)
+    out['e1']  = np.repeat(map_g1 + np.random.randn(len(map_ra))*map_sige,n)
+    out['e2']  = np.repeat(map_g2 + np.random.randn(len(map_ra))*map_sige,n)
+    out['w']   = np.repeat(map_w,n)
     # fio.write(out_file,out,clobber=True)
 
     return out # original pixel positions (not DES pixel positions)
@@ -330,7 +333,7 @@ class run(object):
       for val in vals:
         for zbin in range(4):
           covp,covm = run.get_data_cov(zbin+1)
-          dd0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
+          dd0 = load_obj('text/data_GG_'+catname+'_'+str(zbin+1)+'.cpickle')
           dd1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_1.cpickle')
           dd2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_2.cpickle')
           a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
