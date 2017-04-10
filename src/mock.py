@@ -97,7 +97,7 @@ class methods(object):
                                   out_file='tmp.fits',  # output file name + path
                                   neff_orig=neff_mcal,  # dictionary for neff
                                   sig_orig=sig_mcal,    # dictionary for sigma_e
-                                  neff_ratio=0.3,       # ratio of original to new neff (default half density)
+                                  neff_ratio=0.5,       # ratio of original to new neff (default half density)
                                   nside=4096):          # nside of maps (default 4096)
 
     # out = mock.methods.rotate_mock_rescale_nsigma(3, 1, 1, wfile='text/pzrw_metacalibration_snr_0.fits.gz')
@@ -167,8 +167,8 @@ class methods(object):
     out = np.zeros(np.sum(n),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])
     out['ra']  = np.repeat(map_ra,n)
     out['dec'] = np.repeat(map_dec,n)
-    out['e1']  = np.repeat(map_g1 + np.random.randn(len(map_ra))*map_sige,n)
-    out['e2']  = np.repeat(map_g2 + np.random.randn(len(map_ra))*map_sige,n)
+    out['e1']  = np.repeat(map_g1,n)+np.random.randn(len(out))*map_sige
+    out['e2']  = np.repeat(map_g2,n)+np.random.randn(len(out))*map_sige
     out['w']   = np.repeat(map_w,n)
     # fio.write(out_file,out,clobber=True)
 
@@ -251,6 +251,38 @@ class run(object):
             }
 
             save_obj(d,'text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(cnt)+'_'+str(k)+'.cpickle')
+        cnt+=1
+
+    return
+
+  @staticmethod
+  def loop_2pt_noweight(catname,ii):
+
+    t0=time.time()
+
+    cnt=0
+    for j in range(36):
+      for i in range(8):
+        for zbin in range(4):
+          for k in range(3):
+            if cnt>225:
+              continue
+            if (cnt+1)%5!=ii:
+              continue
+            print j,i,k,time.time()-t0
+            out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=None)
+            cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
+            gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
+            gg.process(cat)
+
+            d = {
+              'theta' : np.exp(gg.meanlogr),
+              'xip' : gg.xip,
+              'xim' : gg.xim,
+              'err' : np.sqrt(gg.varxi)
+            }
+
+            save_obj(d,'text/flask_GG_'+catname+'_noweight_'+str(zbin)+'_'+str(cnt)+'.cpickle')
         cnt+=1
 
     return
