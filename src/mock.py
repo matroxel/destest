@@ -167,8 +167,8 @@ class methods(object):
     out = np.zeros(np.sum(n),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])
     out['ra']  = np.repeat(map_ra,n)
     out['dec'] = np.repeat(map_dec,n)
-    out['e1']  = np.repeat(map_g1,n)+np.random.randn(len(out))*map_sige
-    out['e2']  = np.repeat(map_g2,n)+np.random.randn(len(out))*map_sige
+    out['e1']  = np.repeat(map_g1,n)+np.random.randn(len(out))*np.repeat(map_sige,n)
+    out['e2']  = np.repeat(map_g2,n)+np.random.randn(len(out))*np.repeat(map_sige,n)
     out['w']   = np.repeat(map_w,n)
     # fio.write(out_file,out,clobber=True)
 
