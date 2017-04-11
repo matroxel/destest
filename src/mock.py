@@ -329,11 +329,19 @@ class run(object):
     return amp
 
   @staticmethod
+  def get_chi2(xip,cov):
+
+    chi2=np.dot(xip,np.dot(np.linalg.inv(cov),xip))/(len(xip)-1)
+
+    return chi2
+
+  @staticmethod
   def get_amp_cov(zbin,catname,val,xi,full=False):
 
     a=[]
     b=[]
     c=[]
+    ddd=[]
     covp,covm = run.get_data_cov(zbin,full)
     for i in range(800):
       dd0 = []
@@ -377,18 +385,22 @@ class run(object):
       b.append( run.amp_fit(dd0,dd0-dd1,cov0) )
       c.append( run.amp_fit(dd0,dd2-dd1,cov0) )
 
+      ddd.append(dd2)
+
     a=np.array(a)
     b=np.array(b)
     c=np.array(c)
+    ddd=np.array(ddd)
     acov=np.mean((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1)/(len(a)-1-1)
     bcov=np.mean((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1)/(len(b)-1-1)
     ccov=np.mean((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1)/(len(c)-1-1)
+    cov=np.mean((c-np.mean(c,axis=0))*(c-np.mean(c,axis=0)),axis=0)*(len(c)-1)/(len(c)-20-1)
 
     # print 'a',np.mean(a),acov
     # print 'b',np.mean(b),bcov
     # print 'c',np.mean(c),ccov
 
-    return acov, bcov, ccov
+    return acov, bcov, ccov, cov
 
   @staticmethod
   def cat_2pt_results(catname,full=False):
@@ -431,10 +443,12 @@ class run(object):
           a = run.amp_fit(dd0,dd2-dd0,cov0)
           b = run.amp_fit(dd0,dd0-dd1,cov0)
           c = run.amp_fit(dd0,dd2-dd1,cov0)
-          acov,bcov,ccov = run.get_amp_cov(zbin,catname,val,xi,full)
+          acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full)
+          chi2 = run.get_chi2(dd2-dd1,cov)
           print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
           print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
+          print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
 
     return
 
@@ -459,4 +473,8 @@ class run(object):
 #     a[i,:] = d['xip']
 #   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
 
+# import src.config as config
+# config.cov['path']='../des-mpp/y1_mcal/2pt_fits/2pt_NG.fits'
+# import src.mock as mock
+# mock.run.cat_2pt_results('metacalibration',full=True)
 
