@@ -340,23 +340,24 @@ class run(object):
       dd1 = []
       dd2 = []
       if full:
-        for zbin in range(4):
-          try:
+        try:
+          for zbin in range(4):
             d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
             d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
             d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
-          except IOError:
-            break
+            dd0 = np.append(dd0,d0[xi])
+            dd1 = np.append(dd1,d1[xi])
+            dd2 = np.append(dd2,d2[xi])
+          dd0 = np.array(dd0)
+          dd1 = np.array(dd1)
+          dd2 = np.array(dd2)
+        except IOError:
+          continue
 
-          dd0 = np.append(dd0,d0[xi])
-          dd1 = np.append(dd1,d1[xi])
-          dd2 = np.append(dd2,d2[xi])
+        if len(dd0)<80:
+          print i
 
-        dd0 = np.array(dd0)
-        dd1 = np.array(dd1)
-        dd2 = np.array(dd2)
       else:
-        print 'test'
         try:
           d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
           d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
