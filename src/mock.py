@@ -97,7 +97,7 @@ class methods(object):
                                   out_file='tmp.fits',  # output file name + path
                                   neff_orig=neff_mcal,  # dictionary for neff
                                   sig_orig=sig_mcal,    # dictionary for sigma_e
-                                  neff_ratio=1.0,       # ratio of original to new neff (default half density)
+                                  neff_ratio=0.5,       # ratio of original to new neff (default half density)
                                   nside=4096):          # nside of maps (default 4096)
 
     # out = mock.methods.rotate_mock_rescale_nsigma(3, 1, 1, wfile='text/pzrw_metacalibration_snr_0.fits.gz')
@@ -120,7 +120,8 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = np.ones(len(map_ra))
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix))
+      map_neff = neff_new/neff_pix*map_w/np.mean(map_w)
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))
 
     else:
 
@@ -157,18 +158,18 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = w1
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(neff_new/neff_pix)*(w2/w1))
+      map_neff = neff_new/neff_pix*map_w/np.mean(map_w)
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff)*(w2/w1))
 
     fmap     = None
-    n        = np.random.poisson(neff_new/neff_pix,size=len(map_ra))
+    n        = np.random.poisson(map_neff,size=len(map_ra))
 
-    out = np.zeros(len(map_ra),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])      
-    out['ra']  = map_ra
-    out['dec'] = map_dec
-    out['e1']  = map_g1 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
-    out['e2']  = map_g2 + np.random.randn(len(map_ra))*map_sige/np.sqrt(n)
-    out['w']   = map_w*n
-    out        = out[n!=0]
+    out = np.zeros(np.sum(n),dtype=[('ra','f4')]+[('dec','f4')]+[('e1','f4')]+[('e2','f4')]+[('w','f4')])
+    out['ra']  = np.repeat(map_ra,n)
+    out['dec'] = np.repeat(map_dec,n)
+    out['e1']  = np.repeat(map_g1,n)+np.random.randn(len(out))*np.repeat(map_sige,n)
+    out['e2']  = np.repeat(map_g2,n)+np.random.randn(len(out))*np.repeat(map_sige,n)
+    out['w']   = np.repeat(map_w,n)
     # fio.write(out_file,out,clobber=True)
 
     return out # original pixel positions (not DES pixel positions)
@@ -215,7 +216,7 @@ class run(object):
         catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i+1][0],cmax=zbounds[i+1][1],remove=True)
       else:
         mask = (cat.pz>zbounds[i+1][0])&(cat.pz<zbounds[i+1][1])
-        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=False,no2pt=no2pt,zbin=i)
+        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=True,no2pt=no2pt,zbin=i)
 
     return
 
@@ -232,6 +233,8 @@ class run(object):
             print j,i,k,time.time()-t0
             if k==0:
               wfile = None
+              if val!='snr':
+                continue
             else:
               wfile='text/pzrw_'+catname+'_'+val+'_'+str(zbin+1)+'_'+str(k-1)+'.fits.gz'
 
@@ -253,7 +256,39 @@ class run(object):
     return
 
   @staticmethod
-  def get_data_cov(zbin):
+  def loop_2pt_noweight(catname,ii):
+
+    t0=time.time()
+
+    cnt=0
+    for j in range(36):
+      for i in range(8):
+        for zbin in range(4):
+          for k in range(3):
+            if cnt>225:
+              continue
+            if (cnt+1)%5!=ii:
+              continue
+            print j,i,k,time.time()-t0
+            out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=None)
+            cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
+            gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
+            gg.process(cat)
+
+            d = {
+              'theta' : np.exp(gg.meanlogr),
+              'xip' : gg.xip,
+              'xim' : gg.xim,
+              'err' : np.sqrt(gg.varxi)
+            }
+
+            save_obj(d,'text/flask_GG_'+catname+'_noweight_'+str(zbin)+'_'+str(cnt)+'.cpickle')
+        cnt+=1
+
+    return
+
+  @staticmethod
+  def get_data_cov(zbin,full=False):
 
     if config.cov.get('path') is None:
       return None
@@ -263,11 +298,19 @@ class run(object):
       except:
         return None
 
-      ind0 = {1:0,2:80,3:140,4:180}
-      ind1 = {1:20,2:100,3:160,4:199}
+      ind0 = {0:0,1:80,2:140,3:180}
+      ind1 = {0:20,1:100,2:160,3:200}
 
-      xip = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
-      xim = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
+      if full:
+        xip = np.zeros((80,80))
+        xim = np.zeros((80,80))
+        for i in range(4):
+          xip[i*20:(i+1)*20,i*20:(i+1)*20] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+          xim[i*20:(i+1)*20,i*20:(i+1)*20] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
+        return xip,xim
+
+      xip = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+      xim = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
 
       return xip,xim
 
@@ -286,30 +329,60 @@ class run(object):
     return amp
 
   @staticmethod
-  def get_amp_cov(zbin,catname,val,xi):
+  def get_amp_cov(zbin,catname,val,xi,full=False):
 
     a=[]
     b=[]
     c=[]
-    covp,covm = run.get_data_cov(zbin)
+    covp,covm = run.get_data_cov(zbin,full)
     for i in range(800):
-      try:
-        d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
-        d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
-        d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
-      except IOError:
-        continue
+      dd0 = []
+      dd1 = []
+      dd2 = []
+      if full:
+        try:
+          for zbin in range(4):
+            d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+            d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+            d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
+            dd0 = np.append(dd0,d0[xi])
+            dd1 = np.append(dd1,d1[xi])
+            dd2 = np.append(dd2,d2[xi])
+          dd0 = np.array(dd0)
+          dd1 = np.array(dd1)
+          dd2 = np.array(dd2)
+        except IOError:
+          continue
 
-      a.append( run.amp_fit(d0[xi],d2[xi]-d0[xi],covp) )
-      b.append( run.amp_fit(d0[xi],d0[xi]-d1[xi],covp) )
-      c.append( run.amp_fit(d0[xi],d2[xi]-d1[xi],covp) )
+        if len(dd0)<80:
+          print i
+
+      else:
+        try:
+          d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+          d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+          d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
+        except IOError:
+          continue
+
+        dd0 = d0[xi]
+        dd1 = d1[xi]
+        dd2 = d2[xi]
+
+      if xi == 'xip':
+        cov0 = covp
+      else:
+        cov0 = covm
+      a.append( run.amp_fit(dd0,dd2-dd0,cov0) )
+      b.append( run.amp_fit(dd0,dd0-dd1,cov0) )
+      c.append( run.amp_fit(dd0,dd2-dd1,cov0) )
 
     a=np.array(a)
     b=np.array(b)
     c=np.array(c)
-    acov=np.sum((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1.)/len(a)*(len(a)-1-1)/(len(a)-1)
-    bcov=np.sum((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1.)/len(b)*(len(b)-1-1)/(len(b)-1)
-    ccov=np.sum((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1.)/len(c)*(len(c)-1-1)/(len(c)-1)
+    acov=np.mean((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1)/(len(a)-1-1)
+    bcov=np.mean((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1)/(len(b)-1-1)
+    ccov=np.mean((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1)/(len(c)-1-1)
 
     # print 'a',np.mean(a),acov
     # print 'b',np.mean(b),bcov
@@ -318,7 +391,7 @@ class run(object):
     return acov, bcov, ccov
 
   @staticmethod
-  def cat_2pt_results(catname):
+  def cat_2pt_results(catname,full=False):
 
     if catname == 'im3shape':
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
@@ -328,17 +401,62 @@ class run(object):
     print catname
     for xi in ['xip','xim']:
       for val in vals:
+        if full:
+          dd0 = []
+          dd1 = []
+          dd2 = []
         for zbin in range(4):
-          covp,covm = run.get_data_cov(zbin+1)
+          covp,covm = run.get_data_cov(zbin,full)
           d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
-          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_1.cpickle')
-          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin+1)+'_2.cpickle')
-          a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
-          b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
-          c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
-          acov,bcov,ccov = run.get_amp_cov(zbin+1,catname,val,xi)
+          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
+          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
+          if full:
+            dd0 = np.append(dd0,d0[xi])
+            dd1 = np.append(dd1,d1[xi])
+            dd2 = np.append(dd2,d2[xi])
+          else:
+            dd0 = d0[xi]
+            dd1 = d1[xi]
+            dd2 = d2[xi]
+          if xi == 'xip':
+            cov0=covp
+          else:
+            cov0=covm
+          if full&(zbin<3):
+            continue
+          if full:
+            dd0 = np.array(dd0)
+            dd1 = np.array(dd1)
+            dd2 = np.array(dd2)
+          a = run.amp_fit(dd0,dd2-dd0,cov0)
+          b = run.amp_fit(dd0,dd0-dd1,cov0)
+          c = run.amp_fit(dd0,dd2-dd1,cov0)
+          acov,bcov,ccov = run.get_amp_cov(zbin,catname,val,xi,full)
           print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
           print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
 
     return
+
+# a = np.zeros((168,20))
+# for i in range(168):
+#   d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+#   a[i,:] = d0['xip']
+
+
+# print np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)*((168)-1.)/(168)*(168-20-1)/(168-1))
+
+
+
+# (np.sum(out['w']**2)/(np.sum(out['w']))**2)**-1/(len(out)*0.73766043036137707)
+
+# (np.sum(out['e1']**2*out['w']**2)/np.sum(out['w']**2))
+
+# for zbin in range(4):
+#   a = np.zeros((224,20))
+#   for i in range(224):
+#     d = load_obj('text/flask_GG_metacalibration_noweight_'+str(zbin)+'_'+str(i)+'.cpickle')
+#     a[i,:] = d['xip']
+#   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
+
+

@@ -250,7 +250,7 @@ class split_methods(object):
 
     print 'before wnz',time.time()-t0
 
-    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,mask=mask,label=val,plot=plot,zbin=zbin)
+    bins,w,edge=split_methods.get_mask_wnz(cat,array,val,mask=mask,label=val+str(zbin),plot=plot,zbin=zbin)
     print 'edge',edge
     print 'after wnz',time.time()-t0
 
@@ -316,7 +316,7 @@ class split_methods(object):
     #   me1err,me2err,slp1err,slp2err,b1err,b2err=BCC_Methods.jk_iter_lin(array,cat,label,parallel=parallel)
 
     if plot:
-      fig.plot_methods.plot_2pt_split(xip,xim,gt,cat,val,edge[1],log)
+      fig.plot_methods.plot_2pt_split(xip,xim,gt,cat,val+str(zbin),edge[1],log)
 
     if no2pt==None:
       d0 = {
@@ -330,7 +330,6 @@ class split_methods(object):
       save_obj(d0,'text/data_GG_'+cat.name+'_'+str(zbin)+'.cpickle')
     else:
       ind=-1
-    print xip
 
     d1 = {
       'theta' : xip[0],
