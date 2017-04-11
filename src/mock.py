@@ -299,10 +299,10 @@ class run(object):
         return None
 
       ind0 = {1:0,2:80,3:140,4:180}
-      ind1 = {1:20,2:100,3:160,4:-1}
+      ind1 = {1:20,2:100,3:160,4:200}
 
-      xip = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
-      xim = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
+      xip = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+      xim = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
 
       return xip,xim
 
