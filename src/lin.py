@@ -71,7 +71,7 @@ class linear_methods(object):
       if (cat.cat=='gal'):
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,None,None,None,None,None,None,None
       elif (cat.cat=='psf'):
-        cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,False,False,None,None,None,None,None,None,None
+        cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,False,False,cat.e1,cat.e2,None,None,None,None,None
       elif (cat.cat=='epoch'):
         cattype,bs,wt,e1,e2,m1,m2,c1,c2,w=cat.cat,cat.bs,cat.wt,cat.e1,cat.e2,None,None,None,None,cat.w        
       else:
@@ -84,8 +84,8 @@ class linear_methods(object):
       return e1[mask], e2[mask], w[mask], np.ones(np.sum(mask))
 
     elif cattype=='psf':
-
-      return None, None, np.ones(len(mask)), None, None
+      tmp=e1[mask]
+      return tmp, e2[mask], np.ones_like(tmp), np.ones_like(tmp), np.ones_like(tmp)
 
     elif cattype=='epoch':
 
