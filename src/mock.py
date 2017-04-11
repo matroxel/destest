@@ -288,7 +288,7 @@ class run(object):
     return
 
   @staticmethod
-  def get_data_cov(zbin):
+  def get_data_cov(zbin,full=False):
 
     if config.cov.get('path') is None:
       return None
@@ -300,6 +300,14 @@ class run(object):
 
       ind0 = {0:0,1:80,2:140,3:180}
       ind1 = {0:20,1:100,2:160,3:200}
+
+      if full:
+        xip = np.zeros((80,80))
+        xim = np.zeros((80,80))
+        for i in range(4):
+          xip[i*20:(i+1)*20,i*20:(i+1)*20] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+          xim[i*20:(i+1)*20,i*20:(i+1)*20] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
+        return xip,xim
 
       xip = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
       xim = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
@@ -321,23 +329,47 @@ class run(object):
     return amp
 
   @staticmethod
-  def get_amp_cov(zbin,catname,val,xi):
+  def get_amp_cov(zbin,catname,val,xi,full=False):
 
     a=[]
     b=[]
     c=[]
-    covp,covm = run.get_data_cov(zbin)
+    covp,covm = run.get_data_cov(zbin,full)
     for i in range(800):
-      try:
-        d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
-        d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
-        d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
-      except IOError:
-        continue
+      dd0 = []
+      dd1 = []
+      dd2 = []
+      if full:
+        for zbin in range(4):
+          try:
+            d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+            d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+            d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
+          except IOError:
+            continue
 
-      a.append( run.amp_fit(d0[xi],d2[xi]-d0[xi],covp) )
-      b.append( run.amp_fit(d0[xi],d0[xi]-d1[xi],covp) )
-      c.append( run.amp_fit(d0[xi],d2[xi]-d1[xi],covp) )
+            dd0 = np.append(dd0,d0[xi])
+            dd1 = np.append(dd1,d1[xi])
+            dd2 = np.append(dd2,d2[xi])
+      else:
+        try:
+          d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+          d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+          d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
+        except IOError:
+          continue
+
+        dd0 = d0[xi]
+        dd1 = d1[xi]
+        dd2 = d2[xi]
+
+      if xi == 'xip':
+        cov0 = covp
+      else:
+        cov0 = covm
+      a.append( run.amp_fit(dd0,dd2-dd0,cov0) )
+      b.append( run.amp_fit(dd0,dd0-dd1,cov0) )
+      c.append( run.amp_fit(dd0,dd2-dd1,cov0) )
 
     a=np.array(a)
     b=np.array(b)
@@ -353,7 +385,7 @@ class run(object):
     return acov, bcov, ccov
 
   @staticmethod
-  def cat_2pt_results(catname):
+  def cat_2pt_results(catname,full=False):
 
     if catname == 'im3shape':
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
@@ -363,20 +395,33 @@ class run(object):
     print catname
     for xi in ['xip','xim']:
       for val in vals:
+        if full:
+          dd0 = []
+          dd1 = []
+          dd2 = []
         for zbin in range(4):
-          covp,covm = run.get_data_cov(zbin)
+          covp,covm = run.get_data_cov(zbin,full)
           d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
           d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
           d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
-          if xi == 'xip':
-            a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
-            b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
-            c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
+          if full:
+            dd0 = np.append(dd0,d0[xi])
+            dd1 = np.append(dd1,d1[xi])
+            dd2 = np.append(dd2,d2[xi])
           else:
-            a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covm)
-            b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covm)
-            c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covm)
-          acov,bcov,ccov = run.get_amp_cov(zbin,catname,val,xi)
+            dd0 = d0[xi]
+            dd1 = d1[xi]
+            dd2 = d2[xi]
+          if xi == 'xip':
+            cov0=covp
+          else:
+            cov0=covm
+          if full&(zbin<3):
+            continue
+          a = run.amp_fit(dd0,dd2-dd0,cov0)
+          b = run.amp_fit(dd0,dd0-dd1,cov0)
+          c = run.amp_fit(dd0,dd2-dd1,cov0)
+          acov,bcov,ccov = run.get_amp_cov(zbin,catname,val,xi,full)
           print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
           print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
