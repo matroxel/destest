@@ -394,7 +394,10 @@ class run(object):
     acov=np.mean((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1)/(len(a)-1-1)
     bcov=np.mean((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1)/(len(b)-1-1)
     ccov=np.mean((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1)/(len(c)-1-1)
-    cov=np.mean((c-np.mean(c,axis=0))*(c-np.mean(c,axis=0)),axis=0)*(len(c)-1)/(len(c)-20-1)
+    cov = np.zeros((len(ddd[0,:]),len(ddd[0,:])))
+    for i in len(cov[0,:]):
+      for j in len(cov[0,:]):
+        cov[i,j]=np.mean((ddd[:,i]-np.mean(ddd[:,i]))*(ddd[:,j]-np.mean(ddd[:,j])))*(len(ddd)-1)/(len(ddd)-len(ddd[0,:])-1)
 
     # print 'a',np.mean(a),acov
     # print 'b',np.mean(b),bcov
