@@ -299,7 +299,7 @@ class run(object):
         return None
 
       ind0 = {1:0,2:80,3:140,4:180}
-      ind1 = {1:20,2:100,3:160,4:199}
+      ind1 = {1:20,2:100,3:160,4:-1}
 
       xip = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
       xim = cov.covmat[ind0[zbin]:ind1[zbin],ind0[zbin]:ind1[zbin]]
@@ -368,9 +368,14 @@ class run(object):
           d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
           d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
           d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
-          a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
-          b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
-          c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
+          if xi == 'xip':
+            a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covp)
+            b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covp)
+            c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covp)
+          else:
+            a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covm)
+            b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covm)
+            c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covm)
           acov,bcov,ccov = run.get_amp_cov(zbin+1,catname,val,xi)
           print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
           print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
