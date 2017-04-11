@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import pickle
+import cPickle as pickle
 import glob
 import healpy as hp
 import matplotlib
@@ -202,12 +202,13 @@ class y1(object):
 
         else:
 
-            cols = ['e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
+            cols = ['ra','dec', 'e1','e2','ccd','col','row','psf1','psf2','mag','size','psf_size','flag']
             psf  = catalog.CatalogStore('psf',cutfunc=catalog.CatalogMethods.final_null_cuts_ra(),cols=cols,cattype='psf',catdir=psfdir)
             psf.ccd-=1
             catalog.CatalogMethods.match_cat(psf,psf.flag<2)
+            del psf.filename
 
-            #save_obj(psf,psfpickle)
+            save_obj(psf,psfpickle)
 
         return psf
 
