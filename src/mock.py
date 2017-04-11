@@ -342,9 +342,9 @@ class run(object):
     a=np.array(a)
     b=np.array(b)
     c=np.array(c)
-    acov=np.sum((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1.)/len(a)*(len(a)-1-1)/(len(a)-1)
-    bcov=np.sum((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1.)/len(b)*(len(b)-1-1)/(len(b)-1)
-    ccov=np.sum((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1.)/len(c)*(len(c)-1-1)/(len(c)-1)
+    acov=np.mean((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1)/(len(a)-1-1)
+    bcov=np.mean((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1)/(len(b)-1-1)
+    ccov=np.mean((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1)/(len(c)-1-1)
 
     # print 'a',np.mean(a),acov
     # print 'b',np.mean(b),bcov
@@ -391,5 +391,12 @@ class run(object):
 # (np.sum(out['w']**2)/(np.sum(out['w']))**2)**-1/(len(out)*0.73766043036137707)
 
 # (np.sum(out['e1']**2*out['w']**2)/np.sum(out['w']**2))
+
+# for zbin in range(4):
+#   a = np.zeros((224,20))
+#   for i in range(224):
+#     d = load_obj('text/flask_GG_metacalibration_noweight_'+str(zbin)+'_'+str(i)+'.cpickle')
+#     a[i,:] = d['xip']
+#   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
 
 
