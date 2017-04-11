@@ -346,7 +346,7 @@ class run(object):
             d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
             d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
           except IOError:
-            continue
+            break
 
           dd0 = np.append(dd0,d0[xi])
           dd1 = np.append(dd1,d1[xi])
@@ -356,6 +356,7 @@ class run(object):
         dd1 = np.array(dd1)
         dd2 = np.array(dd2)
       else:
+        print 'test'
         try:
           d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
           d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
