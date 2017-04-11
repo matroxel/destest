@@ -355,6 +355,7 @@ class run(object):
         dd0 = np.array(dd0)
         dd1 = np.array(dd1)
         dd2 = np.array(dd2)
+        print i,dd0,dd1,dd2
       else:
         try:
           d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
