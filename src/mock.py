@@ -298,8 +298,8 @@ class run(object):
       except:
         return None
 
-      ind0 = {1:0,2:80,3:140,4:180}
-      ind1 = {1:20,2:100,3:160,4:200}
+      ind0 = {0:0,1:80,2:140,3:180}
+      ind1 = {0:20,1:100,2:160,3:200}
 
       xip = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
       xim = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
