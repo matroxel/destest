@@ -351,6 +351,10 @@ class run(object):
             dd0 = np.append(dd0,d0[xi])
             dd1 = np.append(dd1,d1[xi])
             dd2 = np.append(dd2,d2[xi])
+
+        dd0 = np.array(dd0)
+        dd1 = np.array(dd1)
+        dd2 = np.array(dd2)
       else:
         try:
           d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
@@ -418,6 +422,10 @@ class run(object):
             cov0=covm
           if full&(zbin<3):
             continue
+          if full:
+            dd0 = np.array(dd0)
+            dd1 = np.array(dd1)
+            dd2 = np.array(dd2)
           a = run.amp_fit(dd0,dd2-dd0,cov0)
           b = run.amp_fit(dd0,dd0-dd1,cov0)
           c = run.amp_fit(dd0,dd2-dd1,cov0)
