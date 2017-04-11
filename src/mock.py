@@ -376,7 +376,7 @@ class run(object):
             a = run.amp_fit(d0[xi],d2[xi]-d0[xi],covm)
             b = run.amp_fit(d0[xi],d0[xi]-d1[xi],covm)
             c = run.amp_fit(d0[xi],d2[xi]-d1[xi],covm)
-          acov,bcov,ccov = run.get_amp_cov(zbin+1,catname,val,xi)
+          acov,bcov,ccov = run.get_amp_cov(zbin,catname,val,xi)
           print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
           print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
