@@ -332,6 +332,7 @@ class run(object):
   def get_chi2(xip,cov):
 
     chi2=np.dot(xip,np.dot(np.linalg.inv(cov),xip))/(len(xip)-1)
+    print xip,np.sqrt(np.diagonal(cov))
 
     return chi2
 
