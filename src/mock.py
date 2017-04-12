@@ -385,7 +385,7 @@ class run(object):
       b.append( run.amp_fit(dd0,dd0-dd1,cov0) )
       c.append( run.amp_fit(dd0,dd2-dd1,cov0) )
 
-      ddd.append(dd2)
+      ddd.append(dd2-dd1)
 
     a=np.array(a)
     b=np.array(b)
