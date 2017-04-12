@@ -350,7 +350,7 @@ class run(object):
       if full:
         try:
           for zbin in range(4):
-            d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+            d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
             d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
             d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
             dd0 = np.append(dd0,d0[xi])
@@ -367,7 +367,7 @@ class run(object):
 
       else:
         try:
-          d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+          d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
           d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
           d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
         except IOError:
@@ -479,5 +479,5 @@ class run(object):
 # import src.config as config
 # config.cov['path']='../des-mpp/y1_mcal/2pt_fits/2pt_NG.fits'
 # import src.mock as mock
-# mock.run.cat_2pt_results('metacalibration',full=True)
+# mock.run.cat_2pt_results('im3shape',full=True)
 
