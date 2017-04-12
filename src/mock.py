@@ -120,7 +120,7 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = np.ones(len(map_ra))
-      map_neff = neff_new/neff_pix*map_w/np.mean(map_w)
+      map_neff = neff_new/neff_pix#*map_w/np.mean(map_w)
       map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))
 
     else:
@@ -147,10 +147,10 @@ class methods(object):
       diff     = np.append(diff,[None])
 
       w1       = np.zeros(len(rot_pix))
-      w2       = np.zeros(len(rot_pix))
+      # w2       = np.zeros(len(rot_pix))
       for i in xrange(len(diff)-1):
         w1[diff[i]:diff[i+1]] = w['weight'][i]
-        w2[diff[i]:diff[i+1]] = w['weightsq'][i]
+        # w2[diff[i]:diff[i+1]] = w['weightsq'][i]
       w        = None
 
       map_ra   = phi/np.pi*180.0
@@ -158,8 +158,9 @@ class methods(object):
       map_g1   = fmap['Q_STOKES']
       map_g2   = fmap['U_STOKES']
       map_w    = w1
-      map_neff = neff_new/neff_pix*map_w/np.mean(map_w)
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff)*(w2/w1))
+      map_neff = neff_new/neff_pix#*map_w/np.mean(map_w)
+      # map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff)*(w2/w1))
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))
 
     fmap     = None
     n        = np.random.poisson(map_neff,size=len(map_ra))
@@ -170,6 +171,7 @@ class methods(object):
     out['e1']  = np.repeat(map_g1,n)+np.random.randn(len(out))*np.repeat(map_sige,n)
     out['e2']  = np.repeat(map_g2,n)+np.random.randn(len(out))*np.repeat(map_sige,n)
     out['w']   = np.repeat(map_w,n)
+    # out['w']   = np.ones(len(out))
     # fio.write(out_file,out,clobber=True)
 
     return out # original pixel positions (not DES pixel positions)
@@ -388,6 +390,7 @@ class run(object):
 
       ddd.append(dd2-dd1)
 
+    print dd2-dd1
     a=np.array(a)
     b=np.array(b)
     c=np.array(c)
@@ -460,7 +463,6 @@ class run(object):
 # for i in range(168):
 #   d0 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
 #   a[i,:] = d0['xip']
-
 
 # print np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)*((168)-1.)/(168)*(168-20-1)/(168-1))
 
