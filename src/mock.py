@@ -160,7 +160,7 @@ class methods(object):
       map_w    = w1
       map_neff = neff_new/neff_pix#*map_w/np.mean(map_w)
       # map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff)*(w2/w1))
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))*np.ones(len(map_ra))
 
     fmap     = None
     n        = np.random.poisson(map_neff,size=len(map_ra))
