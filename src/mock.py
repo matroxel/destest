@@ -390,7 +390,7 @@ class run(object):
 
       ddd.append(dd2-dd1)
 
-    print dd2-dd1
+    print np.array(dd2)-np.array(dd1)
     a=np.array(a)
     b=np.array(b)
     c=np.array(c)
