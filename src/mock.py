@@ -420,6 +420,8 @@ class run(object):
     print catname
     for xi in ['xip','xim']:
       for val in vals:
+        if val=='snr':
+          continue
         if full:
           dd0 = []
           dd1 = []
