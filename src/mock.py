@@ -453,54 +453,54 @@ class run(object):
     d2 = np.load(catname+'_split_d2.npy')
     for ival,val in enumerate(vals):
       print val
-        for zbin in range(4):
-          for ixi,xi in enumerate(['xip','xim']):
-            a = run.amp_fit(dd0,dd2-dd0,cov0)
+      for zbin in range(4):
+        for ixi,xi in enumerate(['xip','xim']):
+          a = run.amp_fit(dd0,dd2-dd0,cov0)
 
 
-    print catname
-    for xi in ['xip','xim']:
-      for val in vals:
-        # if val=='snr':
-        #   continue
-        if full:
-          dd0 = []
-          dd1 = []
-          dd2 = []
-        for zbin in range(4):
-          covp,covm = run.get_data_cov(zbin,full)
-          d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
-          d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
-          d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
-          if full:
-            dd0 = np.append(dd0,d0[xi])
-            dd1 = np.append(dd1,d1[xi])
-            dd2 = np.append(dd2,d2[xi])
-          else:
-            dd0 = d0[xi]
-            dd1 = d1[xi]
-            dd2 = d2[xi]
-          if xi == 'xip':
-            cov0=covp
-          else:
-            cov0=covm
-          if full&(zbin<3):
-            continue
-          if full:
-            dd0 = np.array(dd0)
-            dd1 = np.array(dd1)
-            dd2 = np.array(dd2)
-          if all:
-            a = run.amp_fit(dd0,dd2-dd0,cov0)
-            b = run.amp_fit(dd0,dd0-dd1,cov0)
-          c = run.amp_fit(dd0,dd2-dd1,cov0)
-          acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full,all)
-          # chi2 = run.get_chi2(dd2-dd1,cov)
-          if all:
-            print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
-            print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
-          print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
-          # print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
+    # print catname
+    # for xi in ['xip','xim']:
+    #   for val in vals:
+    #     # if val=='snr':
+    #     #   continue
+    #     if full:
+    #       dd0 = []
+    #       dd1 = []
+    #       dd2 = []
+    #     for zbin in range(4):
+    #       covp,covm = run.get_data_cov(zbin,full)
+    #       d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
+    #       d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
+    #       d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
+    #       if full:
+    #         dd0 = np.append(dd0,d0[xi])
+    #         dd1 = np.append(dd1,d1[xi])
+    #         dd2 = np.append(dd2,d2[xi])
+    #       else:
+    #         dd0 = d0[xi]
+    #         dd1 = d1[xi]
+    #         dd2 = d2[xi]
+    #       if xi == 'xip':
+    #         cov0=covp
+    #       else:
+    #         cov0=covm
+    #       if full&(zbin<3):
+    #         continue
+    #       if full:
+    #         dd0 = np.array(dd0)
+    #         dd1 = np.array(dd1)
+    #         dd2 = np.array(dd2)
+    #       if all:
+    #         a = run.amp_fit(dd0,dd2-dd0,cov0)
+    #         b = run.amp_fit(dd0,dd0-dd1,cov0)
+    #       c = run.amp_fit(dd0,dd2-dd1,cov0)
+    #       acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full,all)
+    #       # chi2 = run.get_chi2(dd2-dd1,cov)
+    #       if all:
+    #         print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
+    #         print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
+    #       print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
+    #       # print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
 
     return
 
