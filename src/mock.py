@@ -317,6 +317,31 @@ class run(object):
       return xip,xim
 
   @staticmethod
+  def get_theory():
+
+    if config.cov.get('path') is None:
+      return None
+    else:
+      try:
+        xi  = tp.TwoPointFile.from_fits(config.cov.get('path')).spectra
+        cov = tp.TwoPointFile.from_fits(config.cov.get('path')).covmat_info
+      except:
+        return None
+
+      ind0 = {0:0,1:80,2:140,3:180}
+      ind1 = {0:20,1:100,2:160,3:200}
+
+      xip = np.zeros((2,4,20))
+      xipcov = np.zeros((2,4,20,20))
+      for zbin in range(4):
+        xip[0,zbin,:] = xi[0].value[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+        xip[1,zbin,:] = xi[1].value[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
+        xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+        xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
+
+      return xip,xipcov
+
+  @staticmethod
   def amp_fit(xip,dxip,cov):
 
     chi2st=999999
@@ -422,6 +447,18 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
+    xi,cov = run.get_theory()
+    d0 = np.load(catname+'_split_d0.npy')
+    d1 = np.load(catname+'_split_d1.npy')
+    d2 = np.load(catname+'_split_d2.npy')
+    for ival,val in enumerate(vals):
+      print val
+        for zbin in range(4):
+          for ixi,xi in enumerate(['xip','xim']):
+            a = run.amp_fit(dd0,dd2-dd0,cov0)
+
+
+    print catname
     for xi in ['xip','xim']:
       for val in vals:
         # if val=='snr':
@@ -464,6 +501,45 @@ class run(object):
             print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
           # print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
+
+    return
+
+  @staticmethod
+  def build_2pt_results(catname,imax=250):
+
+    if catname == 'im3shape':
+      vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
+    else:
+      vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
+
+    print catname
+    dd0 = np.zeros((2,4,20))
+    dd1 = np.zeros((10,imax,2,4,20))
+    dd2 = np.zeros((10,imax,2,4,20))
+    for ival,val in enumerate(vals):
+      print val
+      for i in range(imax):
+        try:
+          for zbin in range(4):
+            if i==0:
+              d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+            d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+            d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
+        except:
+          continue
+        for zbin in range(4):
+          if i==0:
+            d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+          d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
+          d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
+          for ixi,xi in enumerate(['xip','xim']):
+            if i==0:
+              dd0[ixi,zbin,:] = d0[xi]
+            dd1[ival,i,ixi,zbin,:] = d1[xi]
+            dd2[ival,i,ixi,zbin,:] = d2[xi]
+    np.save(catname+'_split_d0.npy',dd0)
+    np.save(catname+'_split_d1.npy',dd0)
+    np.save(catname+'_split_d2.npy',dd0)
 
     return
 
