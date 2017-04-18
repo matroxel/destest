@@ -334,8 +334,8 @@ class run(object):
       xip = np.zeros((2,4,20))
       xipcov = np.zeros((2,4,20,20))
       for zbin in range(4):
-        xip[0,zbin,:] = xi[0].value[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
-        xip[1,zbin,:] = xi[1].value[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
+        xip[0,zbin,:] = xi[0].get_pair(zbin,zbin)[1]
+        xip[1,zbin,:] = xi[1].get_pair(zbin,zbin)[1]
         xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
         xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
 
@@ -447,7 +447,7 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    xi,cov = run.get_theory()
+    xi,cov = mock.run.get_theory()
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
@@ -455,7 +455,7 @@ class run(object):
       print val
       for zbin in range(4):
         for ixi,xi in enumerate(['xip','xim']):
-          a = run.amp_fit(dd0,dd2-dd0,cov0)
+          a = mock.run.amp_fit(dd0,dd2-dd0,cov0)
 
 
     # print catname
