@@ -339,7 +339,7 @@ class run(object):
     return chi2
 
   @staticmethod
-  def get_amp_cov(zbin,catname,val,xi,full=False):
+  def get_amp_cov(zbin,catname,val,xi,full=False,all=False):
 
     a=[]
     b=[]
@@ -395,13 +395,17 @@ class run(object):
     b=np.array(b)
     c=np.array(c)
     ddd=np.array(ddd)
-    acov=np.mean((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1)/(len(a)-1-1)
-    bcov=np.mean((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1)/(len(b)-1-1)
+    if all:
+      acov=np.mean((a-np.mean(a))*(a-np.mean(a)))*(len(a)-1)/(len(a)-1-1)
+      bcov=np.mean((b-np.mean(b))*(b-np.mean(b)))*(len(b)-1)/(len(b)-1-1)
+    else:
+      acov=1
+      bcov=1
     ccov=np.mean((c-np.mean(c))*(c-np.mean(c)))*(len(c)-1)/(len(c)-1-1)
     cov = np.zeros((len(ddd[0,:]),len(ddd[0,:])))
-    for i in range(len(cov[0,:])):
-      for j in range(len(cov[0,:])):
-        cov[i,j]=np.mean((ddd[:,i]-np.mean(ddd[:,i]))*(ddd[:,j]-np.mean(ddd[:,j])))*(len(ddd)-1)/(len(ddd)-len(ddd[0,:])-1)
+    # for i in range(len(cov[0,:])):
+    #   for j in range(len(cov[0,:])):
+    #     cov[i,j]=np.mean((ddd[:,i]-np.mean(ddd[:,i]))*(ddd[:,j]-np.mean(ddd[:,j])))*(len(ddd)-1)/(len(ddd)-len(ddd[0,:])-1)
 
     # print 'a',np.mean(a),acov
     # print 'b',np.mean(b),bcov
@@ -410,7 +414,7 @@ class run(object):
     return acov, bcov, ccov, cov
 
   @staticmethod
-  def cat_2pt_results(catname,full=False):
+  def cat_2pt_results(catname,full=False,all=False):
 
     if catname == 'im3shape':
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
@@ -449,15 +453,17 @@ class run(object):
             dd0 = np.array(dd0)
             dd1 = np.array(dd1)
             dd2 = np.array(dd2)
-          a = run.amp_fit(dd0,dd2-dd0,cov0)
-          b = run.amp_fit(dd0,dd0-dd1,cov0)
+          if all:
+            a = run.amp_fit(dd0,dd2-dd0,cov0)
+            b = run.amp_fit(dd0,dd0-dd1,cov0)
           c = run.amp_fit(dd0,dd2-dd1,cov0)
-          acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full)
-          chi2 = run.get_chi2(dd2-dd1,cov)
-          print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
-          print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
+          acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full,all)
+          # chi2 = run.get_chi2(dd2-dd1,cov)
+          if all:
+            print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
+            print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
           print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
-          print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
+          # print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
 
     return
 
