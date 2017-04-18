@@ -121,7 +121,7 @@ class methods(object):
       map_g2   = fmap['U_STOKES']
       map_w    = np.ones(len(map_ra))
       map_neff = neff_new/neff_pix#*map_w/np.mean(map_w)
-      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))
+      map_sige = np.sqrt((sig_orig[zbin]**2/2.)*(map_neff))*np.ones(len(map_ra))
 
     else:
 
