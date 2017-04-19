@@ -334,8 +334,8 @@ class run(object):
       xip = np.zeros((2,4,20))
       xipcov = np.zeros((2,4,20,20))
       for zbin in range(4):
-        xip[0,zbin,:] = xi[0].get_pair(zbin,zbin)[1]
-        xip[1,zbin,:] = xi[1].get_pair(zbin,zbin)[1]
+        xip[0,zbin,:] = xi[0].get_pair(zbin+1,zbin+1)[1]
+        xip[1,zbin,:] = xi[1].get_pair(zbin+1,zbin+1)[1]
         xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
         xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
 
@@ -538,8 +538,8 @@ class run(object):
             dd1[ival,i,ixi,zbin,:] = d1[xi]
             dd2[ival,i,ixi,zbin,:] = d2[xi]
     np.save(catname+'_split_d0.npy',dd0)
-    np.save(catname+'_split_d1.npy',dd0)
-    np.save(catname+'_split_d2.npy',dd0)
+    np.save(catname+'_split_d1.npy',dd1)
+    np.save(catname+'_split_d2.npy',dd2)
 
     return
 
