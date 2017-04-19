@@ -13,7 +13,7 @@ import time
 import pickle
 import glob
 import twopoint as tp
-from scipy.optimize import curve_fit
+import scipy.optimize as opt
 
 '''
 Modified code by Oliver to turn flask catalogs by Lucas 
@@ -333,27 +333,22 @@ class run(object):
 
       xip = np.zeros((2,4,20))
       xipcov = np.zeros((2,4,20,20))
+      xipcovfull = np.zeros((2,80,80))
       for zbin in range(4):
         xip[0,zbin,:] = xi[0].get_pair(zbin+1,zbin+1)[1]
         xip[1,zbin,:] = xi[1].get_pair(zbin+1,zbin+1)[1]
         xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
         xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
+      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
+      xipcovfull[0,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]        
 
-      return xip,xipcov
+      return xip,xipcov,xipcovfull
 
   @staticmethod
-  def amp_fit(xip,dxip,cov):
-
-    chi2st=999999
-    amp=0.
-    for a in xrange(-200,200):
-      x=dxip-a*xip/100.
-      chi2=np.dot(x,np.dot(np.linalg.inv(cov),x))
-      if chi2<chi2st:
-        chi2st=chi2
-        amp=a/100.
-
-    return amp
+  def amp_fit(xip0,xip,cov):
+    def rescale(a,xip,xip0,cov):
+      return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
+    return opt.minimize(rescale,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
 
   @staticmethod
   def get_chi2(xip,cov):
@@ -439,7 +434,7 @@ class run(object):
     return acov, bcov, ccov, cov
 
   @staticmethod
-  def cat_2pt_results(catname,full=False,all=False):
+  def cat_2pt_results(catname,imax=250):
 
     if catname == 'im3shape':
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
@@ -447,15 +442,19 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    xi,cov = mock.run.get_theory()
+    xi,cov,covfull = mock.run.get_theory()
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
-    for ival,val in enumerate(vals):
-      print val
-      for zbin in range(4):
-        for ixi,xi in enumerate(['xip','xim']):
-          a = mock.run.amp_fit(dd0,dd2-dd0,cov0)
+    a  = np.zeros((imax,10,5,2))
+    for i in range(imax):
+      for ival,val in enumerate(vals):
+        print val
+        for ixi,xii in enumerate(['xip','xim']):
+          for zbin in range(4):
+            a[ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+          a[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull)
+
 
 
     # print catname
