@@ -449,15 +449,30 @@ class run(object):
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
+    data0 = np.load(catname+'_split_data0.npy')
+    data1 = np.load(catname+'_split_data1.npy')
+    data2 = np.load(catname+'_split_data2.npy')
     a  = np.zeros((imax,10,5,2))
+    a0  = np.zeros((10,5,2))
     for i in range(imax):
+      if i%10==0:
+        print i
       for ival,val in enumerate(vals):
-        print val
         for ixi,xii in enumerate(['xip','xim']):
           for zbin in range(4):
-            a[ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+            a[i,ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+            if i==0:
+              a0[ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+          a[i,ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+          if i==0:
+            a0[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
+    astd = np.zeros((10,5,2))
+    for i in range(imax):
+      for ival,val in enumerate(vals):
+        for ixi,xii in enumerate(['xip','xim']):
+          for zbin in range(5):
+            astd[ival,zbin,ixi] = np.mean((a[:,ival,zbin,ixi]-np.mean(a[:,ival,zbin,ixi]))**2)*(len(a)-1)/(len(a)-1-1)
 
 
     # print catname
@@ -518,6 +533,9 @@ class run(object):
     dd0 = np.zeros((2,4,20))
     dd1 = np.zeros((10,imax,2,4,20))
     dd2 = np.zeros((10,imax,2,4,20))
+    ddata0 = np.zeros((2,4,20))
+    ddata1 = np.zeros((10,2,4,20))
+    ddata2 = np.zeros((10,2,4,20))
     for ival,val in enumerate(vals):
       print val
       for i in range(imax):
@@ -532,16 +550,27 @@ class run(object):
         for zbin in range(4):
           if i==0:
             d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
+            if ival==0:
+              data0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
+            data1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
+            data2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
           d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
           d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
           for ixi,xi in enumerate(['xip','xim']):
             if i==0:
               dd0[ixi,zbin,:] = d0[xi]
+              if ival==0:
+                ddata0[ixi,zbin,:] = data0[xi]
+              ddata1[ival,ixi,zbin,:] = data1[xi]
+              ddata2[ival,ixi,zbin,:] = data2[xi]
             dd1[ival,i,ixi,zbin,:] = d1[xi]
             dd2[ival,i,ixi,zbin,:] = d2[xi]
     np.save(catname+'_split_d0.npy',dd0)
     np.save(catname+'_split_d1.npy',dd1)
     np.save(catname+'_split_d2.npy',dd2)
+    np.save(catname+'_split_data0.npy',dd0)
+    np.save(catname+'_split_data1.npy',dd1)
+    np.save(catname+'_split_data2.npy',dd2)
 
     return
 
