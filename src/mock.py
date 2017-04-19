@@ -340,8 +340,10 @@ class run(object):
         xip[1,zbin,:] = xi[1].get_pair(zbin+1,zbin+1)[1]
         xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
         xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
-      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind2,cov.starts[0]+ind2]
-      xipcovfull[1,:,:] = cov.covmat[cov.starts[1]+ind2,cov.starts[1]+ind2]        
+      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind2,:]
+      xipcovfull[1,:,:] = cov.covmat[cov.starts[1]+ind2,:]        
+      xipcovfull[0,:,:] = xipcovfull[0,:,:][:,cov.starts[0]+ind2]
+      xipcovfull[1,:,:] = xipcovfull[1,:,:][:,cov.starts[1]+ind2]        
 
       return xip,xipcov,xipcovfull
 
@@ -454,7 +456,7 @@ class run(object):
         for ixi,xii in enumerate(['xip','xim']):
           for zbin in range(4):
             a[ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull)
+          a[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
 
 
