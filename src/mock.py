@@ -340,8 +340,8 @@ class run(object):
         xip[1,zbin,:] = xi[1].get_pair(zbin+1,zbin+1)[1]
         xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
         xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
-      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind2:cov.starts[0]+ind2,cov.starts[0]+ind2:cov.starts[0]+ind2]
-      xipcovfull[1,:,:] = cov.covmat[cov.starts[1]+ind2:cov.starts[1]+ind2,cov.starts[1]+ind2:cov.starts[1]+ind2]        
+      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind2,cov.starts[0]+ind2]
+      xipcovfull[1,:,:] = cov.covmat[cov.starts[1]+ind2,cov.starts[1]+ind2]        
 
       return xip,xipcov,xipcovfull
 
