@@ -330,6 +330,7 @@ class run(object):
 
       ind0 = {0:0,1:80,2:140,3:180}
       ind1 = {0:20,1:100,2:160,3:200}
+      ind2 = np.append(np.append(np.append(np.arange(0,20),np.arange(80,100)),np.arange(140,160)),np.arange(180,200))
 
       xip = np.zeros((2,4,20))
       xipcov = np.zeros((2,4,20,20))
@@ -339,8 +340,8 @@ class run(object):
         xip[1,zbin,:] = xi[1].get_pair(zbin+1,zbin+1)[1]
         xipcov[0,zbin,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
         xipcov[1,zbin,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]
-      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin],cov.starts[0]+ind0[zbin]:cov.starts[0]+ind1[zbin]]
-      xipcovfull[0,:,:] = cov.covmat[cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin],cov.starts[1]+ind0[zbin]:cov.starts[1]+ind1[zbin]]        
+      xipcovfull[0,:,:] = cov.covmat[cov.starts[0]+ind2:cov.starts[0]+ind2,cov.starts[0]+ind2:cov.starts[0]+ind2]
+      xipcovfull[1,:,:] = cov.covmat[cov.starts[1]+ind2:cov.starts[1]+ind2,cov.starts[1]+ind2:cov.starts[1]+ind2]        
 
       return xip,xipcov,xipcovfull
 
