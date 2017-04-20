@@ -453,7 +453,6 @@ class run(object):
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
-    xi = np.mean(d0[:,:,:,:],axis=0)
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
