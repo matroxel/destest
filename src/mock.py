@@ -205,12 +205,15 @@ class methods(object):
 class run(object):
 
   @staticmethod
-  def loop_2pt_data(cat,col):
+  def loop_2pt_data(cat,col,no2pt=False):
 
-    if col=='snr':
-      no2pt=None
+    if no2pt:
+      no2pt=0
     else:
-      no2pt=1
+      if col=='snr':
+        no2pt=None
+      else:
+        no2pt=1
     for i in range(4):
       if cat.cat == 'mcal':
         catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i+1][0],cmax=zbounds[i+1][1],remove=False)
@@ -482,6 +485,17 @@ class run(object):
     np.save(catname+'_split_a.npy',a)
     np.save(catname+'_split_astd.npy',astd)
 
+    return
+
+  @staticmethod
+  def cat_2pt_summary(catname,imax=250):
+
+    if catname == 'im3shape':
+      vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
+    else:
+      vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
+
+    xi,cov,covfull = run.get_theory()
     final = []
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
@@ -492,10 +506,9 @@ class run(object):
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
         for zbin in range(4):
-          print val,xii,zbin,a0[ival,zbin+1,ixi],'+-',np.sqrt(astd[ival,zbin+1,ixi]),'-------',np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]))
+          print val,xii,zbin,a0[ival,zbin+1,ixi],'+-',np.sqrt(astd[ival,zbin+1,ixi]),'-------',a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]),'-------',np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]))
           final2.append(np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi])))
 
-    return
 
   @staticmethod
   def build_2pt_results(catname,imax=250):
