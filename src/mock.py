@@ -453,6 +453,7 @@ class run(object):
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
+    xi = np.mean(d0,axis=0)
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
@@ -482,15 +483,14 @@ class run(object):
     np.save(catname+'_split_a.npy',a)
     np.save(catname+'_split_astd.npy',astd)
 
-
-    # a0 = np.load(catname+'_split_a0.npy')
-    # a = np.load(catname+'_split_a.npy')
-    # astd = np.load(catname+'_split_astd.npy')
+    a0 = np.load(catname+'_split_a0.npy')
+    a = np.load(catname+'_split_a.npy')
+    astd = np.load(catname+'_split_astd.npy')
 
     final = []
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
-        print val,xii,zbin,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
+        print val,xii,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
         final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
 
     final2 = []
@@ -511,7 +511,7 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    dd0 = np.zeros((2,4,20))
+    dd0 = np.zeros((imax,2,4,20))
     dd1 = np.zeros((10,imax,2,4,20))
     dd2 = np.zeros((10,imax,2,4,20))
     ddata0 = np.zeros((2,4,20))
@@ -522,7 +522,7 @@ class run(object):
       for i in range(imax):
         try:
           for zbin in range(4):
-            if i==0:
+            if ival==0:
               d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
             d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
             d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
@@ -530,16 +530,17 @@ class run(object):
           continue
         for zbin in range(4):
           if i==0:
-            d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
             if ival==0:
               data0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
             data1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
             data2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
+          if ival==0:
+            d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
           d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
           d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
           for ixi,xi in enumerate(['xip','xim']):
             if i==0:
-              dd0[ixi,zbin,:] = d0[xi]
+              dd0[i,ixi,zbin,:] = d0[xi]
               if ival==0:
                 ddata0[ixi,zbin,:] = data0[xi]
               ddata1[ival,ixi,zbin,:] = data1[xi]
