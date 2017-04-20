@@ -348,12 +348,6 @@ class run(object):
       return xip,xipcov,xipcovfull
 
   @staticmethod
-  def amp_fit(xip0,xip,cov):
-    def rescale(a,xip,xip0,cov):
-      return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
-    return opt.minimize(rescale,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
-
-  @staticmethod
   def get_chi2(xip,cov):
 
     chi2=np.dot(xip,np.dot(np.linalg.inv(cov),xip))/(len(xip)-1)
@@ -437,6 +431,16 @@ class run(object):
     return acov, bcov, ccov, cov
 
   @staticmethod
+  def chi2_dist(x,k):
+    return 1./(2**(k/2.)*scipy.special.gamma(k/2.))*x**(k/2.-1.)*np.exp(-x/2.)
+
+  @staticmethod
+  def amp_fit(xip0,xip,cov):
+    def rescale(a,xip,xip0,cov):
+      return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
+    return opt.minimize(rescale,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
+
+  @staticmethod
   def cat_2pt_results(catname,imax=250):
 
     if catname == 'im3shape':
@@ -452,6 +456,8 @@ class run(object):
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
+    asim = mock.run.amp_fit(xi[ixi,:,:].flatten(),np.mean(d0[ival,:,ixi,:,:],axis=0).flatten(),covfull[ixi,:,:])
+    adata = mock.run.amp_fit(xi[ixi,:,:].flatten(),data0[ival,ixi,:,:].flatten(),covfull[ixi,:,:])
     a  = np.zeros((imax,10,5,2))
     a0  = np.zeros((10,5,2))
     for i in range(imax):
@@ -460,12 +466,12 @@ class run(object):
       for ival,val in enumerate(vals):
         for ixi,xii in enumerate(['xip','xim']):
           for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+            a[i,ival,zbin+1,ixi] = mock.run.amp_fit(asim*xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
             if i==0:
-              a0[ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+              a0[ival,zbin+1,ixi] = mock.run.amp_fit(adata*xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+          a[i,ival,0,ixi] = mock.run.amp_fit(asim*xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           if i==0:
-            a0[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+            a0[ival,0,ixi] = mock.run.amp_fit(adata*xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
     astd = np.zeros((10,5,2))
     for i in range(imax):
@@ -474,50 +480,24 @@ class run(object):
           for zbin in range(5):
             astd[ival,zbin,ixi] = np.mean((a[:,ival,zbin,ixi]-np.mean(a[:,ival,zbin,ixi]))**2)*(len(a)-1)/(len(a)-1-1)
 
+    np.save(catname+'_split_a0.npy',a0)
+    np.save(catname+'_split_a.npy',a)
+    np.save(catname+'_split_astd.npy',astd)
 
-    # print catname
-    # for xi in ['xip','xim']:
-    #   for val in vals:
-    #     # if val=='snr':
-    #     #   continue
-    #     if full:
-    #       dd0 = []
-    #       dd1 = []
-    #       dd2 = []
+
+    # final = []
+    # for ixi,xii in enumerate(['xip','xim']):
+    #   for ival,val in enumerate(vals):
+    #     print val,xii,zbin,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
+    #     final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
+
+    # final2 = []
+    # for ixi,xii in enumerate(['xip','xim']):
+    #   for ival,val in enumerate(vals):
     #     for zbin in range(4):
-    #       covp,covm = run.get_data_cov(zbin,full)
-    #       d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
-    #       d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
-    #       d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
-    #       if full:
-    #         dd0 = np.append(dd0,d0[xi])
-    #         dd1 = np.append(dd1,d1[xi])
-    #         dd2 = np.append(dd2,d2[xi])
-    #       else:
-    #         dd0 = d0[xi]
-    #         dd1 = d1[xi]
-    #         dd2 = d2[xi]
-    #       if xi == 'xip':
-    #         cov0=covp
-    #       else:
-    #         cov0=covm
-    #       if full&(zbin<3):
-    #         continue
-    #       if full:
-    #         dd0 = np.array(dd0)
-    #         dd1 = np.array(dd1)
-    #         dd2 = np.array(dd2)
-    #       if all:
-    #         a = run.amp_fit(dd0,dd2-dd0,cov0)
-    #         b = run.amp_fit(dd0,dd0-dd1,cov0)
-    #       c = run.amp_fit(dd0,dd2-dd1,cov0)
-    #       acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full,all)
-    #       # chi2 = run.get_chi2(dd2-dd1,cov)
-    #       if all:
-    #         print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
-    #         print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
-    #       print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
-    #       # print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
+    #       print val,xii,zbin,a0[ival,zbin+1,ixi],'+-',np.sqrt(astd[ival,zbin+1,ixi]),'-------',np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]))
+    #       final2.append(np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi])))
+
 
     return
 
