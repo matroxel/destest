@@ -464,10 +464,10 @@ class run(object):
       for ival,val in enumerate(vals):
         for ixi,xii in enumerate(['xip','xim']):
           for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = run.amp_fit(np.mean(d0,axis=0)[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+            a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
             if i==0:
               a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = run.amp_fit(np.mean(d0,axis=0)[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+          a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           if i==0:
             a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,i,ixi,:,:]-data1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
