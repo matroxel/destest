@@ -511,7 +511,7 @@ class split_methods(object):
         if i==0:
           mask = mask1[0]
         else:
-          mask = np.append(mask[i],mask[5])
+          mask = np.append(mask1[i],mask1[5])
         h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
         w=np.ones(len(nz))
         print 'w0',len(w)
