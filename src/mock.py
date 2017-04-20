@@ -485,7 +485,7 @@ class run(object):
     final = []
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
-        print val,xii,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
+        print val,xii,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
         final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
 
     final2 = []
