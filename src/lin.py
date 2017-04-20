@@ -150,14 +150,14 @@ class linear_methods(object):
         if xi:
           if w1 is not None:
             w=w1
-            print '1',w
+            print '1',w,len(w),len(mask)
           else:
             w=np.ones(len(e1))
             print '2',w
           # unsheared, 1p, 1m, 2p, 2m
           print 'bs mask',mask0,mask
-          m1=np.mean(cat.R11[mask0]) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
-          m2=np.mean(cat.R22[mask0]) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
+          m1=np.mean(cat.R11[mask0]*w) #np.mean(cat.e1_1p[mask0])-np.mean(cat.e1_1m[mask0])
+          m2=np.mean(cat.R22[mask0]*w) #np.mean(cat.e2_2p[mask0])-np.mean(cat.e2_2m[mask0])
           if not isinstance(mask,tuple):
             print 'WARNING: no tuple mask provided, not calculating selection effects....'
             m1+=(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
@@ -185,7 +185,7 @@ class linear_methods(object):
       w=np.ones(len(e1))
 
     if w1 is not None:
-      w=np.sqrt(w*w1)
+      w=w*w1
 
     return e1[mask],e2[mask],w[mask],ms[mask],ms[mask]
 
