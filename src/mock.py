@@ -466,10 +466,10 @@ class run(object):
           for zbin in range(4):
             a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
             if i==0:
-              a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+              a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
           a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           if i==0:
-            a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,i,ixi,:,:]-data1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+            a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
     astd = np.zeros((10,5,2))
     for i in range(imax):
@@ -485,7 +485,7 @@ class run(object):
     final = []
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
-        print val,xii,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
+        print val,xii,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
         final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
 
     final2 = []
@@ -545,9 +545,9 @@ class run(object):
     np.save(catname+'_split_d0.npy',dd0)
     np.save(catname+'_split_d1.npy',dd1)
     np.save(catname+'_split_d2.npy',dd2)
-    np.save(catname+'_split_data0.npy',dd0)
-    np.save(catname+'_split_data1.npy',dd1)
-    np.save(catname+'_split_data2.npy',dd2)
+    np.save(catname+'_split_data0.npy',ddata0)
+    np.save(catname+'_split_data1.npy',ddata1)
+    np.save(catname+'_split_data2.npy',ddata2)
 
     return
 
