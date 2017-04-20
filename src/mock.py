@@ -449,15 +449,15 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    xi,cov,covfull = mock.run.get_theory()
+    xi,cov,covfull = run.get_theory()
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
-    asim = mock.run.amp_fit(xi[ixi,:,:].flatten(),np.mean(d0[ival,:,ixi,:,:],axis=0).flatten(),covfull[ixi,:,:])
-    adata = mock.run.amp_fit(xi[ixi,:,:].flatten(),data0[ival,ixi,:,:].flatten(),covfull[ixi,:,:])
+    asim = run.amp_fit(xi[ixi,:,:].flatten(),np.mean(d0[ival,:,ixi,:,:],axis=0).flatten(),covfull[ixi,:,:])
+    adata = run.amp_fit(xi[ixi,:,:].flatten(),data0[ival,ixi,:,:].flatten(),covfull[ixi,:,:])
     a  = np.zeros((imax,10,5,2))
     a0  = np.zeros((10,5,2))
     for i in range(imax):
@@ -466,12 +466,12 @@ class run(object):
       for ival,val in enumerate(vals):
         for ixi,xii in enumerate(['xip','xim']):
           for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = mock.run.amp_fit(asim*xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+            a[i,ival,zbin+1,ixi] = run.amp_fit(asim*xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
             if i==0:
-              a0[ival,zbin+1,ixi] = mock.run.amp_fit(adata*xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = mock.run.amp_fit(asim*xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+              a0[ival,zbin+1,ixi] = run.amp_fit(adata*xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+          a[i,ival,0,ixi] = run.amp_fit(asim*xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           if i==0:
-            a0[ival,0,ixi] = mock.run.amp_fit(adata*xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
+            a0[ival,0,ixi] = run.amp_fit(adata*xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
     astd = np.zeros((10,5,2))
     for i in range(imax):
