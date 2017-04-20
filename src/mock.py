@@ -469,7 +469,7 @@ class run(object):
               a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
           a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           if i==0:
-            a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
+            a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,i,ixi,:,:]-data1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
     astd = np.zeros((10,5,2))
     for i in range(imax):
@@ -481,7 +481,6 @@ class run(object):
     np.save(catname+'_split_a0.npy',a0)
     np.save(catname+'_split_a.npy',a)
     np.save(catname+'_split_astd.npy',astd)
-
 
     # final = []
     # for ixi,xii in enumerate(['xip','xim']):
