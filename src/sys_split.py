@@ -428,18 +428,24 @@ class split_methods(object):
 
     if cat.pzrw:
       print 'before weights ',time.time()-t0
-      w,weights=split_methods.pz_weight(cat,mask,bins)
+      if cat.cat=='mcal':
+        w,weights=split_methods.pz_weight_mcal(cat,mask,bins)
+      else:
+        w,weights=split_methods.pz_weight(cat,mask,bins)
       mock.methods.save_weights(cat,val,zbin,w,bins,mask)
     else:
       if cat.cat!='mcal':
         w=np.ones(np.sum([mask]))
       else:
-        w=np.ones(len(cat.coadd))
+        w=[np.ones(len(cat.coadd)),np.ones(len(cat.coadd)),np.ones(len(cat.coadd)),np.ones(len(cat.coadd)),np.ones(len(cat.coadd))]
 
     print 'before plots ',time.time()-t0
 
     if plot:
-      fig.plot_methods.plot_pzrw(cat,mask,bins,w,label,edge,weights)
+      if cat.cat=='mcal':
+        fig.plot_methods.plot_pzrw(cat,mask,bins,w[0],label,edge,weights)
+      else:
+        fig.plot_methods.plot_pzrw(cat,mask,bins,w,label,edge,weights)
 
     print 'end of wnz ',time.time()-t0
     return bins,w,edge
@@ -458,37 +464,21 @@ class split_methods(object):
         nz = cat.pzstore.pz_full
       else:
         nz = cat.pz_full
-      if cat.cat=='mcal':
-        mask1=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
-      else:
-        mask1=mask
+      mask1=mask
       e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask1,xi=True)
       if cat.wt:
         weights = w * (m1+m2)/2.
       else:
-        if cat.cat!='mcal':
-          weights = (m1+m2)/2.*np.ones(np.sum(mask))
-        else:
-          weights = (m1+m2)/2.*np.ones(len(cat.coadd))
-      if cat.cat == 'mcal':
-        h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
-      else:
-        h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights)
+        weights = (m1+m2)/2.*np.ones(np.sum(mask))
+      h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights)
       w=np.ones(len(nz))
       print 'w0',len(w)
       for j in range(cat.sbins):
-        if cat.cat!='mcal':
-          binmask=(bins==j)&mask
-          h,b=np.histogram(nz[binmask],bins=b0,weights=weights[bins[mask]==j])
-        else:
-          binmask=bins[j]
-          h,b=np.histogram(nz[binmask],bins=b0,weights=weights[binmask])
+        binmask=(bins==j)&mask
+        h,b=np.histogram(nz[binmask],bins=b0,weights=weights[bins[mask]==j])
         for k in range(binnum):
           binmask2=(nz>b[k])&(nz<=b[k+1])
-          if cat.cat!='mcal':
-            mask_=binmask&binmask2
-          else:
-            mask_=binmask[np.in1d(binmask,np.where(binmask2)[0])]
+          mask_=binmask&binmask2
           if h[k]<0.01*h0[k]:
             w[mask_]=0.
           else:
@@ -497,6 +487,49 @@ class split_methods(object):
         print 'max/min/mean weight', k,np.max(w),np.min(w),np.mean(w[binmask])
 
     return w,weights
+
+
+  @staticmethod
+  def pz_weight_mcal(cat,mask,bins,binnum=100,pdf=False):
+    """
+    Reweight portions of galaxy population to match redshift distributions to that of the whole population.
+    """
+
+    if pdf:
+      print 'transfer pdf support'
+      return
+    else:
+      if hasattr(cat,'pzstore'):
+        nz = cat.pzstore.pz_full
+      else:
+        nz = cat.pz_full
+      mask1=catalog.CatalogMethods.get_cuts_mask(cat,full=True)
+      e1,e2,w,m1,m2=lin.linear_methods.get_lin_e_w_ms(cat,mask=mask1,xi=True)
+      weights = (m1+m2)/2.*np.ones(len(cat.coadd))
+      w0 = []
+      for i in range(len(mask1)):
+        if i==0:
+          mask = mask1[0]
+        else:
+          mask = np.append(mask[i],mask[5])
+        h0,b0=np.histogram(nz[mask],bins=binnum,weights=weights[mask])
+        w=np.ones(len(nz))
+        print 'w0',len(w)
+        for j in range(cat.sbins):
+          binmask=bins[j]
+          h,b=np.histogram(nz[binmask],bins=b0,weights=weights[binmask])
+          for k in range(binnum):
+            binmask2=(nz>b[k])&(nz<=b[k+1])
+            mask_=binmask[np.in1d(binmask,np.where(binmask2)[0])]
+            if h[k]<0.01*h0[k]:
+              w[mask_]=0.
+            else:
+              w[mask_]=0.5*h0[k]/h[k]
+        w0.append(w)
+
+        print 'max/min/mean weight', k,np.max(w),np.min(w),np.mean(w[binmask])
+
+    return w0,weights
 
   @staticmethod
   def amp_shift(xip,dxip,dxiperr):
