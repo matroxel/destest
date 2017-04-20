@@ -453,7 +453,6 @@ class run(object):
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
-    xi = np.mean(d0,axis=0)
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
@@ -465,10 +464,10 @@ class run(object):
       for ival,val in enumerate(vals):
         for ixi,xii in enumerate(['xip','xim']):
           for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+            a[i,ival,zbin+1,ixi] = run.amp_fit(np.mean(d0,axis=0)[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
             if i==0:
               a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,i,ixi,zbin,:]-data1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+          a[i,ival,0,ixi] = run.amp_fit(np.mean(d0,axis=0)[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           if i==0:
             a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,i,ixi,:,:]-data1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
@@ -482,10 +481,6 @@ class run(object):
     np.save(catname+'_split_a0.npy',a0)
     np.save(catname+'_split_a.npy',a)
     np.save(catname+'_split_astd.npy',astd)
-
-    a0 = np.load(catname+'_split_a0.npy')
-    a = np.load(catname+'_split_a.npy')
-    astd = np.load(catname+'_split_astd.npy')
 
     final = []
     for ixi,xii in enumerate(['xip','xim']):
