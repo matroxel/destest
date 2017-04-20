@@ -453,6 +453,7 @@ class run(object):
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
+    xi = np.mean(d0[:,:,:,:],axis=0)
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
@@ -482,19 +483,23 @@ class run(object):
     np.save(catname+'_split_a.npy',a)
     np.save(catname+'_split_astd.npy',astd)
 
-    # final = []
-    # for ixi,xii in enumerate(['xip','xim']):
-    #   for ival,val in enumerate(vals):
-    #     print val,xii,zbin,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
-    #     final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
 
-    # final2 = []
-    # for ixi,xii in enumerate(['xip','xim']):
-    #   for ival,val in enumerate(vals):
-    #     for zbin in range(4):
-    #       print val,xii,zbin,a0[ival,zbin+1,ixi],'+-',np.sqrt(astd[ival,zbin+1,ixi]),'-------',np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]))
-    #       final2.append(np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi])))
+    # a0 = np.load(catname+'_split_a0.npy')
+    # a = np.load(catname+'_split_a.npy')
+    # astd = np.load(catname+'_split_astd.npy')
 
+    final = []
+    for ixi,xii in enumerate(['xip','xim']):
+      for ival,val in enumerate(vals):
+        print val,xii,zbin,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
+        final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
+
+    final2 = []
+    for ixi,xii in enumerate(['xip','xim']):
+      for ival,val in enumerate(vals):
+        for zbin in range(4):
+          print val,xii,zbin,a0[ival,zbin+1,ixi],'+-',np.sqrt(astd[ival,zbin+1,ixi]),'-------',np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]))
+          final2.append(np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi])))
 
     return
 
