@@ -221,7 +221,7 @@ class run(object):
         catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i+1][0],cmax=zbounds[i+1][1],remove=True)
       else:
         mask = (cat.pz>zbounds[i+1][0])&(cat.pz<zbounds[i+1][1])
-        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=True,no2pt=no2pt,zbin=i)
+        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=False,no2pt=no2pt,zbin=i)
 
     return
 
@@ -494,6 +494,9 @@ class run(object):
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
     else:
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
+
+    a0=np.load(catname+'_split_a0.npy')
+    astd=np.load(catname+'_split_astd.npy')
 
     xi,cov,covfull = run.get_theory()
     final = []
