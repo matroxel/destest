@@ -440,7 +440,7 @@ class run(object):
   @staticmethod
   def amp_fit(xip0,xip,cov):
     def rescale(a,xip,xip0,cov):
-      return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
+      return np.dot(1-xip/(a*xip0),np.dot(np.linalg.inv(cov),1-xip/(a*xip0)))
     return opt.minimize(rescale,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
 
   @staticmethod
@@ -471,8 +471,8 @@ class run(object):
                 a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
             a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
           for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = run.amp_fit(d0[i,ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = run.amp_fit(d0[i,ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+            a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+          a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           #   a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
           #   if i==0:
           #     a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
