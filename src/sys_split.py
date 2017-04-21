@@ -430,9 +430,10 @@ class split_methods(object):
       print 'before weights ',time.time()-t0
       if cat.cat=='mcal':
         w,weights=split_methods.pz_weight_mcal(cat,mask,bins)
+        mock.methods.save_weights(cat,val,zbin,w[0],bins,mask)
       else:
         w,weights=split_methods.pz_weight(cat,mask,bins)
-      mock.methods.save_weights(cat,val,zbin,w,bins,mask)
+        mock.methods.save_weights(cat,val,zbin,w,bins,mask)
     else:
       if cat.cat!='mcal':
         w=np.ones(np.sum([mask]))
