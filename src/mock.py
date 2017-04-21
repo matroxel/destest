@@ -466,13 +466,13 @@ class run(object):
         print i
       for ival,val in enumerate(vals):
         for ixi,xii in enumerate(['xip','xim']):
-          for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = run.amp_fit(d1[ival,i,ixi,zbin,:],d2[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-            if i==0:
-              a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = run.amp_fit(d1[ival,i,ixi,:,:].flatten(),d2[ival,i,ixi,:,:].flatten(),covfull[ixi,:,:])
           if i==0:
+            for zbin in range(4):
+                a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
             a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
+          for zbin in range(4):
+            a[i,ival,zbin+1,ixi] = run.amp_fit(d0[i,ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+          a[i,ival,0,ixi] = run.amp_fit(d0[i,ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
           #   a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
           #   if i==0:
           #     a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
