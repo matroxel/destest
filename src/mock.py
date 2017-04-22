@@ -4,6 +4,7 @@ import fitsio as fio
 import sys_split
 import catalog
 import config
+import lin
 try:
   import treecorr
 except:
