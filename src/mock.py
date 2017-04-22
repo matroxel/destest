@@ -669,10 +669,10 @@ class run(object):
 #     a[i,:] = d['xip']
 #   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
 
-plt.hist(a0[:,1:,:].flatten()*19.,bins=10,normed=True)
-plt.plot(np.arange(0,5000)/100.,chi2_dist(np.arange(0,5000)/100.,19.))
-plt.savefig('tmp.png')
-plt.close()
+# plt.hist(a0[:,1:,:].flatten()*19.,bins=10,normed=True)
+# plt.plot(np.arange(0,5000)/100.,chi2_dist(np.arange(0,5000)/100.,19.))
+# plt.savefig('tmp.png')
+# plt.close()
 
 
 # import src.config as config
