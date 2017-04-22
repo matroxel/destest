@@ -552,7 +552,7 @@ class run(object):
             covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
         for zbin in range(4):
           for zbin2 in range(4):
-            covfull[ival,ixi,i*20:(i+1)*20,j*20:(j+1)*20]*=np.mean(sn[ival,:])
+            covfull[ival,ixi,zbin*20:(zbin+1)*20,zbin2*20:(zbin2+1)*20]*=np.mean(sn[ival,:])
           for i in range(20):
             for j in range(20):
               tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
