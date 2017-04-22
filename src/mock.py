@@ -543,7 +543,7 @@ class run(object):
     sn = np.zeros((10,4))
     for ival,val in enumerate(vals):
       for zbin in range(4):
-        sn[ival,zbin] = np.mean(methods.correct_sn(cat,val,zbin+1))
+        sn[ival,zbin] = 1.*np.mean(methods.correct_sn(cat,val,zbin+1))
       for ixi,xii in enumerate(['xip','xim']):
         print ival,ixi
         for i in range(80):
