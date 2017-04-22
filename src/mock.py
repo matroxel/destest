@@ -351,14 +351,6 @@ class run(object):
       return xip,xipcov,xipcovfull
 
   @staticmethod
-  def get_chi2(xip,cov):
-
-    chi2=np.dot(xip,np.dot(np.linalg.inv(cov),xip))/(len(xip)-1)
-    print xip,np.diagonal(cov)
-
-    return chi2
-
-  @staticmethod
   def get_amp_cov(zbin,catname,val,xi,full=False,all=False):
 
     a=[]
@@ -438,10 +430,12 @@ class run(object):
     return 1./(2**(k/2.)*scipy.special.gamma(k/2.))*x**(k/2.-1.)*np.exp(-x/2.)
 
   @staticmethod
+  def get_chi2(a,xip,xip0,cov):
+    return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
+
+  @staticmethod
   def amp_fit(xip0,xip,cov):
-    def rescale(a,xip,xip0,cov):
-      return np.dot(1-xip/(a*xip0),np.dot(np.linalg.inv(cov),1-xip/(a*xip0)))
-    return opt.minimize(rescale,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
+    return opt.minimize(get_chi2,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
 
   @staticmethod
   def cat_2pt_results(catname,imax=250):
@@ -452,44 +446,36 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    xi,cov,covfull = run.get_theory()
     d0 = np.load(catname+'_split_d0.npy')
     d1 = np.load(catname+'_split_d1.npy')
     d2 = np.load(catname+'_split_d2.npy')
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
-    a  = np.zeros((imax,10,5,2))
+    cov = np.zeros((10,2,4,20,20))
+    covfull = np.zeros((10,2,80,80))
     a0  = np.zeros((10,5,2))
-    for i in range(imax):
-      if i%10==0:
-        print i
-      for ival,val in enumerate(vals):
-        for ixi,xii in enumerate(['xip','xim']):
-          if i==0:
-            for zbin in range(4):
-                a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
-            a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
-          for zbin in range(4):
-            a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
-          #   a[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          #   if i==0:
-          #     a0[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
-          # a[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
-          # if i==0:
-          #   a0[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
+    for ival,val in enumerate(vals):
+      for ixi,xii in enumerate(['xip','xim']):
+        print ival,ixi
+        for i in range(80):
+          for j in range(80):
+            tmp=d2[ival,:,ixi,:,:].reshape((imax,80))-d1[ival,:,ixi,:,:].reshape((imax,80))
+            covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
+        for zbin in range(4):
+          for i in range(20):
+            for j in range(20):
+              tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
+              cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)
+        a0[ival,0,ixi] = get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/19.
+        for zbin in range(4):
+          a0[ival,zbin+1,ixi] = get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
 
-    astd = np.zeros((10,5,2))
-    for i in range(imax):
-      for ival,val in enumerate(vals):
-        for ixi,xii in enumerate(['xip','xim']):
-          for zbin in range(5):
-            astd[ival,zbin,ixi] = np.mean((a[:,ival,zbin,ixi]-np.mean(a[:,ival,zbin,ixi]))**2)*(len(a)-1)/(len(a)-1-1)
-
+    np.save(catname+'_split_cov.npy',cov)
+    np.save(catname+'_split_covfull.npy',covfull)
     np.save(catname+'_split_a0.npy',a0)
-    np.save(catname+'_split_a.npy',a)
-    np.save(catname+'_split_astd.npy',astd)
+
+    run.cat_2pt_summary(catname,imax=imax)
 
     return
 
@@ -502,22 +488,19 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     a0=np.load(catname+'_split_a0.npy')
-    astd=np.load(catname+'_split_astd.npy')
 
-    xi,cov,covfull = run.get_theory()
     final = []
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
-        print val,xii,a0[ival,0,ixi],'+-',np.sqrt(astd[ival,0,ixi]),'-------',np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi]))
-        final.append(np.abs(a0[ival,0,ixi]/np.sqrt(astd[ival,0,ixi])))
+        print val,xii,a0[ival,0,ixi]
 
     final2 = []
     for ixi,xii in enumerate(['xip','xim']):
       for ival,val in enumerate(vals):
         for zbin in range(4):
-          print val,xii,zbin,a0[ival,zbin+1,ixi],'+-',np.sqrt(astd[ival,zbin+1,ixi]),'-------',a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]),'-------',np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi]))
-          final2.append(np.abs(a0[ival,zbin+1,ixi]/np.sqrt(astd[ival,zbin+1,ixi])))
+          print val,xii,zbin,a0[ival,zbin+1,ixi]
 
+    return
 
   @staticmethod
   def build_2pt_results(catname,imax=250):
@@ -594,6 +577,7 @@ class run(object):
 #   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
 
 # import src.config as config
+# config.cov['path']='../des-mpp/cosmosis/baseline/simulated_y1_v12_fiducial_wcov.fits'
 # config.cov['path']='../des-mpp/y1_mcal/2pt_fits/2pt_NG.fits'
 # import src.mock as mock
 # mock.run.cat_2pt_results('im3shape',full=True)
