@@ -192,8 +192,8 @@ class methods(object):
       w2   = np.bincount(pix,weights=w0*w0)
       mask = np.where(w1!=0)[0]
       # upix = upix[mask]
-      w1   = w1[mask]
-      w2   = w2[mask]
+      w1   = w1[mask]/np.bincount(pix)[mask]
+      w2   = w2[mask]/np.bincount(pix)[mask]
 
       out  = np.empty(len(upix),dtype=[('pix',int)]+[('weight','f4')]+[('weightsq','f4')])
       out['pix']      = upix
@@ -238,8 +238,6 @@ class methods(object):
       w = w[pixmask]
       fmap = fmap[pixmask]
       sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2))/np.sum(w['weight']/cnt)**2)
-      if cat.name!='metacalibration':
-        sn[i]/=((sig_mcal[zbin]**2/neff_mcal[zbin])/(sig_i3[zbin]**2/neff_i3[zbin]))
 
     if cat.name=='metacalibration':
       catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
@@ -287,7 +285,10 @@ class run(object):
             else:
               wfile='text/pzrw_'+catname+'_'+val+'_'+str(zbin+1)+'_'+str(k-1)+'.fits.gz'
 
-            out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile)
+            if catname=='metacalibration':
+              out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile,neff_orig=neff_mcal,sig_orig=sig_mcal)
+            else:
+              out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile,neff_orig=neff_i3,sig_orig=sig_i3)
             cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
             gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
             gg.process(cat)
@@ -560,8 +561,6 @@ class run(object):
               tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
               cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*np.mean(sn[ival,zbin])
         a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
-        for zbin in range(4):
-          a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
 
     np.save(catname+'_split_cov.npy',cov)
     np.save(catname+'_split_covfull.npy',covfull)
