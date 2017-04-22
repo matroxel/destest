@@ -237,7 +237,7 @@ class methods(object):
       cnt = cnt[pixmask]
       w = w[pixmask]
       fmap = fmap[pixmask]
-      sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2))/np.sum(w['weight']/cnt)**2)
+      sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['U_STOKES']**2))/np.sum(w['weight']/cnt)**2)
 
     if cat.name=='metacalibration':
       catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
@@ -561,6 +561,8 @@ class run(object):
               tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
               cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*np.mean(sn[ival,zbin])
         a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
+        for zbin in range(4):
+          a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
 
     np.save(catname+'_split_cov.npy',cov)
     np.save(catname+'_split_covfull.npy',covfull)
