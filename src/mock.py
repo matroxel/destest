@@ -222,7 +222,7 @@ class methods(object):
       w=w[x]
       pix=pix[x]
       fmap=fmap[y]
-      cnt  = np.bincount(pix)ca
+      cnt  = np.bincount(pix)
       cnt = cnt[w['pix']]
       pixmask = cnt!=0
       cnt = cnt[pixmask]
