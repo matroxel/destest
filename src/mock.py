@@ -223,7 +223,7 @@ class methods(object):
         mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
       else:
-        mask = mask0 & (getattr(cat,val)>edge[i]) & (getattr(cat,val)>edge[i+1])
+        mask = mask0 & (getattr(cat,val)>edge[i]) & (getattr(cat,val)<edge[i+1])
       fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
       w=fio.FITS('text/pzrw_'+cat.name+'_'+val+'_'+str(zbin)+'_'+str(i)+'.fits.gz')[-1].read()
       pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
