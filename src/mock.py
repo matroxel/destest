@@ -229,9 +229,10 @@ class methods(object):
       cnt = cnt[pixmask]
       w = w[pixmask]
       fmap = fmap[pixmask]
-      sn[i] = (np.sum(w['weightsq']*fmap['Q_STOKES']**2)/np.sum(w['weight'])**2)/(np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)/np.sum(w['weight']/cnt)**2)
+      sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2))/np.sum(w['weight']/cnt)**2)
 
     catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
+    print sn
     return sn
 
 class run(object):
