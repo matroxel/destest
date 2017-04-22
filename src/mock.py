@@ -446,9 +446,9 @@ class run(object):
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    d0 = np.load(catname+'_split_d0.npy')
-    d1 = np.load(catname+'_split_d1.npy')
-    d2 = np.load(catname+'_split_d2.npy')
+    d0 = np.load(catname+'_split_d0.npy')*.713 # Correct for mismatch in mean amplitude of xi+- between mock and final data
+    d1 = np.load(catname+'_split_d1.npy')*.713
+    d2 = np.load(catname+'_split_d2.npy')*.713
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
@@ -467,7 +467,7 @@ class run(object):
             for j in range(20):
               tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
               cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)
-        a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/19.
+        a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/80.
         for zbin in range(4):
           a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
 
