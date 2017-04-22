@@ -531,7 +531,10 @@ class run(object):
     cov = np.zeros((10,2,4,20,20))
     covfull = np.zeros((10,2,80,80))
     a0  = np.zeros((10,5,2))
+    sn = np.zeros((10,4))
     for ival,val in enumerate(vals):
+      for zbin in range(4):
+        sn[ival,zbin] = np.mean(methods.correct_sn(cat,val,zbin+1))
       for ixi,xii in enumerate(['xip','xim']):
         print ival,ixi
         for i in range(80):
@@ -540,11 +543,11 @@ class run(object):
             covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
         for zbin in range(4):
           for zbin2 in range(4):
-            covfull[ival,ixi,i*20:(i+1)*20,j*20:(j+1)*20]*=np.sqrt(np.mean(methods.correct_sn(cat,val,zbin+1)))*np.sqrt(np.mean(methods.correct_sn(cat,val,zbin2+1)))
+            covfull[ival,ixi,i*20:(i+1)*20,j*20:(j+1)*20]*=np.sqrt(sn[ival,zbin])*np.sqrt(sn[ival,zbin2])
           for i in range(20):
             for j in range(20):
               tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
-              cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*np.mean(methods.correct_sn(cat,val,zbin+1))
+              cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*np.mean(sn[ival,zbin])
         a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
         for zbin in range(4):
           a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
