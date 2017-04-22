@@ -207,7 +207,7 @@ class methods(object):
   def correct_sn(cat,val,zbin):
 
 
-    if cat.cat=='metacalibration':
+    if cat.name=='metacalibration':
       catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=False)
       mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
       edge=lin.linear_methods.find_bin_edges(getattr(cat,val)[mask],cat.sbins)
@@ -218,7 +218,7 @@ class methods(object):
     sn=np.zeros(2)
     mapfile = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(1)+'/kgg-s'+str(1)+'-f2z'+str(zbin)+'_c'+str(1)+'.fits'
     for i in xrange(cat.sbins):
-      if cat.cat=='metacalibration':
+      if cat.name=='metacalibration':
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
         mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
         catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
@@ -239,7 +239,7 @@ class methods(object):
       fmap = fmap[pixmask]
       sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2))/np.sum(w['weight']/cnt)**2)
 
-    if cat.cat=='metacalibration':
+    if cat.name=='metacalibration':
       catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
     print sn
     return sn
