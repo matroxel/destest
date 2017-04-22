@@ -238,6 +238,8 @@ class methods(object):
       w = w[pixmask]
       fmap = fmap[pixmask]
       sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2))/np.sum(w['weight']/cnt)**2)
+      if cat.name!='metacalibration':
+        sn[i]/=(sig_mcal[zbin]**2/neff_mcal[zbin])/(sig_i3[zbin]**2/neff_i3[zbin])
 
     if cat.name=='metacalibration':
       catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
