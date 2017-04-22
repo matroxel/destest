@@ -223,7 +223,7 @@ class methods(object):
       w=w[x]
       fmap=fmap[y]
       cnt  = np.bincount(pix)
-      cnt=cnt[np.in1d(np.arange(len(cnt)),w['pix'],assume_unique=False)]
+      # cnt=cnt[np.in1d(np.arange(len(cnt)),w['pix'],assume_unique=True)]
       cnt = cnt[w['pix']]
       pixmask = (cnt!=0)
       cnt = cnt[pixmask]
