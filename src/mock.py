@@ -559,7 +559,6 @@ class run(object):
               cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*np.mean(sn[ival,zbin])
         a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
         for zbin in range(4):
-          print val,xii,zbin,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],np.diagonal(cov[ival,ixi,zbin,:,:])
           a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
 
     np.save(catname+'_split_cov.npy',cov)
