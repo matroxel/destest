@@ -552,7 +552,7 @@ class run(object):
             covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
         for zbin in range(4):
           for zbin2 in range(4):
-            covfull[ival,ixi,i*20:(i+1)*20,j*20:(j+1)*20]*=np.sqrt(sn[ival,zbin])*np.sqrt(sn[ival,zbin2])
+            covfull[ival,ixi,i*20:(i+1)*20,j*20:(j+1)*20]*=np.mean(sn[ival,:])
           for i in range(20):
             for j in range(20):
               tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
@@ -668,6 +668,12 @@ class run(object):
 #     d = load_obj('text/flask_GG_metacalibration_noweight_'+str(zbin)+'_'+str(i)+'.cpickle')
 #     a[i,:] = d['xip']
 #   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
+
+plt.hist(a0[:,1:,:].flatten()*19.,bins=10,normed=True)
+plt.plot(np.arange(0,5000)/100.,chi2_dist(np.arange(0,5000)/100.,19.))
+plt.savefig('tmp.png')
+plt.close()
+
 
 # import src.config as config
 # config.cov['path']='../des-mpp/cosmosis/baseline/simulated_y1_v12_fiducial_wcov.fits'
