@@ -206,16 +206,24 @@ class methods(object):
   @staticmethod
   def correct_sn(cat,val,zbin):
 
-    catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=False)
-    mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-    edge=lin.linear_methods.find_bin_edges(getattr(cat,val)[mask],cat.sbins)
+
+    if cat.cat=='metacalibration':
+      catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=False)
+      mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+      edge=lin.linear_methods.find_bin_edges(getattr(cat,val)[mask],cat.sbins)
+    else:
+      mask0 = (cat.flags_select==0)&(cat.pz>zbounds[zbin][0])&(cat.pz<zbounds[zbin][1])
+      edge=lin.linear_methods.find_bin_edges(getattr(cat,val)[mask0],cat.sbins,w=cat.w[mask0])
 
     sn=np.zeros(2)
     mapfile = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(1)+'/kgg-s'+str(1)+'-f2z'+str(zbin)+'_c'+str(1)+'.fits'
     for i in xrange(cat.sbins):
-      catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
-      mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
-      catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+      if cat.cat=='metacalibration':
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+      else:
+        mask = mask0 & (getattr(cat,val)>edge[i]) & (getattr(cat,val)>edge[i+1])
       fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
       w=fio.FITS('text/pzrw_'+cat.name+'_'+val+'_'+str(zbin)+'_'+str(i)+'.fits.gz')[-1].read()
       pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
@@ -231,7 +239,8 @@ class methods(object):
       fmap = fmap[pixmask]
       sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2))/np.sum(w['weight']/cnt)**2)
 
-    catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
+    if cat.cat=='metacalibration':
+      catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
     print sn
     return sn
 
