@@ -221,10 +221,9 @@ class methods(object):
       pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
       x,y = catalog.CatalogMethods.sort2(w['pix'],fmap['PIXEL'])
       w=w[x]
-      pix=pix[x]
       fmap=fmap[y]
       cnt  = np.bincount(pix)
-      cnt=cnt[np.in1d(np.arange(len(cnt)),w['pix'],assume_unique=True)]
+      cnt=cnt[np.in1d(np.arange(len(cnt)),w['pix'],assume_unique=False)]
       cnt = cnt[w['pix']]
       pixmask = (cnt!=0)
       cnt = cnt[pixmask]
