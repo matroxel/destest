@@ -551,20 +551,20 @@ class field_methods(object):
   @staticmethod
   def ccd_corners():
 
-    cornersx=[]
-    cornersy=[]
+    centre=np.zeros((62,4,2))
     for i,x in enumerate(field_methods.ccdid):
-      centrex=np.append(centrex,field_methods.chip_centres.get(x,None)[0]-field_methods.ccdx/2.) # lower left
-      centrex=np.append(centrex,field_methods.chip_centres.get(x,None)[0]-field_methods.ccdx/2.) # lower right
-      centrex=np.append(centrex,field_methods.chip_centres.get(x,None)[0]+field_methods.ccdx/2.) # upper left
-      centrex=np.append(centrex,field_methods.chip_centres.get(x,None)[0]+field_methods.ccdx/2.) # upper right
+      c=field_methods.chip_centres.get(x,None)
+      centre[i][0][0]=c[0]-field_methods.ccdx/2. # lower left
+      centre[i][1][0]=c[0]-field_methods.ccdx/2. # lower right
+      centre[i][2][0]=c[0]+field_methods.ccdx/2. # upper left
+      centre[i][3][0]=c[0]+field_methods.ccdx/2. # upper right
 
-      centrey=np.append(centrey,field_methods.chip_centres.get(x,None)[1]-field_methods.ccdy/2.)
-      centrey=np.append(centrey,field_methods.chip_centres.get(x,None)[1]+field_methods.ccdy/2.)
-      centrey=np.append(centrey,field_methods.chip_centres.get(x,None)[1]-field_methods.ccdy/2.)
-      centrey=np.append(centrey,field_methods.chip_centres.get(x,None)[1]+field_methods.ccdy/2.)
+      centre[i][0][1]=c[1]-field_methods.ccdy/2.
+      centre[i][1][1]=c[1]+field_methods.ccdy/2.
+      centre[i][2][1]=c[1]-field_methods.ccdy/2.
+      centre[i][3][1]=c[1]+field_methods.ccdy/2.
 
-    return np.vstack((centrex,centrey)).T
+    return centre
 
   @staticmethod
   def ccd_to_field(ccd,ccdx,ccdy):
