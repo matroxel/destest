@@ -4,6 +4,7 @@ import fitsio as fio
 import sys_split
 import catalog
 import config
+import lin
 try:
   import treecorr
 except:
@@ -191,8 +192,8 @@ class methods(object):
       w2   = np.bincount(pix,weights=w0*w0)
       mask = np.where(w1!=0)[0]
       # upix = upix[mask]
-      w1   = w1[mask]
-      w2   = w2[mask]
+      w1   = w1[mask]/np.bincount(pix)[mask]
+      w2   = w2[mask]/np.bincount(pix)[mask]
 
       out  = np.empty(len(upix),dtype=[('pix',int)]+[('weight','f4')]+[('weightsq','f4')])
       out['pix']      = upix
@@ -202,15 +203,59 @@ class methods(object):
 
     return
 
+  @staticmethod
+  def correct_sn(cat,val,zbin):
+
+
+    if cat.name=='metacalibration':
+      catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=False)
+      mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+      edge=lin.linear_methods.find_bin_edges(getattr(cat,val)[mask],cat.sbins)
+    else:
+      mask0 = (cat.flags_select==0)&(cat.pz>zbounds[zbin][0])&(cat.pz<zbounds[zbin][1])
+      edge=lin.linear_methods.find_bin_edges(getattr(cat,val)[mask0],cat.sbins,w=cat.w[mask0])
+
+    sn=np.zeros(2)
+    mapfile = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(1)+'/kgg-s'+str(1)+'-f2z'+str(zbin)+'_c'+str(1)+'.fits'
+    for i in xrange(cat.sbins):
+      if cat.name=='metacalibration':
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=False)
+        mask=catalog.CatalogMethods.get_cuts_mask(cat,full=False)
+        catalog.CatalogMethods.add_cut_sheared(cat,val,cmin=edge[i],cmax=edge[i+1],remove=True)
+      else:
+        mask = mask0 & (getattr(cat,val)>edge[i]) & (getattr(cat,val)<edge[i+1])
+      fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
+      w=fio.FITS('text/pzrw_'+cat.name+'_'+val+'_'+str(zbin)+'_'+str(i)+'.fits.gz')[-1].read()
+      pix  = catalog.CatalogMethods.radec_to_hpix(cat.ra[mask],cat.dec[mask],nside=4096,nest=False)
+      x,y = catalog.CatalogMethods.sort2(w['pix'],fmap['PIXEL'])
+      w=w[x]
+      fmap=fmap[y]
+      cnt  = np.bincount(pix)
+      # cnt=cnt[np.in1d(np.arange(len(cnt)),w['pix'],assume_unique=True)]
+      cnt = cnt[w['pix']]
+      pixmask = (cnt!=0)
+      cnt = cnt[pixmask]
+      w = w[pixmask]
+      fmap = fmap[pixmask]
+      sn[i] = ((np.sum(w['weightsq']*fmap['Q_STOKES']**2)+np.sum(w['weightsq']*fmap['U_STOKES']**2))/np.sum(w['weight'])**2)/((np.sum(w['weightsq']/cnt*fmap['Q_STOKES']**2)+np.sum(w['weightsq']/cnt*fmap['U_STOKES']**2))/np.sum(w['weight']/cnt)**2)
+
+    if cat.name=='metacalibration':
+      catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[zbin][0],cmax=zbounds[zbin][1],remove=True)
+    print sn
+    return sn
+
 class run(object):
 
   @staticmethod
-  def loop_2pt_data(cat,col):
+  def loop_2pt_data(cat,col,no2pt=False):
 
-    if col=='snr':
-      no2pt=None
+    if no2pt:
+      no2pt=0
     else:
-      no2pt=1
+      if col=='snr':
+        no2pt=None
+      else:
+        no2pt=1
     for i in range(4):
       if cat.cat == 'mcal':
         catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i+1][0],cmax=zbounds[i+1][1],remove=False)
@@ -218,7 +263,7 @@ class run(object):
         catalog.CatalogMethods.add_cut_sheared(cat,'pz',cmin=zbounds[i+1][0],cmax=zbounds[i+1][1],remove=True)
       else:
         mask = (cat.pz>zbounds[i+1][0])&(cat.pz<zbounds[i+1][1])
-        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=True,no2pt=no2pt,zbin=i)
+        xip,xim,gt,split,edge=sys_split.split_methods.split_gals_2pt_along(cat,None,col,mask=mask,blind=False,plot=False,no2pt=no2pt,zbin=i)
 
     return
 
@@ -240,7 +285,10 @@ class run(object):
             else:
               wfile='text/pzrw_'+catname+'_'+val+'_'+str(zbin+1)+'_'+str(k-1)+'.fits.gz'
 
-            out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile)
+            if catname=='metacalibration':
+              out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile,neff_orig=neff_mcal,sig_orig=sig_mcal)
+            else:
+              out = methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile,neff_orig=neff_i3,sig_orig=sig_i3)
             cat = treecorr.Catalog(g1=out['e1'], g2=out['e2'], w=out['w'], ra=out['ra'], dec=out['dec'], ra_units='deg', dec_units='deg')
             gg  = treecorr.GGCorrelation(nbins=20, min_sep=2.5, max_sep=250., sep_units='arcmin', bin_slop=0.2, verbose=0)
             gg.process(cat)
@@ -348,20 +396,6 @@ class run(object):
       return xip,xipcov,xipcovfull
 
   @staticmethod
-  def amp_fit(xip0,xip,cov):
-    def rescale(a,xip,xip0,cov):
-      return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
-    return opt.minimize(rescale,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
-
-  @staticmethod
-  def get_chi2(xip,cov):
-
-    chi2=np.dot(xip,np.dot(np.linalg.inv(cov),xip))/(len(xip)-1)
-    print xip,np.diagonal(cov)
-
-    return chi2
-
-  @staticmethod
   def get_amp_cov(zbin,catname,val,xi,full=False,all=False):
 
     a=[]
@@ -437,93 +471,154 @@ class run(object):
     return acov, bcov, ccov, cov
 
   @staticmethod
-  def cat_2pt_results(catname,imax=250):
+  def chi2_dist(x,k):
+    return 1./(2**(k/2.)*scipy.special.gamma(k/2.))*x**(k/2.-1.)*np.exp(-x/2.)
 
+  @staticmethod
+  def get_chi2(a,xip,xip0,cov):
+    return np.dot(xip-a*xip0,np.dot(np.linalg.inv(cov),xip-a*xip0))
+
+  @staticmethod
+  def amp_fit(xip0,xip,cov):
+    return opt.minimize(get_chi2,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
+
+  @staticmethod
+  def cat_2pt_results(cat,imax=250):
+
+    catname=cat.name
     if catname == 'im3shape':
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
     else:
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
     print catname
-    xi,cov,covfull = mock.run.get_theory()
-    d0 = np.load(catname+'_split_d0.npy')
-    d1 = np.load(catname+'_split_d1.npy')
-    d2 = np.load(catname+'_split_d2.npy')
-    a  = np.zeros((imax,10,5,2))
-    for i in range(imax):
-      for ival,val in enumerate(vals):
-        print val
-        for ixi,xii in enumerate(['xip','xim']):
-          for zbin in range(4):
-            a[ival,zbin+1,ixi] = mock.run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-          a[ival,0,ixi] = amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
+    xi,cov,covfull = run.get_theory()
+    d0 = np.load(catname+'_split_d0.npy')*.713 # Correct for mismatch in mean amplitude of xi+- between mean of mocks and final data
+    d1 = np.load(catname+'_split_d1.npy')*.713
+    d2 = np.load(catname+'_split_d2.npy')*.713
+    data0 = np.load(catname+'_split_data0.npy')
+    data1 = np.load(catname+'_split_data1.npy')
+    data2 = np.load(catname+'_split_data2.npy')
+    # a1  = np.zeros((10,5,2))
+    # a1std  = np.zeros((10,5,2))
+    # for i in range(imax):
+    #   if i%10==0:
+    #     print i
+    #   for ival,val in enumerate(vals):
+    #     for ixi,xii in enumerate(['xip','xim']):
+    #       print ival,ixi
+    #       if i==0:
+    #         for zbin in range(4):
+    #             a10[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
+    #         a10[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
+    #       for zbin in range(4):
+    #         a1[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
+    #       a1[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
 
+    # astd = np.zeros((10,5,2))
+    # for i in range(imax):
+    #   for ival,val in enumerate(vals):
+    #     for ixi,xii in enumerate(['xip','xim']):
+    #       for zbin in range(5):
+    #         astd[ival,zbin,ixi] = np.mean((a[:,ival,zbin,ixi]-np.mean(a[:,ival,zbin,ixi]))**2)*(len(a)-1)/(len(a)-1-1)
 
-
-    # print catname
-    # for xi in ['xip','xim']:
-    #   for val in vals:
-    #     # if val=='snr':
-    #     #   continue
-    #     if full:
-    #       dd0 = []
-    #       dd1 = []
-    #       dd2 = []
+    # a1  = np.zeros((10,5,2))
+    # a1std  = np.zeros((10,5,2))
+    # for ival,val in enumerate(vals):
+    #   for ixi,xii in enumerate(['xip','xim']):
+    #     print ival,ixi
+    #     for i in range(80):
+    #       for j in range(80):
+    #         tmp=d2[ival,:,ixi,:,:].reshape((imax,80))-d1[ival,:,ixi,:,:].reshape((imax,80))
+    #         covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
     #     for zbin in range(4):
-    #       covp,covm = run.get_data_cov(zbin,full)
-    #       d0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
-    #       d1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
-    #       d2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
-    #       if full:
-    #         dd0 = np.append(dd0,d0[xi])
-    #         dd1 = np.append(dd1,d1[xi])
-    #         dd2 = np.append(dd2,d2[xi])
-    #       else:
-    #         dd0 = d0[xi]
-    #         dd1 = d1[xi]
-    #         dd2 = d2[xi]
-    #       if xi == 'xip':
-    #         cov0=covp
-    #       else:
-    #         cov0=covm
-    #       if full&(zbin<3):
-    #         continue
-    #       if full:
-    #         dd0 = np.array(dd0)
-    #         dd1 = np.array(dd1)
-    #         dd2 = np.array(dd2)
-    #       if all:
-    #         a = run.amp_fit(dd0,dd2-dd0,cov0)
-    #         b = run.amp_fit(dd0,dd0-dd1,cov0)
-    #       c = run.amp_fit(dd0,dd2-dd1,cov0)
-    #       acov,bcov,ccov,cov = run.get_amp_cov(zbin,catname,val,xi,full,all)
-    #       # chi2 = run.get_chi2(dd2-dd1,cov)
-    #       if all:
-    #         print xi, val, zbin, 'a = '+str(np.around(a,2))+' +- '+str(np.around(np.sqrt(acov),2))
-    #         print xi, val, zbin, 'b = '+str(np.around(b,2))+' +- '+str(np.around(np.sqrt(bcov),2))
-    #       print xi, val, zbin, 'c = '+str(np.around(c,2))+' +- '+str(np.around(np.sqrt(ccov),2))
-    #       # print xi, val, zbin, 'red. chi2 = ',str(np.around(chi2,2))
+    #       for i in range(20):
+    #         for j in range(20):
+    #           tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
+    #           cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)
+    #     a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
+    #     for zbin in range(4):
+    #       a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
+
+    cov = np.zeros((10,2,4,20,20))
+    covfull = np.zeros((10,2,80,80))
+    a0  = np.zeros((10,5,2))
+    sn = np.zeros((10,4))
+    for ival,val in enumerate(vals):
+      for zbin in range(4):
+        sn[ival,zbin] = np.mean(methods.correct_sn(cat,val,zbin+1))
+      for ixi,xii in enumerate(['xip','xim']):
+        print ival,ixi
+        for i in range(80):
+          for j in range(80):
+            tmp=d2[ival,:,ixi,:,:].reshape((imax,80))-d1[ival,:,ixi,:,:].reshape((imax,80))
+            covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
+        for zbin in range(4):
+          for zbin2 in range(4):
+            covfull[ival,ixi,zbin*20:(zbin+1)*20,zbin2*20:(zbin2+1)*20]*=np.mean(sn[ival,:])
+          for i in range(20):
+            for j in range(20):
+              tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
+              cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*np.mean(sn[ival,zbin])
+        a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
+        for zbin in range(4):
+          a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
+
+    np.save(catname+'_split_cov.npy',cov)
+    np.save(catname+'_split_covfull.npy',covfull)
+    np.save(catname+'_split_a0.npy',a0)
+    # np.save(catname+'_split_a1.npy',a1)
+    # np.save(catname+'_split_astd.npy',astd)
+
+    run.cat_2pt_summary(catname,imax=imax)
 
     return
 
   @staticmethod
-  def build_2pt_results(catname,imax=250):
+  def cat_2pt_summary(catname,imax=250):
 
     if catname == 'im3shape':
       vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
     else:
       vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
 
+    a0=np.load(catname+'_split_a0.npy')
+
+    final = []
+    for ixi,xii in enumerate(['xip','xim']):
+      for ival,val in enumerate(vals):
+        print val,xii,a0[ival,0,ixi]
+
+    final2 = []
+    for ixi,xii in enumerate(['xip','xim']):
+      for ival,val in enumerate(vals):
+        for zbin in range(4):
+          print val,xii,zbin,a0[ival,zbin+1,ixi]
+
+    return
+
+  @staticmethod
+  def build_2pt_results(cat,imax=250):
+
+    catname=cat.name
+    if catname == 'im3shape':
+      vals = ['snr','psf1','psf2','rgp','ebv','skybrite','fwhm','airmass','maglim','colour']      
+    else:
+      vals = ['snr','psf1','psf2','size','ebv','skybrite','fwhm','airmass','maglim','colour']
+
     print catname
-    dd0 = np.zeros((2,4,20))
+    dd0 = np.zeros((imax,2,4,20))
     dd1 = np.zeros((10,imax,2,4,20))
     dd2 = np.zeros((10,imax,2,4,20))
+    ddata0 = np.zeros((2,4,20))
+    ddata1 = np.zeros((10,2,4,20))
+    ddata2 = np.zeros((10,2,4,20))
     for ival,val in enumerate(vals):
       print val
       for i in range(imax):
         try:
           for zbin in range(4):
-            if i==0:
+            if ival==0:
               d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
             d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
             d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
@@ -531,17 +626,29 @@ class run(object):
           continue
         for zbin in range(4):
           if i==0:
+            if ival==0:
+              data0 = load_obj('text/data_GG_'+catname+'_'+str(zbin)+'.cpickle')
+            data1 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_1.cpickle')
+            data2 = load_obj('text/data_GG_'+catname+'_'+val+'_'+str(zbin)+'_2.cpickle')
+          if ival==0:
             d0 = load_obj('text/flask_GG_'+catname+'_'+'snr'+'_'+str(zbin)+'_'+str(i)+'_0.cpickle')
           d1 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_1.cpickle')
           d2 = load_obj('text/flask_GG_'+catname+'_'+val+'_'+str(zbin)+'_'+str(i)+'_2.cpickle')
           for ixi,xi in enumerate(['xip','xim']):
             if i==0:
-              dd0[ixi,zbin,:] = d0[xi]
+              dd0[i,ixi,zbin,:] = d0[xi]
+              if ival==0:
+                ddata0[ixi,zbin,:] = data0[xi]
+              ddata1[ival,ixi,zbin,:] = data1[xi]
+              ddata2[ival,ixi,zbin,:] = data2[xi]
             dd1[ival,i,ixi,zbin,:] = d1[xi]
             dd2[ival,i,ixi,zbin,:] = d2[xi]
     np.save(catname+'_split_d0.npy',dd0)
     np.save(catname+'_split_d1.npy',dd1)
     np.save(catname+'_split_d2.npy',dd2)
+    np.save(catname+'_split_data0.npy',ddata0)
+    np.save(catname+'_split_data1.npy',ddata1)
+    np.save(catname+'_split_data2.npy',ddata2)
 
     return
 
@@ -565,7 +672,14 @@ class run(object):
 #     a[i,:] = d['xip']
 #   print zbin, np.sqrt(np.sum((a-np.mean(a,axis=0))*(a-np.mean(a,axis=0)),axis=0)/len(a))*(len(a)-20-1)/(len(a)-1)
 
+# plt.hist(a0[:,1:,:].flatten()*19.,bins=10,normed=True)
+# plt.plot(np.arange(0,5000)/100.,chi2_dist(np.arange(0,5000)/100.,19.))
+# plt.savefig('tmp.png')
+# plt.close()
+
+
 # import src.config as config
+# config.cov['path']='../des-mpp/cosmosis/baseline/simulated_y1_v12_fiducial_wcov.fits'
 # config.cov['path']='../des-mpp/y1_mcal/2pt_fits/2pt_NG.fits'
 # import src.mock as mock
 # mock.run.cat_2pt_results('im3shape',full=True)

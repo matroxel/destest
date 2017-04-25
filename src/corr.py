@@ -293,9 +293,7 @@ class xi_2pt(object):
     print 'after lin_e_...',time.time()-t0
 
     if (corr=='GG')|((catb!=None)&(corr=='KG')):
-      if (cata.cat=='mcal')&(cata.bs):
-        catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
-      elif cata.cat=='mcal':
+      if cata.cat=='mcal':
         catxa=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maska0], ra=cata.ra[maska0], dec=cata.dec[maska0], ra_units='deg', dec_units='deg')
       else:
         # print len(e1),len(e2),len(w),len(cata.ra),len(maska0),maska0
@@ -356,9 +354,7 @@ class xi_2pt(object):
 
       if corr in ['GG','NG','KG']:
         print len(e1/m1),len(w),len(catb.ra),len(catb.dec),np.max(maskb0)
-        if (catb.cat=='mcal')&(catb.bs):
-          catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
-        elif catb.cat=='mcal':
+        if catb.cat=='mcal':
           catxb=treecorr.Catalog(g1=e1/m1, g2=e2/m2, w=w[maskb0], ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
         else:
           catxb=treecorr.Catalog(g1=e1, g2=e2, w=w, ra=catb.ra[maskb0], dec=catb.dec[maskb0], ra_units='deg', dec_units='deg')
