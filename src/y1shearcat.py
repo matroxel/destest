@@ -764,6 +764,24 @@ class y1_plots(object):
 
         skm.addFootprint('DES', proj, ax, zorder=10, edgecolor='#2222B2', facecolor='None', lw=2)
         
+        def add_label(ra_label,dec_label,label):
+            x,y=proj(ra_label,dec_label)
+            ax.text(x,y,label,fontsize=14)
+        
+        add_label(45,-64,"SPT")
+        add_label(350,4.0, "Stripe 82")
+        add_label(50,-26, "D04")
+        add_label(38.5,-1.5, "D04")
+
+        #Fiddle with axis limit so we can see the whole range
+        xmin,_=proj(100,-30)
+        _,xmax=ax.get_xlim()
+        ax.set_xlim(xmin,xmax)
+        ymin,ymax=ax.get_ylim()
+        r=ymax-ymin
+        ymin-=r/10.
+        ymax+=r/5.
+        ax.set_ylim(ymin,ymax)
         return
 
     @staticmethod
