@@ -107,7 +107,7 @@ class methods(object):
     neff_pix = 1. / (hp.nside2pixarea(nside, degrees=True)*3600.)
     neff_new = neff_orig[zbin]*neff_ratio
 
-    mapfile = '/fs/scratch/cond0083/flask/kgg-s'+str(seed)+'-f2z'+str(zbin)+'_c'+str(rlsn)+'.fits'
+    mapfile = '/global/cscratch1/sd/seccolf/y1_patch/seed'+str(seed)+'/kgg-s'+str(seed)+'-f2z'+str(zbin)+'_c'+str(rlsn)+'.fits'
     fmap = fio.FITS(mapfile)[-1].read(columns=['PIXEL','Q_STOKES','U_STOKES'])
     theta, phi         = hp.pix2ang(nside,fmap['PIXEL']) #theta and phi of the footprint pixels
     pix_rotator        = hp.Rotator(deg=False, rot=[euler_angle_1[int(rlsn)]*np.pi/180., euler_angle_2[int(rlsn)]*np.pi/180.])
@@ -305,6 +305,29 @@ class run(object):
 
     return
 
+
+  @staticmethod
+  def loop_1pt(catname,val):
+
+    t0=time.time()
+
+    e1=np.zeros((4,201))
+    e2=np.zeros((4,201))    
+    cnt=0
+    for j in range(36):
+      for i in range(8):
+        print cnt
+        if cnt>200:
+          continue
+        for zbin in range(4):
+          wfile = None
+          out = mock.methods.rotate_mock_rescale_nsigma(zbin+1, i+1, j+1, wfile=wfile,neff_orig=mock.neff_mcal,sig_orig=mock.sig_mcal)
+        e1[zbin,cnt]=np.mean(out['e1'])
+        e2[zbin,cnt]=np.mean(out['e2'])
+        cnt+=1
+
+    return
+
   @staticmethod
   def loop_2pt_noweight(catname,ii):
 
@@ -480,7 +503,7 @@ class run(object):
 
   @staticmethod
   def amp_fit(xip0,xip,cov):
-    return opt.minimize(get_chi2,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
+    return opt.minimize(run.get_chi2,0.,args=(xip0,xip,cov),bounds=[[-2,2]],tol=1e-2).x[0]
 
   @staticmethod
   def cat_2pt_results(cat,imax=250):
@@ -499,46 +522,6 @@ class run(object):
     data0 = np.load(catname+'_split_data0.npy')
     data1 = np.load(catname+'_split_data1.npy')
     data2 = np.load(catname+'_split_data2.npy')
-    # a1  = np.zeros((10,5,2))
-    # a1std  = np.zeros((10,5,2))
-    # for i in range(imax):
-    #   if i%10==0:
-    #     print i
-    #   for ival,val in enumerate(vals):
-    #     for ixi,xii in enumerate(['xip','xim']):
-    #       print ival,ixi
-    #       if i==0:
-    #         for zbin in range(4):
-    #             a10[ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
-    #         a10[ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(data2[ival,ixi,:,:]-data1[ival,ixi,:,:]).flatten(),covfull[ixi,:,:])
-    #       for zbin in range(4):
-    #         a1[i,ival,zbin+1,ixi] = run.amp_fit(xi[ixi,zbin,:],d2[ival,i,ixi,zbin,:]-d1[ival,i,ixi,zbin,:],cov[ixi,zbin,:,:])
-    #       a1[i,ival,0,ixi] = run.amp_fit(xi[ixi,:,:].flatten(),(d2[ival,i,ixi,:,:]-d1[ival,i,ixi,:,:]).flatten(),covfull[ixi,:,:])
-
-    # astd = np.zeros((10,5,2))
-    # for i in range(imax):
-    #   for ival,val in enumerate(vals):
-    #     for ixi,xii in enumerate(['xip','xim']):
-    #       for zbin in range(5):
-    #         astd[ival,zbin,ixi] = np.mean((a[:,ival,zbin,ixi]-np.mean(a[:,ival,zbin,ixi]))**2)*(len(a)-1)/(len(a)-1-1)
-
-    # a1  = np.zeros((10,5,2))
-    # a1std  = np.zeros((10,5,2))
-    # for ival,val in enumerate(vals):
-    #   for ixi,xii in enumerate(['xip','xim']):
-    #     print ival,ixi
-    #     for i in range(80):
-    #       for j in range(80):
-    #         tmp=d2[ival,:,ixi,:,:].reshape((imax,80))-d1[ival,:,ixi,:,:].reshape((imax,80))
-    #         covfull[ival,ixi,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-80-1)
-    #     for zbin in range(4):
-    #       for i in range(20):
-    #         for j in range(20):
-    #           tmp=d2[ival,:,ixi,zbin,:]-d1[ival,:,ixi,zbin,:]
-    #           cov[ival,ixi,zbin,i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)
-    #     a0[ival,0,ixi] = run.get_chi2(1.,data2[ival,ixi,:,:].flatten(),data1[ival,ixi,:,:].flatten(),covfull[ival,ixi,:,:])/79.
-    #     for zbin in range(4):
-    #       a0[ival,zbin+1,ixi] = run.get_chi2(1.,data2[ival,ixi,zbin,:],data1[ival,ixi,zbin,:],cov[ival,ixi,zbin,:,:])/19.
 
     cov = np.zeros((10,2,4,20,20))
     covfull = np.zeros((10,2,80,80))
@@ -594,6 +577,26 @@ class run(object):
       for ival,val in enumerate(vals):
         for zbin in range(4):
           print val,xii,zbin,a0[ival,zbin+1,ixi]
+
+    xi,cov,covfull = run.get_theory()
+    d0 = np.load(catname+'_split_d0.npy')*.713 # Correct for mismatch in mean amplitude of xi+- between mean of mocks and final data
+    d1 = np.load(catname+'_split_d1.npy')*.713
+    d2 = np.load(catname+'_split_d2.npy')*.713
+    data0 = np.load(catname+'_split_data0.npy')
+    data1 = np.load(catname+'_split_data1.npy')
+    data2 = np.load(catname+'_split_data2.npy')
+    cov1 = np.zeros((20,20))
+    ival=0
+    zbin=3
+    ixi=0
+    for i in range(20):
+      for j in range(20):
+        tmp=d1[ival,:,ixi,zbin,:]
+        cov1[i,j]=np.mean((tmp[:,i]-np.mean(tmp[:,i]))*(tmp[:,j]-np.mean(tmp[:,j])))*(imax-1)/(imax-20-1)*0.83
+    print run.amp_fit(xi[ixi,zbin,:],data2[ival,ixi,zbin,:]-data0[ival,ixi,zbin,:],cov[ixi,zbin,:,:])
+    print np.average((data2[ival,ixi,zbin,:]-data1[ival,ixi,zbin,:])/xi[ixi,zbin,:],weights=np.diagonal(np.linalg.inv(cov[ixi,zbin,:,:])))
+    print np.average(np.sqrt(np.diagonal((cov[ixi,zbin,:,:])))/xi[ixi,zbin,:],weights=np.diagonal(np.linalg.inv(cov[ixi,zbin,:,:])))
+    print np.average((data2[ival,ixi,zbin,:]-data0[ixi,zbin,:])/np.sqrt(np.diagonal(cov0[0,ixi,zbin,:,:])),weights=1./np.diagonal(cov0[0,ixi,zbin,:,:]))
 
     return
 
