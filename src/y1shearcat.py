@@ -803,9 +803,9 @@ class y1_plots(object):
 
         unique_ccd_ids = np.max(cat.ccd[mask])*cat.filenum[mask]+cat.ccd[mask]
         u,c=np.unique(unique_ccd_ids,return_counts=True)
-        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k')
-        plt.ylabel('Number of CCDs')
-        plt.xlabel('Number of stars per CCD')
+        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k', alpha=0.5)
+        plt.ylabel('Number of CCD exposures')
+        plt.xlabel('Stars per CCD exposure')
         plt.savefig('plots/y1/psf_star_dist.pdf', bbox_inches='tight')
         plt.close()
 
