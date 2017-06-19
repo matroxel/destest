@@ -764,6 +764,24 @@ class y1_plots(object):
 
         skm.addFootprint('DES', proj, ax, zorder=10, edgecolor='#2222B2', facecolor='None', lw=2)
         
+        def add_label(ra_label,dec_label,label):
+            x,y=proj(ra_label,dec_label)
+            ax.text(x,y,label,fontsize=14)
+        
+        add_label(45,-64,"SPT")
+        add_label(350,4.0, "Stripe 82")
+        add_label(50,-26, "D04")
+        add_label(38.5,-1.5, "D04")
+
+        #Fiddle with axis limit so we can see the whole range
+        xmin,_=proj(100,-30)
+        _,xmax=ax.get_xlim()
+        ax.set_xlim(xmin,xmax)
+        ymin,ymax=ax.get_ylim()
+        r=ymax-ymin
+        ymin-=r/10.
+        ymax+=r/5.
+        ax.set_ylim(ymin,ymax)
         return
 
     @staticmethod
@@ -785,9 +803,9 @@ class y1_plots(object):
 
         unique_ccd_ids = np.max(cat.ccd[mask])*cat.filenum[mask]+cat.ccd[mask]
         u,c=np.unique(unique_ccd_ids,return_counts=True)
-        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k')
-        plt.ylabel('Number of CCDs')
-        plt.xlabel('Number of stars per CCD')
+        plt.hist(c,bins=100,range=(0,700),histtype='stepfilled',color='k', alpha=0.5)
+        plt.ylabel('Number of CCD exposures')
+        plt.xlabel('Stars per CCD exposure')
         plt.savefig('plots/y1/psf_star_dist.pdf', bbox_inches='tight')
         plt.close()
 
@@ -845,26 +863,32 @@ class y1_plots(object):
 
             d = load_obj(name)
 
+        print "Adding magnitude offset 5.3"
+        mag_offset = 5.3
+
         ax=plt.subplot(2,1,1)
-        plt.errorbar(d['arr1'],d['dT'],yerr=d['dTerr'],marker='.',linestyle='',color='k')
+        plt.errorbar(mag_offset+d['arr1'],d['dT'],yerr=d['dTerr'],marker='.',linestyle='',color='k')
         ax.minorticks_on()
         plt.ylabel(r'$T_{\mathrm{PSF}}-T_{\mathrm{model}}~(\mathrm{arcsec}^{2})$')
-        plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        plt.axvline(mag_offset+cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.01*np.ones(2),0.02*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.axvspan(mag_offset+9, mag_offset+cat.mag[cat.flag==0].min(), facecolor='k', alpha=0.2)
+        plt.xlim(15,23)
+
         ax.set_xticklabels([])
 
         ax=plt.subplot(2,1,2)
-        plt.errorbar(d['arr1'],d['de1'],yerr=d['de1err'],marker='.',linestyle='',color='r',label=r'$e_1$')
-        plt.errorbar(d['arr1'],d['de2'],yerr=d['de2err'],marker='.',linestyle='',color='b',label=r'$e_2$')
+        plt.errorbar(mag_offset+d['arr1'],d['de1'],yerr=d['de1err'],marker='.',linestyle='',color='r',label=r'$e_1$')
+        plt.errorbar(mag_offset+d['arr1'],d['de2'],yerr=d['de2err'],marker='.',linestyle='',color='b',label=r'$e_2$')
         ax.minorticks_on()
         plt.ylabel(r'$e_{\mathrm{PSF}}-e_{\mathrm{model}}$')
-        plt.axvline(cat.mag[cat.flag==0].min(),color='k')
+        plt.axvline(mag_offset+cat.mag[cat.flag==0].min(),color='k')
         plt.axhline(0.,color='k')
-        plt.fill_between([10.,cat.mag[cat.flag==0].min()],-0.001*np.ones(2),0.001*np.ones(2),interpolate=True,color='k',alpha=0.2)
+        plt.axvspan(mag_offset+9, mag_offset+cat.mag[cat.flag==0].min(), facecolor='k', alpha=0.2)
         plt.xlabel('Magnitude')
+        plt.xlim(15,23)
 
-        plt.legend(loc='lower right',ncol=1, frameon=True,prop={'size':12})
+        plt.legend(loc='upper right',ncol=1, frameon=True,prop={'size':12})
         plt.tight_layout()
         plt.savefig('plots/y1/psf_res_mag.pdf', bbox_inches='tight')
         plt.close()
