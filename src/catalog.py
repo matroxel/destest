@@ -609,7 +609,10 @@ class CatalogMethods(object):
 
     lenst=0
     # Loop over file(s) [in directory]
-    for ifile,file in enumerate(glob.glob(dir)):
+    allfiles=glob.glob(dir)
+    for ifile,file in enumerate(allfiles):
+      if ifile%20==0:
+        print file, ifile+1, len(allfiles)
       if ifile>maxiter:
         break
       if (exiter>=0)&(exiter!=ifile):
@@ -685,7 +688,7 @@ class CatalogMethods(object):
       filenums[lenst:lenst+np.sum(mask)]=np.ones(np.sum(mask))*ifile
 
       lenst+=np.sum(mask)
-      print ifile,np.sum(mask),lenst,file
+      #print ifile,np.sum(mask),lenst,file
 
       fits.close()
 
