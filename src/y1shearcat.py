@@ -27,10 +27,12 @@ import src.corr as corr
 #pzbins = [0.2,0.43,0.63,0.9,1.3]
 
 def save_obj(obj, name ):
+    print "Pickling:", name
     with open(name, 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 def load_obj(name ):
+    print "Unpickling:", name
     with open(name, 'rb') as f:
         return pickle.load(f)
 
