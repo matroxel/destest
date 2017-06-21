@@ -271,12 +271,7 @@ class y1(object):
 
         else:
 
-            #If we have already loaded i3 and mcal catalogs don't load them again.
-            if isinstance(i3pickle, catalog.CatalogStore) and isinstance(mcalpickle, catalog.CatalogStore):
-                mcal = mcalpickle
-                i3 = i3pickle
-            else:
-                mcal,i3 = y1.get_nonepoch(i3pickle,mcalpickle)
+            mcal,i3 = y1.get_nonepoch(i3pickle,mcalpickle)
 
             mcalepoch0 = y1.epoch_data_dump(mcaldir,['id','orig_row','orig_col','image_id'],-2)
             mask = np.where(np.in1d(mcal[:,0],mcalepoch0['id'],assume_unique=False))[0]
