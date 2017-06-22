@@ -535,7 +535,7 @@ class field_methods(object):
   ccdid=['S29','S30','S31','S25','S26','S27','S28','S20','S21','S22','S23','S24','S14','S15','S16','S17','S18','S19','S8','S9','S10','S11','S12','S13','S1','S2','S3','S4','S5','S6','S7','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','N12','N13','N14','N15','N16','N17','N18','N19','N20','N21','N22','N23','N24','N25','N26','N27','N28','N29','N30','N31']
 
   bad_ccd_names = ['N30', 'S30', 'S7']
-  bad_ccd_nums = [ccd.id.index(bad_ccd_name) for bad_ccd_name in bad_ccd_names]
+  bad_ccd_nums = [ccdid.index(bad_ccd_name) for bad_ccd_name in bad_ccd_names]
 
 
   ccdx=2048.*15.e-6*1000. # col
