@@ -173,6 +173,7 @@ class linear_methods(object):
           print 'resp g',m1,m2
           if not isinstance(mask,tuple):
             print 'WARNING: no tuple mask provided, not calculating selection effects....'
+          else:
             m1+=(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
             m2+=(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
             print 'resp S',(np.mean(cat.e1[np.append(mask[1],mask[5])])-np.mean(cat.e1[np.append(mask[2],mask[5])]))/(2.*config.cfg.get('mcal_dg')),(np.mean(cat.e2[np.append(mask[3],mask[5])])-np.mean(cat.e2[np.append(mask[4],mask[5])]))/(2.*config.cfg.get('mcal_dg'))
@@ -263,7 +264,8 @@ class linear_methods(object):
     if w is None:
       xs=np.sort(x)
       r=np.linspace(0.,1.,nbins+1.)*(len(x)-1)
-      return xs[r.astype(int)]
+      # return xs[r.astype(int)]
+      return np.linspace(-0.02,0.03,15+1)
 
     fail=False
     ww=np.sum(w)/nbins
@@ -310,7 +312,8 @@ class linear_methods(object):
     r[0]=x[i[0]]
     r[-1]=x[i[-1]]
 
-    return r
+    #return r
+    return np.linspace(-0.02,0.03,15+1)
 
   @staticmethod
   def binned_mean_e(bin,cat,val,mask=None,mock=False,edge=None):
